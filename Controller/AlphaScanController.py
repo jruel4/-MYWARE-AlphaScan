@@ -2,6 +2,8 @@
 import socket
 import time
 from threading import Thread, Event
+from pylsl import StreamInfo, StreamOutlet
+import random
 
 class AlphaScanDevice:
     
@@ -31,6 +33,12 @@ class AlphaScanDevice:
         self.DEV_log = list()
         self.inbuf = list()  
         self.unknown_stream_errors = 0
+        
+        self.info = StreamInfo('AlphaScan', 'EEG', 8, 100, 'float32', 'myuid34234')
+        self.outlet = StreamOutlet(self.info)
+        self.mysample = [random.random(), random.random(), random.random(),
+            random.random(), random.random(), random.random(),
+            random.random(), random.random()]
         
     def init_TCP(self):
         ###############################################################################
@@ -70,6 +78,7 @@ class AlphaScanDevice:
         ###############################################################################
         # UDP Stream thread target
         ###############################################################################
+        # TODO maybe open LSL stream here
         self.errors = 0
         self.reads = 0
         self.unknown_stream_errors = 0
@@ -82,6 +91,10 @@ class AlphaScanDevice:
             try:
                 self.data = self.sock.recv(128)
                 self.inbuf += [ord(self.data[23:])]
+                # send to lsl stream
+                
+                self.outlet.push_sample(self.mysample)
+                
                 self.reads += 1
             except socket.error as e:
                 if e.errno == 10035:

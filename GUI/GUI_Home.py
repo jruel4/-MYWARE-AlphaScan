@@ -42,14 +42,35 @@ class AlphaScanGui(QWidget): #TODO probably want something other than dialog her
         
         statusArea.addWidget(self.StreamingStatus)
         statusArea.addWidget(self.ConnectionStatus)
+
+        # Create tab objects        
+        self.genTab = GeneralTab(self._Device)        
         
-        # Create tabs
-        tabWidget.addTab(GeneralTab(self._Device), "General")
+        # Create tabs with objects
+        tabWidget.addTab(self.genTab, "General")
         tabWidget.addTab(ADC_REG_TAB(self._Device), "ADC")
         tabWidget.addTab(PWR_REG_TAB(self._Device), "Power")
         tabWidget.addTab(ACCEL_REG_TAB(self._Device), "Accel")
 
         self.setWindowTitle("AlphaScan Controller")
+        
+        # Create periodic timer for updating streaming and connection status
+        self.timer = QTimer()
+        self.timer.timeout.connect(self.update)
+        self.timer.start(100)
+        
+    @Slot()
+    def update(self):
+        if self.genTab.Streaming:
+            self.StreamingStatus.setText("Streaming")
+        else:
+            self.StreamingStatus.setText("Not Streaming")
+        if self.genTab.Connected:
+            self.ConnectionStatus.setText("Connected")
+        else:
+            self.ConnectionStatus.setText("Not Connected")
+        
+        
         
     def closeEvent(self, event):
         self._Device.close_TCP()
