@@ -18,7 +18,7 @@ class AlphaScanDevice:
         ###############################################################################
         # UDP Settings
         ###############################################################################
-        self.UDP_IP = "192.168.1.17"      #CONFIGURABLE
+        self.UDP_IP = "192.168.1.11"      #CONFIGURABLE #TODO get this automatically from TCP conn
         self.UDP_PORT = 2390              #CONFIGURABLE
         
         self.num = 10
@@ -174,57 +174,12 @@ class AlphaScanDevice:
         except:
             pass
     
-    
-    ###############################################################################
-    # Main control loop
-    ###############################################################################    
-    
-# TODO Give this code a home in a method    
-#==============================================================================
-#     
-# # Regular TCP command mode (not streaming UDP)
-# if not self.DEV_streamActive.is_set():
-#     
-#     # Setup for command if necessary   
-#     if len(self.user_input) > 1: 
-#         
-#         if self.user_input[0] == 's': #open streaming thread   
-#             self.LSL_Thread = Thread(target=DEV_printStream)
-#             self.LSL_Thread.start()
-#             self.DEV_streamActive.set()
-#             self.conn.send(user_input.encode('utf-8'))
-#             continue
-#         
-#         # Other commands may require setup, add them here as 'elif's
-#         
-#         # Send the command            
-#         conn.send(user_input.encode('utf-8'))
-#     
-#     # Receive data from device
-#     try:
-#         data = (conn.recv(100)).decode("utf-8")
-#     except socket.timeout:
-#         data = ''
-#     
-#     # print received data
-#     if len(data) > 0: print("received: ", data)  
-# 
-# #If streaming, only terminate ('t') command is valid
-# else:
-#     if user_input[0] == 't':
-#         
-#         # Send stream termination command
-#         sock.sendto(('ttt'.encode('utf-8')), (UDP_IP, UDP_PORT))
-#         
-#         #TODO wait for ACK to shutdown thread             
-#         
-#         DEV_streamActive.clear()
-#         print("streaming stopped")
-#     else:
-#         print("only 't' command is valid while in streaming mode")    
-#==============================================================================
-
-
+    def update_adc_registers(self,reg_to_update):
+        #send adc registers to update over tcp
+        self.flush_TCP()
+        self.conn.send('u'+''.join([str(t) for t in reg_to_update])+'\r'.encode('utf-8'))
+        time.sleep(0.01) # Time for device to respond
+        return #TODO add validation
 
         
     
