@@ -139,6 +139,13 @@ class AlphaScanDevice:
         except:
             r_string = 'failed'
         return r_string
+        
+    def sync_adc_registers(self):
+        ###############################################################################
+        # Get all registers and return as list of lists
+        ###############################################################################
+        return [[True if i % 2 == 0 else False for i in range(8)] for j in range(24)]
+        # TODO replace test code above with command to Firmware
 
     def initiate_UDP_stream(self):
         ###############################################################################

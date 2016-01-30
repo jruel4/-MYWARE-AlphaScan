@@ -346,6 +346,25 @@ class ADC_REG_TAB( QWidget):
         p = ColLabelWidgets[0].palette()
         p.setColor(ColLabelWidgets[0].backgroundRole(), 'blue')
         ColLabelWidgets[0].setPalette(p)
+        
+        # Add Button_UpdateRegister
+        self.Button_UpdateRegister = QPushButton("Update Registers")
+        mainLayout.addWidget(self.Button_UpdateRegister)
+        self.Button_UpdateRegister.clicked.connect(self.sync_registers_to_ads)
+        
+    @Slot()
+    def sync_registers_to_ads(self):
+        
+        # TODO check to ensure that (not streaming) and (connected)
+        self.ADC_RegMap = self._Device.sync_adc_registers()
+        
+        # set all check boxes to match RegMap
+        for i in range(len(self.rowDict)):
+            for j in range(8):
+                if self.ADC_RegMap[i][j]:
+                    self.rowDict[i]['BIT_'+str(j)].setCheckState(Qt.CheckState.Checked)
+                else:
+                    self.rowDict[i]['BIT_'+str(j)].setCheckState(Qt.CheckState.Unchecked)
     
     @Slot()
     def update_registers(self):
