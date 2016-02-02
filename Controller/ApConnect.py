@@ -6,61 +6,82 @@ Created on Mon Feb 01 18:54:23 2016
 """
 
 import requests
-import re
 import subprocess # NOTE: we use Windows-specific command 'netsh' commands
 
-#r = requests.get("http://192.168.4.1/fuck_you")
+class ApConnection:
+    
+    def __init__(self):
+        ''' ApConnection Class Initialization routine'''
+        self.interfaces = str()
+        self.networks = str()
+        self.ApIsAvailable = False
+        self.connected = False
+        self.associated = False
+    
+    def read_network_card(self):
+        ''' Populate available interfaces and networks, then check to see if 
+            AlphaScan access point is available and/or connected.'''
+        self.interfaces = subprocess.check_output(["netsh","wlan","show","interfaces"])
+        self.networks = subprocess.check_output(["netsh","wlan","show","networks"])
+        self.ApIsAvailable = ('AlphaScanAP' in self.networks)
+        self.ApConnected = self.ap_connection_status(self.interfaces)
 
-# Requirements
-#   1) Connect to wireless Acess Point AlphaScanAP
-#       TODO lookup netsh connection abilities - automate connection... 
-#   2) Software should detect whether or not host is connected to AlphaScanAP
-interfaces = subprocess.check_output(["netsh","wlan","show","interfaces"])
-networks = subprocess.check_output(["netsh","wlan","show","networks"])
-# TODO parse above results into usable fields
-#   Information to extract:
-#       - Is AlphaScanAP available? (Interfaces)
-#       - Is AlphaScanAP connected? (Networks)
-ApIsAvailable = ('AlphaScanAP' in networks)
-
-def ApConnectionStatus(i):
-    #TODO expand for multiple interfaces
-    # Split into separate lines
-    i = i.replace('\r','')
-    i = i.split('\n')
-    n = list()
-    for e in i:
-        if (len(e) > 1) and ':' in e:
-            n += [(e.split(':'))]
-    # Check if SSID == AlphaScanAP and State = 'connected'
-    connected = False
-    associated = False
-    for e in n:
-        if 'SSID' in e[0]:
-            if 'AlphaScanAP' in e[1]:
-                associated = True
-        if 'State' in e[0]:
-            if 'connected' in e[1]:
-                connected = True
-    if associated and connected:
-        return True
-    else:
-        return False
-
-ApConnected = ApConnectionStatus(interfaces)
-
-# If Ap is Available but not Connected, attempt to connect
-def connectToAp():
-    if ApIsAvailable and not ApConnected:
-        r = subprocess.check_output(["netsh","wlan","connect","name=AlphaScanAP"])
-        if 'successfully' in r:
+    def ap_connection_status(self,i):
+        ''' Parse the interfaces return string to check whether there is a current
+            connection to the AP.'''
+        i = i.replace('\r','')
+        i = i.split('\n')
+        n = list()
+        for e in i:
+            if (len(e) > 1) and ':' in e:
+                n += [(e.split(':'))]
+        # Check if SSID == AlphaScanAP and State = 'connected'
+        connected = False
+        associated = False
+        for e in n:
+            if 'SSID' in e[0]:
+                if 'AlphaScanAP' in e[1]:
+                    associated = True
+            if 'State' in e[0]:
+                if 'connected' in e[1]:
+                    connected = True
+        if associated and connected:
             return True
         else:
             return False
+
+    def connect_to_ap(self):
+        ''' If the AP is available but not connected, connect to it. '''
+        # TODO trouble shoot if profile not currently available - researsh says not possible...
+        if self.ApIsAvailable and not self.ApConnected:
+            r = subprocess.check_output(["netsh","wlan","connect","name=AlphaScanAP"])
+            if 'successfully' in r:
+                return True
+            else:
+                return False
  
 #   3) If not: request to do so, if so: attempt to communicate is AlphaScan
-    
-    
+    def test_ap_connection(self):
+        ''' Query to see if connection to AlphaScanAP is valid. '''
+        r = requests.get("http://192.168.4.1/alive?")
+        if 'IAMALPHASCAN' in r.text:
+            return True
+        else:
+            return False
+            
+    def query_ap(self,query_text):
+        ''' Send arbitrary query text to ap '''
+        r = requests.get("http://192.168.4.1/"+query_text)
+        return r.text
+
+# TODO remove this test driver
+
+conn = ApConnection()
+conn.read_network_card()
+print("connected:        "+str(conn.ApConnected))
+print("available:        "+str(conn.ApIsAvailable))
+print("connection valid: "+str(conn.test_ap_connection()))
+            
 #   4) Data to exchange with alpha scan:
 #       - network SSID
 #       - network passkey

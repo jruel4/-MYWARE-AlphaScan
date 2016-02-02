@@ -24,6 +24,7 @@ WiFiUDP Udp;
 // Declare function prototypes
 void establishHostTCPConn();
 void ADC_StartDataStream();
+void ADC_getRegisterContents();
 
 void setup() {
   // Setup Serial
@@ -83,6 +84,12 @@ void loop() {
       
     case 'i': //information request
       client.print("Dear host, here is your information");
+      break;
+
+    case 'u': //update register contents
+      // TODO go unto sub-switch here for devices other than adc
+      Serial.println("Received request to update ADC registers");
+      Serial.println(line);
       break;
       
     default: 
@@ -166,6 +173,9 @@ void ADC_StartDataStream() {
   }
 }
 
+void ADC_getRegisterContents() {
+  
+}
 //Power Management Control////////////////////////////////////////////////////////////////
 // TODO create pwr_man class to track status
 
