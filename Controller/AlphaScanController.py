@@ -20,7 +20,7 @@ class AlphaScanDevice:
         ###############################################################################
         # UDP Settings
         ###############################################################################
-        self.UDP_IP = "192.168.1.11"      #CONFIGURABLE #TODO get this automatically from TCP conn
+        self.UDP_IP = "192.168.1.14"      #CONFIGURABLE #TODO get this automatically from TCP conn
         self.UDP_PORT = 2390              #CONFIGURABLE
         
         self.num = 10
