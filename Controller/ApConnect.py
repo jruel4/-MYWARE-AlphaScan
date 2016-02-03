@@ -71,6 +71,7 @@ class ApConnection:
             
     def query_ap(self,query_text):
         ''' Send arbitrary query text to ap '''
+        #TODO make these requests non blocking or short timeout
         r = requests.get("http://192.168.4.1/"+query_text)
         return r.text
 
@@ -80,8 +81,14 @@ conn = ApConnection()
 conn.read_network_card()
 print("connected:        "+str(conn.ApConnected))
 print("available:        "+str(conn.ApIsAvailable))
-print("connection valid: "+str(conn.test_ap_connection()))
-            
+#print("connection valid: "+str(conn.test_ap_connection()))
+#==============================================================================
+# conn.query_ap('host_ip_192.168.1.8_endhost_ip')
+# conn.query_ap('pass_BSJKMVQ6LF2XH6BJ_endpass')
+# conn.query_ap('ssid_PHSL2_endssid')
+# conn.query_ap('GO')
+#==============================================================================
+
 #   4) Data to exchange with alpha scan:
 #       - network SSID
 #       - network passkey

@@ -4,19 +4,31 @@
 #include <WiFiUDP.h>
 
 // Define hard coded network constants
-const char* ssid     = "PHSL2";
-const char* password = "BSJKMVQ6LF2XH6BJ";
-const char* host     = "192.168.1.8";
+//const char* ssid     = "PHSL2";
+//const char* password = "BSJKMVQ6LF2XH6BJ";
+//const char* host     = "192.168.1.8";
+char ssid[20];
+char password[50];
+char host[15];
+
+String ssid_str;
+String password_str;
+String host_ip_str;
+
+bool ssid_set = false;
+bool password_set = false;
+bool host_set = false;
+bool network_set = false;
 
 // TCP constants
-const int   port     = 50007;
+const int   port     = 50007; // TODO in case of port collision try another port dynamically?
 
 // UDP constants
 const int   UDP_port = 2390;
 byte packetBuffer[512]; //buffer to hold incoming and outgoing packets
 
 // Declare WiFi client 
-WiFiClient client;
+WiFiClient client; // TODO consider using separate client instances for AP and TCP
 
 // Declare Udp Instance
 WiFiUDP Udp;
@@ -26,6 +38,8 @@ void establishHostTCPConn();
 void ADC_StartDataStream();
 void ADC_getRegisterContents();
 void processClientRequest();
+void acquireNetworkParams();
+String extractValue(String,String);
 
 //////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////
@@ -33,16 +47,34 @@ void processClientRequest();
 
 void setup() {
   // Setup Serial
-  Serial.begin(115200);
+  Serial.begin(74880);
   // Setup I2C
   // Setup SPI
   // Setup WiFi
 
   //--Connect to host application--//
 
-  // 1) Use a) hard-coded, b) stored, c) serial uploaded SSID and Passkey to connect (see: https://github.com/esp8266/Arduino/blob/master/doc/filesystem.md)
-  // TODO Establish communication loop with host over serial w/ 115200 Baudrate
+  // 1) Use b) stored, c) serial uploaded SSID and Passkey to connect (see: https://github.com/esp8266/Arduino/blob/master/doc/filesystem.md)
+
+  // acquire SSID and password via SoftAP
+  Serial.println("aquire SSID and other network params now...");
+  while(!network_set) {
+    
+    acquireNetworkParams();
+  
+  }
+   
+  Serial.println("Network parameters acquired, now attempting to join LAN with: ");
+  Serial.println("ssid: " + ssid_str + ", pass: " + password_str + ", host_ip: " + host_ip_str);
+
+  WiFi.mode(WIFI_STA);
+  WiFi.disconnect();
+  delay(1000);
+  
+  //WiFi.begin("PHSL2", "BSJKMVQ6LF2XH6BJ");
   WiFi.begin(ssid, password);
+
+  
   while (WiFi.status() != WL_CONNECTED) {
     delay(500);
     Serial.print(".");
@@ -62,7 +94,7 @@ void setup() {
 
 void loop() {
   // If not connected, connect to host (could potentially do this check via an exception on trying to client.print())
-   establishHostTCPConn();
+  establishHostTCPConn();
 
   // Read and parse client message
   processClientRequest();
@@ -75,9 +107,119 @@ void loop() {
 
 
 
+void acquireNetworkParams() {
+
+  // Define variables
+  const char AP_NAME_STR[] = "AlphaScanAP";
+  const char WiFiAPPSK[] = "martianwearables";
+  String custom_response;
+  long int c = 0;
+  int i;
+  WiFiServer server(80);
+
+  // Setup software access point (SoftAP)
+  WiFi.mode(WIFI_AP); // MAIN CALL TO SET WIFI MODE
+  WiFi.softAP(AP_NAME_STR, WiFiAPPSK); // THIS IS THE MAIN CALL TO SETUP AP
+  server.begin();
+
+  // Loop and listen for client data
+  /////////////////////////////////////////////////////////////////////////////////
+  // Check if a client has connected
+
+  
+
+  client = server.available();
+  while (!client) {
+    client = server.available();
+    if(c++ % 10000000 == 0)Serial.print(".");if(c % 100000000 ==0)Serial.println("");
+  }
+
+  if (ssid_set && host_set && password_set) {
+      network_set = true;
+      Serial.println("Network is set");
+      delay(1);
+      client.print("HTTP/1.1 200 OK\r\nfuck off");
+      delay(1);
+      client.stop();
+      delay(1);
+      return;
+    }
+
+  
+  /////////////////////////////////////////////////////////////////////////////////
+  // Read the first line of the request
+  String req = client.readStringUntil('\r');
+  Serial.print("Request received: ");Serial.print(req);Serial.println("");
+  client.flush();
+
+  /////////////////////////////////////////////////////////////////////////////////
+  // Parse request
+
+  // Alive request
+  if (req.indexOf("alive") >= 0) {
+    custom_response = "___IAMALPHASCAN___";
+  }
+
+  // Rx SSID
+  else if (req.indexOf("ssid") >= 0) {
+    // collect SSID into local variables
+    ssid_str = extractValue(req,"ssid");
+    strcpy(ssid,&(ssid_str[0]));
+    custom_response = "SSID";
+    ssid_set = true;
+
+    Serial.print("received ssid: ");Serial.println(ssid);
+  }
+
+  // Rx passkey
+  else if (req.indexOf("pass") >= 0) {
+    password_str = extractValue(req,"pass");
+    strcpy(password,&(password_str[0]));
+    custom_response = "passkey";
+    password_set = true;
+  }
+
+  // Rx Host IP
+  else if (req.indexOf("host_ip") >= 0) {
+    host_ip_str = extractValue(req,"host_ip");
+    strcpy(host,&(host_ip_str[0]));
+    custom_response = "Host IP";
+    host_set = true;
+  }
+
+  // Echo network params
+  else if (req.indexOf("echo_params") >= 0) {
+    custom_response = "ssid: " + ssid_str + ", pass: " + password_str + ", host_ip: " + host_ip_str;
+  }
+
+  else {
+    custom_response = "unknown_request";
+  }
+
+
+  // Send the response to the client
+  String s = "HTTP/1.1 200 OK\r\n";
+  s += "Content-Type: text/html\r\n\r\n";
+  s += "<!DOCTYPE HTML>\r\n<html>\r\n";
+  s += custom_response;
+  s += "</html>\n";
+  client.print(s);
+  delay(1);
+  Serial.println("Client disonnected");
+
+  //TODO close softAP to allow regular wifi connection?
+
+
+  
+}
 
 
 
+String extractValue(String Request, String delimeter) {
+  // Standard request syntax is "delimeter_value_enddelimeter"
+  // This method extracts "value"
+  return Request.substring( (Request.indexOf(delimeter) + delimeter.length() + 1), Request.indexOf("end"+delimeter) - 1);
+}
 
 
 
