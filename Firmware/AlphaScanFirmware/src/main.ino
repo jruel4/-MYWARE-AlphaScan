@@ -2,16 +2,11 @@
 #include <SPI.h>
 #include <Wire.h>
 #include <WiFiUDP.h>
-#include "FS.h"
-
 #include <ESP8266mDNS.h>
 #include <ArduinoOTA.h>
+#include "FS.h"
 
-// Define hard coded network constants
-//const char* ssid     = "PHSL2";
-//const char* password = "BSJKMVQ6LF2XH6BJ";
-const char* host     = "192.168.1.8";
-
+const char* host     = "192.168.1.8"; // TODO get this over UDP beacon
 char ssid[20];
 char password[50];
 
@@ -23,25 +18,17 @@ bool password_set = false;
 bool host_set = true;
 bool network_set = false;
 
-// TCP constants
 const int   port     = 50007; // TODO in case of port collision try another port dynamically?
-
-// UDP constants
 const int   UDP_port = 2390;
 byte packetBuffer[512]; //buffer to hold incoming and outgoing packets
 
-// Declare WiFi client
 WiFiClient client; // TODO consider using separate client instances for AP and TCP
-
-// Declare Udp Instance
 WiFiUDP Udp;
 
-// Declare filesystem variables
-const char path[] = "/net_params.txt";
+const char path[] = "/host_params.txt";
 bool open_a = true;
 File f;
 
-// Declare function prototypes
 void establishHostTCPConn();
 void ADC_StartDataStream();
 void ADC_getRegisterContents();
@@ -52,57 +39,20 @@ void readSpiffsForParams();
 void readApForParams();
 void connectToWan();
 void handleOTA();
-
-//////////////////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////////////////
+void setupOTA();
 
 void setup() {
 
   Serial.begin(74880);
-
-
   readSpiffsForParams();
-
-
   readApForParams();
-
-
   connectToWan();
-
-
-  ArduinoOTA.onStart([]() {
-    Serial.println("Start");
-  });
-  ArduinoOTA.onEnd([]() {
-    Serial.println("End");
-  });
-  ArduinoOTA.onProgress([](unsigned int progress, unsigned int total) {
-    Serial.printf("Progress: %u%%\n", (progress / (total / 100)));
-  });
-  ArduinoOTA.onError([](ota_error_t error) {
-    Serial.printf("Error[%u]: ", error);
-    if (error == OTA_AUTH_ERROR) Serial.println("Auth Failed");
-    else if (error == OTA_BEGIN_ERROR) Serial.println("Begin Failed");
-    else if (error == OTA_CONNECT_ERROR) Serial.println("Connect Failed");
-    else if (error == OTA_RECEIVE_ERROR) Serial.println("Receive Failed");
-    else if (error == OTA_END_ERROR) Serial.println("End Failed");
-  });
-  ArduinoOTA.begin();
 }
 
-//////////////////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////////////////
-
 void loop() {
-  // If not connected, connect to host (could potentially do this check via an exception on trying to client.print())
+
   establishHostTCPConn();
-
-  // Read and parse client message
   processClientRequest();
-
-
 }
 
 void connectToWan() {
@@ -131,7 +81,6 @@ void connectToWan() {
   // Bind local Wifi port
   Udp.begin(UDP_port);
 }
-
 
 void readApForParams() {
   /////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -170,7 +119,6 @@ void readApForParams() {
   WiFi.disconnect();
   delay(1000);
 }
-
 
 void readSpiffsForParams() {
   /////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -235,11 +183,6 @@ void readSpiffsForParams() {
     network_set = false;
   }
 }
-//////////////////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////////////////
-
-
 
 void acquireNetworkParams() {
 
@@ -339,26 +282,6 @@ void acquireNetworkParams() {
 
 }
 
-
-
-String extractValue(String Request, String delimeter) {
-  // Standard request syntax is "delimeter_value_enddelimeter"
-  // This method extracts "value"
-  return Request.substring( (Request.indexOf(delimeter) + delimeter.length() + 1), Request.indexOf("end"+delimeter) - 1);
-}
-
-
-
-
-
-
-
-
-
-//////////////////////////////////////////////////////////////////////////////////////////
-//////////////////////Utility Methods/////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////////////////////////////////
-
 void processClientRequest() {
 
   // Check for command from Host
@@ -409,11 +332,34 @@ void processClientRequest() {
   }
 }
 
+void setupOTA() {
+  ArduinoOTA.onStart([]() {
+    Serial.println("Start");
+  });
+  ArduinoOTA.onEnd([]() {
+    Serial.println("End");
+  });
+  ArduinoOTA.onProgress([](unsigned int progress, unsigned int total) {
+    Serial.printf("Progress: %u%%\n", (progress / (total / 100)));
+  });
+  ArduinoOTA.onError([](ota_error_t error) {
+    Serial.printf("Error[%u]: ", error);
+    if (error == OTA_AUTH_ERROR) Serial.println("Auth Failed");
+    else if (error == OTA_BEGIN_ERROR) Serial.println("Begin Failed");
+    else if (error == OTA_CONNECT_ERROR) Serial.println("Connect Failed");
+    else if (error == OTA_RECEIVE_ERROR) Serial.println("Receive Failed");
+    else if (error == OTA_END_ERROR) Serial.println("End Failed");
+  });
+  ArduinoOTA.begin();
+}
+
 void handleOTA() {
   // handle ota
   Serial.println("handing OTA - must either update or reset device");
+  // TODO Shut down tcp connection
+  setupOTA();
   while(1) {
-    ArduinoOTA.handle();
+    ArduinoOTA.handle(); // TODO this reset device - debug by shutting down previous TCP connections
   }
 }
 
@@ -421,7 +367,7 @@ void establishHostTCPConn() {
 
   if (!client.status()) {
 
-    Serial.println("Attempting to connect penis to vagina.");
+    Serial.println("Attempting to connect to host.");
 
     // Connet to host
     while (!client.connect(host,port));
@@ -440,11 +386,7 @@ void establishHostTCPConn() {
   }
 }
 
-//ADS1299 Spi Controll////////////////////////////////////////////////////////////////////
-// TODO create ADS1299 class to track register contents and device status
-void ADC_SetupDefaultConfig() {
-
-}
+void ADC_SetupDefaultConfig() {}
 
 void ADC_StartDataStream() {
 
@@ -489,11 +431,10 @@ void ADC_StartDataStream() {
   }
 }
 
-void ADC_getRegisterContents() {
+void ADC_getRegisterContents() {}
 
+String extractValue(String Request, String delimeter) {
+  // Standard request syntax is "delimeter_value_enddelimeter"
+  // This method extracts "value"
+  return Request.substring( (Request.indexOf(delimeter) + delimeter.length() + 1), Request.indexOf("end"+delimeter) - 1);
 }
-//Power Management Control////////////////////////////////////////////////////////////////
-// TODO create pwr_man class to track status
-
-//Accelerometer Control///////////////////////////////////////////////////////////////////
-// TODO create accel class to track status

@@ -1,0 +1,198 @@
+# -*- coding: utf-8 -*-
+"""
+Created on Fri Feb 05 14:06:33 2016
+
+@author: marzipan
+"""
+
+from PySide.QtCore import *
+from PySide.QtGui import *
+
+class GeneralTab(QWidget):
+    
+    # Define Init Method
+    def __init__(self,Device):
+        super(GeneralTab, self).__init__(None)
+        
+        #######################################################################
+        # Basic Init ##########################################################
+        #######################################################################
+        
+        self._Device = Device        
+        
+        # Define status vars
+        self.Connected = False
+        self.Streaming = False
+        
+        # Set layout
+        self.layout = QGridLayout()
+        self.setLayout(self.layout) # Does it matter when I do this?
+        
+        # Set layout formatting
+        self.layout.setAlignment(Qt.AlignTop)
+        self.layout.setColumnStretch(3,1)
+        # TODO prevent horizontal stretch
+        
+        #######################################################################
+        # Status Row ##########################################################
+        #######################################################################
+        
+        # Create Status items to Row_ConnectStatus
+        self.Text_ConnectStatus = QLabel("Device is Disconnected")
+        self.Button_Connect = QPushButton("CONNECT")
+        self.Button_Disconnect = QPushButton("DISCONNECT")
+        
+        # Add status items to status row
+        self.layout.addWidget(self.Text_ConnectStatus,0,0)
+        self.layout.addWidget(self.Button_Connect,0,1)
+        self.layout.addWidget(self.Button_Disconnect,0,2)
+        
+        # Connect Status button signals to connection control slots
+        self.Button_Connect.clicked.connect(self.connect_to_device)
+        self.Button_Disconnect.clicked.connect(self.disconnect_from_device)   
+        
+        #######################################################################
+        # Accelerometer Row ###################################################
+        #######################################################################
+        
+        # Create Accel Status items
+        self.Text_AccelStatus = QLabel("Please update accel status")
+        self.Button_RefreshAccelStatus = QPushButton("Update Accel Status")
+        
+        # Add status items to Row_AccelStatus
+        self.layout.addWidget(self.Text_AccelStatus,1,0)
+        self.layout.addWidget(self.Button_RefreshAccelStatus,1,1,1,2)
+        
+        # Connect Accel Status button signals to slots
+        self.Button_RefreshAccelStatus.clicked.connect(self.update_accel_status)
+        
+        #######################################################################
+        # Power Management Row ################################################
+        #######################################################################
+        
+        # Create PwrManage items
+        self.Text_PowerStatus = QLabel("Please update power status")
+        self.Button_RefreshPowerStatus = QPushButton("Update Power Status")
+        
+        # Add status items to Row_PowerManage
+        self.layout.addWidget(self.Text_PowerStatus,2,0)
+        self.layout.addWidget(self.Button_RefreshPowerStatus,2,1,1,2)
+        
+        # Connect Power Manage button signals to slots
+        self.Button_RefreshPowerStatus.clicked.connect(self.update_power_status)
+        
+        #######################################################################
+        # ADC Row #############################################################
+        #######################################################################
+        
+        # Create adc mamangement items
+        self.Text_AdcStatus = QLabel("Please update ADC Status")
+        self.Button_RefreshAdcStatus = QPushButton("Update ADC Status")
+        
+        self.Text_AdcStreamStatus = QLabel("ADC not streaming")
+        self.Button_AdcBeginStream = QPushButton("Begin Stream")
+        self.Button_AdcStopStream = QPushButton("Stop Stream")
+        
+        # Add status/control widgets to Adc layout
+        self.layout.addWidget(self.Text_AdcStatus, 3,0)
+        self.layout.addWidget(self.Button_RefreshAdcStatus, 3,1,1,2)
+        
+        self.layout.addWidget(self.Text_AdcStreamStatus, 4,0,)
+        self.layout.addWidget(self.Button_AdcBeginStream, 4,1)
+        self.layout.addWidget(self.Button_AdcStopStream, 4,2)
+        
+        # Connect ADC signal to slots
+        self.Button_RefreshAdcStatus.clicked.connect(self.update_adc_status)
+        
+        self.Button_AdcBeginStream.clicked.connect(self.begin_streaming)
+        self.Button_AdcStopStream.clicked.connect(self.stop_streaming)
+        
+        #######################################################################
+        # General Message Area ################################################
+        #######################################################################
+        
+        # Create general message label
+        self.Text_GeneralMessage = QLabel("")
+        self.layout.addWidget(self.Text_GeneralMessage, 5,0,1,2)
+        
+        # Add message formatting
+        self.Text_GeneralMessage.setAutoFillBackground(True)
+        p = self.Text_GeneralMessage.palette()
+        p.setColor(self.Text_GeneralMessage.backgroundRole(), 'cyan')
+        self.Text_GeneralMessage.setPalette(p)
+        
+        # Add clear general message button
+        self.Button_ClearGeneralMessage = QPushButton("clear message")
+        self.layout.addWidget(self.Button_ClearGeneralMessage, 5,2,1,1)
+        self.Button_ClearGeneralMessage.clicked.connect(self.clear_gen_msg)
+        
+        
+    ###########################################################################
+    # Slots ###################################################################
+    ###########################################################################
+        
+    @Slot()
+    def connect_to_device(self):
+        if self.Connected: return
+        self.Text_ConnectStatus.setText("Connecting to AlphaScan...")
+        if self._Device.init_TCP():
+            self.Connected = True
+            self.Text_ConnectStatus.setText("Connected")
+        else:
+            self.Text_ConnectStatus.setText("Connection FAILED")
+    
+    @Slot()
+    def disconnect_from_device(self):
+        if not self.Connected: return
+        self.Text_ConnectStatus.setText("Disconnecting from AlphaScan...")
+        self._Device.close_TCP()
+        self.Connected = False
+        self.Text_ConnectStatus.setText("Disconnected")
+        
+    @Slot()
+    def update_accel_status(self):
+        if self.Streaming or not self.Connected:
+            self.Text_AccelStatus.setText("ILLEGAL")
+            return
+        accel_status_string = self._Device.get_accel_status()
+        self.Text_AccelStatus.setText(accel_status_string)
+        
+    @Slot()
+    def update_power_status(self):
+        if self.Streaming or not self.Connected:
+            self.Text_PowerStatus.setText("ILLEGAL")
+            return
+        power_status_string = self._Device.get_power_status()
+        self.Text_PowerStatus.setText(power_status_string)
+        
+    @Slot()
+    def update_adc_status(self):
+        if self.Streaming or not self.Connected:
+            self.Text_AdcStatus.setText("ILLEGAL")
+            return
+        adc_status_string = self._Device.get_adc_status()
+        self.Text_AdcStatus.setText(adc_status_string)
+    
+    @Slot()
+    def begin_streaming(self):
+        if self.Streaming or not self.Connected:
+            self.Text_GeneralMessage.setText("ILLEGAL: Streaming must be false, Connected must be true")
+            return
+        begin_stream_string = self._Device.initiate_UDP_stream()
+        self.Streaming = True # TODO validate
+        self.Text_AdcStreamStatus.setText(begin_stream_string)
+    
+    @Slot()
+    def stop_streaming(self):
+        if not self.Streaming or not self.Connected:
+            self.Text_GeneralMessage.setText("ILLEGAL: Streaming must be true, Connected must be true")
+            return
+        end_stream_string = self._Device.terminate_UDP_stream()
+        self.Streaming = False # TODO validate
+        self.Text_AdcStreamStatus.setText(end_stream_string)
+        
+    @Slot()
+    def clear_gen_msg(self):
+        self.Text_GeneralMessage.setText("")
+        
+    ###########################################################################    
