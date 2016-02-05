@@ -107,6 +107,8 @@ class GeneralTab(QWidget):
         self.Button_AdcBeginStream.clicked.connect(self.begin_streaming)
         self.Button_AdcStopStream.clicked.connect(self.stop_streaming)
         
+
+        
         #######################################################################
         # General Message Area ################################################
         #######################################################################
@@ -122,10 +124,17 @@ class GeneralTab(QWidget):
         self.Text_GeneralMessage.setPalette(p)
         
         # Add clear general message button
-        self.Button_ClearGeneralMessage = QPushButton("clear message")
+        self.Button_ClearGeneralMessage = QPushButton("Clear Message")
         self.layout.addWidget(self.Button_ClearGeneralMessage, 5,2,1,1)
         self.Button_ClearGeneralMessage.clicked.connect(self.clear_gen_msg)
         
+        #######################################################################
+        # OTA Mode ############################################################
+        #######################################################################
+        
+        self.Button_OtaMode = QPushButton("Enter OTA Mode")
+        self.layout.addWidget(self.Button_OtaMode, 6, 0, 1, 1)
+        self.Button_OtaMode.clicked.connect(self.enter_ota_mode)
         
     ###########################################################################
     # Slots ###################################################################
@@ -194,5 +203,15 @@ class GeneralTab(QWidget):
     @Slot()
     def clear_gen_msg(self):
         self.Text_GeneralMessage.setText("")
+        
+    @Slot()
+    def enter_ota_mode(self):
+        r = self._Device.generic_tcp_command('o') # 'o' == ota mode
+        msgBox = QMessageBox()
+        if '' in r:#TODO add response into firmware
+            msgBox.setText("SUCCESS")
+        else:
+            msgBox.setText("failure")
+        msgBox.exec_()
         
     ###########################################################################    

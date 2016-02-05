@@ -143,6 +143,19 @@ class AlphaScanDevice:
             r_string = 'failed'
         return r_string
         
+    def generic_tcp_command(self, cmd):
+        ###############################################################################
+        # Get adc status
+        ###############################################################################
+        self.flush_TCP()
+        self.conn.send((cmd + '\r').encode('utf-8'))
+        time.sleep(0.01)
+        try:
+            r_string = self.conn.recv(64)
+        except:
+            r_string = 'failed'
+        return r_string
+        
     def sync_adc_registers(self):
         ###############################################################################
         # Get all registers and return as list of lists

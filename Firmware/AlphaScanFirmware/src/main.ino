@@ -44,6 +44,8 @@ void setupOTA();
 void setup() {
 
   Serial.begin(74880);
+  Serial.println("");
+  Serial.println("We are now OTA compatible... :)");
   readSpiffsForParams();
   readApForParams();
   connectToWan();
@@ -356,10 +358,14 @@ void setupOTA() {
 void handleOTA() {
   // handle ota
   Serial.println("handing OTA - must either update or reset device");
-  // TODO Shut down tcp connection
+  // shutdown previous tcp connections
+  client.stop();
+  delay(100);
+  //
   setupOTA();
   while(1) {
     ArduinoOTA.handle(); // TODO this reset device - debug by shutting down previous TCP connections
+    delay(1);
   }
 }
 
