@@ -1,63 +1,99 @@
-////////////////////////////////////////////////////////////////////////////////
-// Includes
-////////////////////////////////////////////////////////////////////////////////
-#include <ArduinoOTA.h>     // Over the Air updates
-#include <ESP8266WiFi.h>    // WiFi Class
-#include <ESP8266mDNS.h>    // DNS Class
-#include <SPI.h>            // Serial Peripheral Interface
-#include <Wire.h>           // Inter-Integrated Circuit
-#include <WiFiUDP.h>        // UDP
-#include "FS.h"             // File system (SPIFFS)
+#include <ESP8266WiFi.h>
+#include <SPI.h>
+#include <Wire.h>
+#include <WiFiUDP.h>
+#include "FS.h"
 
-////////////////////////////////////////////////////////////////////////////////
-// Declare global variables
-////////////////////////////////////////////////////////////////////////////////
-char host_ip[20];           // TODO eliminate this by retreiving over UDP listener then: strcpy(host,&(host_str[0]));
-char ssid[20];              // WAN Router SSID
-char password[50];          // WAN Router password
+#include <ESP8266mDNS.h>
+#include <ArduinoOTA.h>
 
-String host_ip_str;         // Stores host_ip for convinient manipulation
-String ssid_str;            // Stores ssid for convinient manipulation
-String password_str;        // Stores password for convinient manipulation
+// Define hard coded network constants
+//const char* ssid     = "PHSL2";
+//const char* password = "BSJKMVQ6LF2XH6BJ";
+const char* host     = "192.168.1.8";
 
-bool ssid_set     = false;  // ssid has been acquired
-bool password_set = false;  // password has been acquired
-bool host_ip_set     = true;   // host_ip has been acquired
-bool network_set  = false;  // all network params have been acquired
+char ssid[20];
+char password[50];
 
-const int TCP_port = 50007; // Port number opened by TCP host
-const int UDP_port = 2390;  // Port number used for both ends of UDP stream
+String ssid_str;
+String password_str;
 
-byte UDP_packetBuffer[512]; // Buffer to hold incoming and outgoing packets
+bool ssid_set = false;
+bool password_set = false;
+bool host_set = true;
+bool network_set = false;
 
-WiFiClient AP_client;       // Access Point client object
-WiFiClient TCP_client;      // Main TCP control client object
-WiFiUDP    Udp;             // UDP object for streaming ADS data
+// TCP constants
+const int   port     = 50007; // TODO in case of port collision try another port dynamically?
 
+// UDP constants
+const int   UDP_port = 2390;
+byte packetBuffer[512]; //buffer to hold incoming and outgoing packets
+
+// Declare WiFi client
+WiFiClient client; // TODO consider using separate client instances for AP and TCP
+
+// Declare Udp Instance
+WiFiUDP Udp;
+
+// Declare filesystem variables
 const char path[] = "/net_params.txt";
+bool open_a = true;
+File f;
 
-////////////////////////////////////////////////////////////////////////////////
 // Declare function prototypes
-////////////////////////////////////////////////////////////////////////////////
 void establishHostTCPConn();
 void ADC_StartDataStream();
 void ADC_getRegisterContents();
 void processClientRequest();
 void acquireNetworkParams();
-void acquireNetworkParams_SPIFFS();
-void acquireNetworkParams_AP();
-void connectToWAN();
 String extractValue(String,String);
+void readSpiffsForParams();
+void readApForParams();
+void connectToWan();
+void handleOTA();
 
-////////////////////////////////////////////////////////////////////////////////
-// Function definitions
-////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////
+
 void setup() {
 
   Serial.begin(74880);
-  acquireNetworkParams();
-  connectToWAN();
+
+
+  readSpiffsForParams();
+
+
+  readApForParams();
+
+
+  connectToWan();
+
+
+  ArduinoOTA.onStart([]() {
+    Serial.println("Start");
+  });
+  ArduinoOTA.onEnd([]() {
+    Serial.println("End");
+  });
+  ArduinoOTA.onProgress([](unsigned int progress, unsigned int total) {
+    Serial.printf("Progress: %u%%\n", (progress / (total / 100)));
+  });
+  ArduinoOTA.onError([](ota_error_t error) {
+    Serial.printf("Error[%u]: ", error);
+    if (error == OTA_AUTH_ERROR) Serial.println("Auth Failed");
+    else if (error == OTA_BEGIN_ERROR) Serial.println("Begin Failed");
+    else if (error == OTA_CONNECT_ERROR) Serial.println("Connect Failed");
+    else if (error == OTA_RECEIVE_ERROR) Serial.println("Receive Failed");
+    else if (error == OTA_END_ERROR) Serial.println("End Failed");
+  });
+  ArduinoOTA.begin();
 }
+
+//////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////
 
 void loop() {
   // If not connected, connect to host (could potentially do this check via an exception on trying to client.print())
@@ -66,43 +102,13 @@ void loop() {
   // Read and parse client message
   processClientRequest();
 
+
 }
 
-void acquireNetworkParams() {
+void connectToWan() {
+  /////////////////////////////////////////////////////////////////////////////////////////////////////
 
-  acquireNetworkParams_SPIFFS();
 
-  // If failed to retrieve params from SPIFFS, start SoftAP
-  while(!network_set) {
-
-    acquireNetworkParams_AP();
-
-    if (network_set) {
-      // Write network params to SPIFFS
-
-      // open file
-      File f = SPIFFS.open(path,"w");
-      if (!f) {
-        Serial.println("file open failed");
-        return;
-      }
-      else {
-        Serial.println("file open SUCCESS");
-      }
-
-      // write lines
-      f.seek(0,SeekSet);
-      f.println("ssid_" + ssid_str + "_endssid");
-      f.println("pass_" + password_str + "_endpass");
-      f.close();
-    }
-  }
-
-  Serial.println("Network parameters acquired.");
-  Serial.println("ssid: " + ssid_str + ", pass: " + password_str );
-}
-
-void connectToWAN() {
   //WiFi.begin("PHSL2", "BSJKMVQ6LF2XH6BJ");
   WiFi.begin(ssid, password);
 
@@ -122,18 +128,54 @@ void connectToWAN() {
   Serial.println("IP address: ");
   Serial.println(WiFi.localIP());
 
+  // Bind local Wifi port
   Udp.begin(UDP_port);
 }
 
-void acquireNetworkParams_SPIFFS() {
 
+void readApForParams() {
+  /////////////////////////////////////////////////////////////////////////////////////////////////////
+
+  // acquire SSID and password via SoftAP
+  Serial.println("aquire SSID and other network params now...");
+  while(!network_set) {
+
+    acquireNetworkParams();
+
+    if (network_set) {
+      // Write network params to SPIFFS
+
+      // open file
+      f = SPIFFS.open(path,"w");
+      if (!f) {
+        Serial.println("file open failed");
+        return;
+      }
+      else {
+        Serial.println("file open SUCCESS");
+      }
+
+      // write lines
+      f.seek(0,SeekSet);
+      f.println("ssid_" + ssid_str + "_endssid");
+      f.println("pass_" + password_str + "_endpass");
+      f.close();
+    }
+  }
+
+  Serial.println("Network parameters acquired, now attempting to join LAN with: ");
+  Serial.println("ssid: " + ssid_str + ", pass: " + password_str );
+
+  WiFi.mode(WIFI_STA);
+  WiFi.disconnect();
+  delay(1000);
+}
+
+
+void readSpiffsForParams() {
   /////////////////////////////////////////////////////////////////////////////////////////////////////
   // Check SPIFFS for network parameters
   /////////////////////////////////////////////////////////////////////////////////////////////////////
-
-  // Declare filesystem variables
-  bool open_a = true;
-  File f;
 
   // Initiate SPIFFS
   Serial.println("inititating file SPIFFS class");
@@ -193,8 +235,13 @@ void acquireNetworkParams_SPIFFS() {
     network_set = false;
   }
 }
+//////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////
 
-void acquireNetworkParams_AP() {
+
+
+void acquireNetworkParams() {
 
   // Define local AP variables
   const char AP_NAME_STR[] = "AlphaScanAP";
@@ -215,19 +262,19 @@ void acquireNetworkParams_AP() {
 
 
 
-  AP_client = server.available();
-  while (!AP_client) {
-    AP_client = server.available();
+  client = server.available();
+  while (!client) {
+    client = server.available();
     if(c++ % 10000000 == 0)Serial.print(".");if(c % 100000000 ==0)Serial.println("");
   }
 
-  if (ssid_set && host_ip_set && password_set) {
+  if (ssid_set && host_set && password_set) {
     network_set = true;
     Serial.println("Network is set");
     delay(1);
-    AP_client.print("HTTP/1.1 200 OK\r\nfuck off");
+    client.print("HTTP/1.1 200 OK\r\nfuck off");
     delay(1);
-    AP_client.stop();
+    client.stop();
     delay(1);
     return;
   }
@@ -235,9 +282,9 @@ void acquireNetworkParams_AP() {
 
   /////////////////////////////////////////////////////////////////////////////////
   // Read the first line of the request
-  String req = AP_client.readStringUntil('\r');
+  String req = client.readStringUntil('\r');
   Serial.print("Request received: ");Serial.print(req);Serial.println("");
-  AP_client.flush();
+  client.flush();
 
   /////////////////////////////////////////////////////////////////////////////////
   // Parse request
@@ -264,18 +311,6 @@ void acquireNetworkParams_AP() {
     strcpy(password,&(password_str[0]));
     custom_response = "passkey";
     password_set = true;
-
-    Serial.print("received pass: ");Serial.println(password);
-  }
-
-  // host_ip passkey
-  else if (req.indexOf("host_ip") >= 0) {
-    host_ip_str = extractValue(req,"host_ip");
-    strcpy(host_ip,&(host_ip_str[0]));
-    custom_response = "host_ip";
-    host_ip_set = true;
-
-    Serial.print("received host_ip: ");Serial.println(host_ip);
   }
 
   // Echo network params
@@ -288,50 +323,46 @@ void acquireNetworkParams_AP() {
   }
 
 
-  // Send the response to the AP_client
+  // Send the response to the client
   String s = "HTTP/1.1 200 OK\r\n";
   s += "Content-Type: text/html\r\n\r\n";
   s += "<!DOCTYPE HTML>\r\n<html>\r\n";
   s += custom_response;
   s += "</html>\n";
-  AP_client.print(s);
+  client.print(s);
   delay(1);
-  Serial.println("AP_client disonnected");
+  Serial.println("Client disonnected");
 
-  // close softAP to allow regular wifi connection?
-  WiFi.mode(WIFI_STA);
-  WiFi.disconnect();
-  delay(1000);
+  //TODO close softAP to allow regular wifi connection?
+
+
 
 }
 
-void establishHostTCPConn() {
 
-  if (!TCP_client.status()) {
 
-    Serial.println("Attempting to connect to host");
-
-    // Connet to host
-    while (!TCP_client.connect(host_ip,TCP_port)); //TODO turn this into do while loop to see if serial prints at the right time
-    {
-      Serial.println("Connection failed");
-      Serial.println("wait 1 sec...");
-      delay(1000);
-
-      // TODO Account for various exceptions here...
-
-      // TODO After a limited number of attempts, recheck wifi connection
-
-    }
-    TCP_client.print("Connected");
-    Serial.println("Connected to host");
-  }
+String extractValue(String Request, String delimeter) {
+  // Standard request syntax is "delimeter_value_enddelimeter"
+  // This method extracts "value"
+  return Request.substring( (Request.indexOf(delimeter) + delimeter.length() + 1), Request.indexOf("end"+delimeter) - 1);
 }
+
+
+
+
+
+
+
+
+
+//////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////Utility Methods/////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////
 
 void processClientRequest() {
 
   // Check for command from Host
-  String line = TCP_client.readStringUntil('\r');
+  String line = client.readStringUntil('\r');
 
   // Switch between possible command cases
   if (line.length() == 0) return;
@@ -350,21 +381,25 @@ void processClientRequest() {
     break;
 
     case 'a': //read accelerometer data
-    TCP_client.print("Here is your accelerometer data");
+    client.print("Here is your accelerometer data");
     break;
 
     case 'p': //read pwr data
-    TCP_client.print("Here is your power data");
+    client.print("Here is your power data");
     break;
 
     case 'i': //information request
-    TCP_client.print("Dear host, here is your information");
+    client.print("Dear host, here is your information");
     break;
 
     case 'u': //update register contents
     // TODO go unto sub-switch here for devices other than adc
     Serial.println("Received request to update ADC registers");
     Serial.println(line);
+    break;
+
+    case 'o': //OTA update
+    handleOTA();
     break;
 
     default:
@@ -374,7 +409,42 @@ void processClientRequest() {
   }
 }
 
-void ADC_SetupDefaultConfig() {}
+void handleOTA() {
+  // handle ota
+  Serial.println("handing OTA - must either update or reset device");
+  while(1) {
+    ArduinoOTA.handle();
+  }
+}
+
+void establishHostTCPConn() {
+
+  if (!client.status()) {
+
+    Serial.println("Attempting to connect penis to vagina.");
+
+    // Connet to host
+    while (!client.connect(host,port));
+    {
+      Serial.println("Connection failed");
+      Serial.println("wait 1 sec...");
+      delay(1000);
+
+      // TODO Account for various exceptions here...
+
+      // TODO After a limited number of attempts, recheck wifi connection
+
+    }
+    client.print("Connected");
+    Serial.println("Connected to host");
+  }
+}
+
+//ADS1299 Spi Controll////////////////////////////////////////////////////////////////////
+// TODO create ADS1299 class to track register contents and device status
+void ADC_SetupDefaultConfig() {
+
+}
 
 void ADC_StartDataStream() {
 
@@ -391,8 +461,8 @@ void ADC_StartDataStream() {
     noBytes = Udp.parsePacket();
 
     if ( noBytes ) {
-      Udp.read(UDP_packetBuffer,noBytes);
-      if (UDP_packetBuffer[0] == 't' || UDP_packetBuffer[1] == 't' || UDP_packetBuffer[2] == 't')
+      Udp.read(packetBuffer,noBytes);
+      if (packetBuffer[0] == 't' || packetBuffer[1] == 't' || packetBuffer[2] == 't')
       {
         // TERMINATE STREAM
         // TODO run termination ACK protocol here so that log thread on host exits properly
@@ -404,7 +474,7 @@ void ADC_StartDataStream() {
     // Transf
 
     // Stream ADS1299 Data
-    Udp.beginPacket(host_ip,UDP_port);
+    Udp.beginPacket(host,UDP_port);
     Udp.write("Packet:                ");Udp.write(c); // TODO fill this up with 26 bytes of 'sample_buffer'
     Udp.endPacket();
 
@@ -419,17 +489,11 @@ void ADC_StartDataStream() {
   }
 }
 
-void ADC_getRegisterContents() {}
+void ADC_getRegisterContents() {
 
-String extractValue(String Request, String delimeter) {
-  // Standard request syntax is "delimeter_value_enddelimeter"
-  // This method extracts "value"
-  return Request.substring( (Request.indexOf(delimeter) + delimeter.length() + 1), Request.indexOf("end"+delimeter) - 1);
 }
-
-////////////////////////////////////////////////////////////////////////////////
-// Misc TODO's
-////////////////////////////////////////////////////////////////////////////////
+//Power Management Control////////////////////////////////////////////////////////////////
 // TODO create pwr_man class to track status
-// TODO create ADS1299 class to track register contents and device status
+
+//Accelerometer Control///////////////////////////////////////////////////////////////////
 // TODO create accel class to track status
