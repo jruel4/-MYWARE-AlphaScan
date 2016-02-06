@@ -1,3 +1,6 @@
+////////////////////////////////////////////////////////////////////////////////
+// Includes
+////////////////////////////////////////////////////////////////////////////////
 #include <ESP8266WiFi.h>
 #include <SPI.h>
 #include <Wire.h>
@@ -6,30 +9,42 @@
 #include <ArduinoOTA.h>
 #include "FS.h"
 
-char ssid[20];
-char password[50];
-char host_ip[15];
+////////////////////////////////////////////////////////////////////////////////
+// Global variables
+////////////////////////////////////////////////////////////////////////////////
+char ssid[20];                          //
+char password[50];                      //
+char host_ip[15];                       //
 
-String ssid_str;
-String password_str;
-String host_ip_str;
+String ssid_str;                        //
+String password_str;                    //
+String host_ip_str;                     //
 
-bool ssid_set = false;
-bool password_set = false;
-bool host_ip_set = true;
-bool network_set = false;
+bool ssid_set     = false;              //
+bool password_set = false;              //
+bool host_ip_set  = true;               //
+bool network_set  = false;              //
 
-const int   port     = 50007; // TODO in case of port collision try another port dynamically?
-const int   UDP_port = 2390;
-byte packetBuffer[512]; //buffer to hold incoming and outgoing packets
+const int TCP_port = 50007;             //
+const int UDP_port = 2390;              //
+                                        //
+byte packetBuffer[512];                 //
+WiFiClient client;                      //
+WiFiUDP Udp;                            //
 
-WiFiClient client; //
-WiFiUDP Udp;
+bool open_a = true;                     //
+File f;                                 //
+const char path[] = "/neti_params.txt"; //
+String firmware_version = "0.0.3";      //
 
-const char path[] = "/neti_params.txt";
-bool open_a = true;
-File f;
+enum T_SYSTEM_STATE {
+  AP_MODE,
+  RUN_MODE
+} SYSTEM_STATE;
 
+////////////////////////////////////////////////////////////////////////////////
+// Function prototype declarations
+////////////////////////////////////////////////////////////////////////////////
 void establishHostTCPConn();
 void ADC_StartDataStream();
 void ADC_getRegisterContents();
@@ -41,12 +56,14 @@ void readApForParams();
 void connectToWan();
 void handleOTA();
 void setupOTA();
+void generalSetup();
 
+////////////////////////////////////////////////////////////////////////////////
+// Function definitions
+////////////////////////////////////////////////////////////////////////////////
 void setup() {
 
-  Serial.begin(74880);
-  Serial.println("");
-  Serial.println("We are now OTA compatible... :)");
+  generalSetup();
   readSpiffsForParams();
   readApForParams();
   connectToWan();
@@ -54,18 +71,39 @@ void setup() {
 
 void loop() {
 
-  establishHostTCPConn();
-  processClientRequest();
+  switch (SYSTEM_STATE) {
+    case AP_MODE:
+    {
+      readApForParams();
+      connectToWan();
+      break;
+    }
+    case RUN_MODE:
+    {
+      establishHostTCPConn();
+      processClientRequest();
+      break;
+    }
+    default:
+    {
+      Serial.println("Invalid SYSTEM_STATE");
+      break;
+    }
+  }
+
+}
+
+void generalSetup() {
+
+  Serial.begin(74880);
+  Serial.println("");
+  Serial.println("Firmware version: "+firmware_version);
 }
 
 void connectToWan() {
-  /////////////////////////////////////////////////////////////////////////////////////////////////////
 
-
-  //WiFi.begin("PHSL2", "BSJKMVQ6LF2XH6BJ");
   WiFi.begin(ssid, password);
 
-  // TODO add counter here, and if does not work after N tries, switch to SoftAP state. Requires state machine
   int attempts = 0;
   while (WiFi.status() != WL_CONNECTED) {
     delay(500);
@@ -73,7 +111,9 @@ void connectToWan() {
     attempts++;
 
     if (attempts > 30) { // may want to tune this number up for poor connections
-      Serial.println("WiFi parameters appear to be invalid");
+      Serial.println("WiFi parameters appear to be invalid, switching to AP Mode...");
+      SYSTEM_STATE = AP_MODE;
+      return;
     }
   }
   Serial.println("");
@@ -81,12 +121,12 @@ void connectToWan() {
   Serial.println("IP address: ");
   Serial.println(WiFi.localIP());
 
-  // Bind local Wifi port
   Udp.begin(UDP_port);
+
+  SYSTEM_STATE = RUN_MODE;
 }
 
 void readApForParams() {
-  /////////////////////////////////////////////////////////////////////////////////////////////////////
 
   // acquire SSID and password via SoftAP
   Serial.println("acquire SSID and other network params now...");
@@ -220,7 +260,6 @@ void acquireNetworkParams() {
   server.begin();
 
   // Loop and listen for client data
-  /////////////////////////////////////////////////////////////////////////////////
   // Check if a client has connected
 
   client = server.available();
@@ -240,14 +279,11 @@ void acquireNetworkParams() {
     return;
   }
 
-
-  /////////////////////////////////////////////////////////////////////////////////
   // Read the first line of the request
   String req = client.readStringUntil('\r');
   Serial.print("Request received: ");Serial.print(req);Serial.println("");
   client.flush();
 
-  /////////////////////////////////////////////////////////////////////////////////
   // Parse request
 
   // Alive request
@@ -398,10 +434,10 @@ void establishHostTCPConn() {
 
     Serial.println("Attempting to connect to host.");
     Serial.print("host_ip: ");Serial.println(host_ip);
-    Serial.print("port: ");Serial.println(port);
+    Serial.print("port: ");Serial.println(TCP_port);
 
     // Connet to host
-    while (!client.connect(host_ip,port));
+    while (!client.connect(host_ip,TCP_port));
     {
       Serial.println("Connection failed");
       Serial.println("wait 1 sec...");
@@ -442,8 +478,6 @@ void ADC_StartDataStream() {
       }
     }
 
-    // Transf
-
     // Stream ADS1299 Data
     Udp.beginPacket(host_ip,UDP_port);
     Udp.write("Packet:                ");Udp.write(c);
@@ -454,7 +488,9 @@ void ADC_StartDataStream() {
     if( (c%1000) == 0){Serial.print(c);Serial.println("");}
     c++;
     //delayMicroseconds(2000); // TODO find working microsecond delay to increase throughput beyond 1ksps
-    delay(1);
+    int k = 0;
+    for (k=0;k<1000;k++);
+    //delay(1);
 
     // TODO periodically run ALIVE() protocol to guard against sending to nobody
   }
