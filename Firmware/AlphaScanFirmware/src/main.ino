@@ -6,26 +6,27 @@
 #include <ArduinoOTA.h>
 #include "FS.h"
 
-const char* host     = "192.168.1.8"; // TODO get this over UDP beacon
 char ssid[20];
 char password[50];
+char host_ip[15];
 
 String ssid_str;
 String password_str;
+String host_ip_str;
 
 bool ssid_set = false;
 bool password_set = false;
-bool host_set = true;
+bool host_ip_set = true;
 bool network_set = false;
 
 const int   port     = 50007; // TODO in case of port collision try another port dynamically?
 const int   UDP_port = 2390;
 byte packetBuffer[512]; //buffer to hold incoming and outgoing packets
 
-WiFiClient client; // TODO consider using separate client instances for AP and TCP
+WiFiClient client; //
 WiFiUDP Udp;
 
-const char path[] = "/host_params.txt";
+const char path[] = "/neti_params.txt";
 bool open_a = true;
 File f;
 
@@ -71,7 +72,7 @@ void connectToWan() {
     Serial.print(".");
     attempts++;
 
-    if (attempts > 15) { // may want to tune this number up for poor connections
+    if (attempts > 30) { // may want to tune this number up for poor connections
       Serial.println("WiFi parameters appear to be invalid");
     }
   }
@@ -88,7 +89,7 @@ void readApForParams() {
   /////////////////////////////////////////////////////////////////////////////////////////////////////
 
   // acquire SSID and password via SoftAP
-  Serial.println("aquire SSID and other network params now...");
+  Serial.println("acquire SSID and other network params now...");
   while(!network_set) {
 
     acquireNetworkParams();
@@ -110,6 +111,7 @@ void readApForParams() {
       f.seek(0,SeekSet);
       f.println("ssid_" + ssid_str + "_endssid");
       f.println("pass_" + password_str + "_endpass");
+      f.println("host_ip_" + host_ip_str + "_endhost_ip");
       f.close();
     }
   }
@@ -164,6 +166,8 @@ void readSpiffsForParams() {
       ssid_str = extractValue(ssid_str,"ssid");
       strcpy(ssid,&(ssid_str[0]));
       ssid_set = true;
+
+      Serial.print("RS_SSID: ");Serial.println(ssid);
     }
 
     // Read password
@@ -173,11 +177,25 @@ void readSpiffsForParams() {
       password_str = extractValue(password_str,"pass");
       strcpy(password,&(password_str[0]));
       password_set = true;
+
+      Serial.print("RS_PASS: ");Serial.println(password);
+    }
+
+    // Read host_ip
+    if(f.available()) {
+      //Lets read line by line from the file
+      host_ip_str = f.readStringUntil('\n');
+      host_ip_str = extractValue(host_ip_str,"host_ip");
+      strcpy(host_ip,&(host_ip_str[0]));
+      host_ip_set = true;
+
+      Serial.print("RS_host_ip: ");Serial.println(host_ip);
     }
 
     f.close();
 
-    network_set = true;
+    if (ssid_set && host_ip_set && password_set)
+      network_set = true;
 
   }
   // else procees to SoftAP Mode
@@ -205,15 +223,13 @@ void acquireNetworkParams() {
   /////////////////////////////////////////////////////////////////////////////////
   // Check if a client has connected
 
-
-
   client = server.available();
   while (!client) {
     client = server.available();
-    if(c++ % 10000000 == 0)Serial.print(".");if(c % 100000000 ==0)Serial.println("");
+    if(c++ % 1000000 == 0)Serial.print(".");if(c % 10000000 ==0)Serial.println("");
   }
 
-  if (ssid_set && host_set && password_set) {
+  if (ssid_set && host_ip_set && password_set) {
     network_set = true;
     Serial.println("Network is set");
     delay(1);
@@ -256,6 +272,18 @@ void acquireNetworkParams() {
     strcpy(password,&(password_str[0]));
     custom_response = "passkey";
     password_set = true;
+
+    Serial.print("received pass: ");Serial.println(password);
+  }
+
+  // Rx passkey
+  else if (req.indexOf("host_ip") >= 0) {
+    host_ip_str = extractValue(req,"host_ip");
+    strcpy(host_ip,&(host_ip_str[0]));
+    custom_response = "host_ip";
+    host_ip_set = true;
+
+    Serial.print("received host_ip: ");Serial.println(host_ip);
   }
 
   // Echo network params
@@ -277,10 +305,6 @@ void acquireNetworkParams() {
   client.print(s);
   delay(1);
   Serial.println("Client disonnected");
-
-  //TODO close softAP to allow regular wifi connection?
-
-
 
 }
 
@@ -318,7 +342,6 @@ void processClientRequest() {
     break;
 
     case 'u': //update register contents
-    // TODO go unto sub-switch here for devices other than adc
     Serial.println("Received request to update ADC registers");
     Serial.println(line);
     break;
@@ -364,7 +387,7 @@ void handleOTA() {
   //
   setupOTA();
   while(1) {
-    ArduinoOTA.handle(); // TODO this reset device - debug by shutting down previous TCP connections
+    ArduinoOTA.handle();
     delay(1);
   }
 }
@@ -374,15 +397,15 @@ void establishHostTCPConn() {
   if (!client.status()) {
 
     Serial.println("Attempting to connect to host.");
+    Serial.print("host_ip: ");Serial.println(host_ip);
+    Serial.print("port: ");Serial.println(port);
 
     // Connet to host
-    while (!client.connect(host,port));
+    while (!client.connect(host_ip,port));
     {
       Serial.println("Connection failed");
       Serial.println("wait 1 sec...");
       delay(1000);
-
-      // TODO Account for various exceptions here...
 
       // TODO After a limited number of attempts, recheck wifi connection
 
@@ -422,8 +445,8 @@ void ADC_StartDataStream() {
     // Transf
 
     // Stream ADS1299 Data
-    Udp.beginPacket(host,UDP_port);
-    Udp.write("Packet:                ");Udp.write(c); // TODO fill this up with 26 bytes of 'sample_buffer'
+    Udp.beginPacket(host_ip,UDP_port);
+    Udp.write("Packet:                ");Udp.write(c);
     Udp.endPacket();
 
     // Log loop progress and delay

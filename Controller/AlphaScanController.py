@@ -49,6 +49,7 @@ class AlphaScanDevice:
         self.s.bind((self.TCP_IP,self.PORT)) #TODO Deal with previously opened connection without device reset...
         #error: [Errno 10048] Only one usage of each socket address (protocol/network address/port) is normally permitted
         
+        self.s.settimeout(2)
         self.s.listen(1)        
         try:
             self.conn,addr = self.s.accept()

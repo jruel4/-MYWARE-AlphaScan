@@ -111,7 +111,7 @@ class AP_TAB(QWidget):
     def send_ssid(self):
         r = self.conn.query_ap('ssid_'+self.Line_SSID.text()+'_endssid')
         msgBox = QMessageBox()
-        if 'ssid' in r:
+        if 'SSID' in r:
             msgBox.setText("SUCCESS")
         else:
             msgBox.setText("failure")

@@ -63,8 +63,8 @@ class ApConnection:
 #   3) If not: request to do so, if so: attempt to communicate is AlphaScan
     def test_ap_connection(self):
         ''' Query to see if connection to AlphaScanAP is valid. '''
-        r = requests.get("http://192.168.4.1/alive?")
-        if 'IAMALPHASCAN' in r.text:
+        r = self.query_ap("alive?")        
+        if 'IAMALPHASCAN' in r:
             return True
         else:
             return False
@@ -72,8 +72,13 @@ class ApConnection:
     def query_ap(self,query_text):
         ''' Send arbitrary query text to ap '''
         #TODO make these requests non blocking or short timeout
-        r = requests.get("http://192.168.4.1/"+query_text)
-        return r.text
+        try:
+            r = requests.get("http://192.168.4.1/"+query_text, timeout=4.0)
+            return r.text
+        except requests.exceptions.Timeout:
+            return "timed out"
+        except:
+            return "unknown exception"
 
 # Test Driver
 #==============================================================================
