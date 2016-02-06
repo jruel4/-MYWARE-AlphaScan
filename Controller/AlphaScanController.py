@@ -148,6 +148,7 @@ class AlphaScanDevice:
         ###############################################################################
         # Get adc status
         ###############################################################################
+        # TODO use dict with unique values for commands
         self.flush_TCP()
         self.conn.send((cmd + '\r').encode('utf-8'))
         time.sleep(0.01)

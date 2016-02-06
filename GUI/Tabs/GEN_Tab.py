@@ -136,6 +136,14 @@ class GeneralTab(QWidget):
         self.layout.addWidget(self.Button_OtaMode, 6, 0, 1, 1)
         self.Button_OtaMode.clicked.connect(self.enter_ota_mode)
         
+        #######################################################################
+        # AP Mode #############################################################
+        #######################################################################
+        
+        self.Button_ApMode = QPushButton("Enter AP Mode")
+        self.layout.addWidget(self.Button_ApMode, 7, 0, 1, 1)
+        self.Button_ApMode.clicked.connect(self.enter_ap_mode)
+        
     ###########################################################################
     # Slots ###################################################################
     ###########################################################################
@@ -214,4 +222,13 @@ class GeneralTab(QWidget):
             msgBox.setText("failure")
         msgBox.exec_()
         
+    @Slot()
+    def enter_ap_mode(self):
+        r = self._Device.generic_tcp_command('q') # 'o' == ota mode
+        msgBox = QMessageBox()
+        if '' in r:#TODO add response into firmware
+            msgBox.setText("SUCCESS")
+        else:
+            msgBox.setText("failure")
+        msgBox.exec_()
     ###########################################################################    

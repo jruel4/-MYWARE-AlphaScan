@@ -191,7 +191,8 @@ void readSpiffsForParams() {
     // Check if file open succeeded
     if (!f) {
       Serial.println("file open failed");
-      return; // TODO deal with this properly...
+      SYSTEM_STATE = AP_MODE;
+      return;
     }
     else {
       Serial.println("file open SUCCESS");
@@ -353,42 +354,80 @@ void processClientRequest() {
   if (line.length() == 0) return;
   switch(line[0]) {
 
+    ////////////////////////////////////////////////////////////////////////////
     case 's': //start streaming adc data
-    ADC_StartDataStream();
-    break;
+    {
+      ADC_StartDataStream();
+      break;
+    }
 
+    ////////////////////////////////////////////////////////////////////////////
     case 'r': // get ADS1299 registers
-    ADC_getRegisterContents();
-    break;
+    {
+      ADC_getRegisterContents();
+      break;
+    }
 
+    ////////////////////////////////////////////////////////////////////////////
     case 't': //stop streaming adc data
-    // this command does nothing in this context
-    break;
+    {
+      // this command does nothing in this context
+      break;
+    }
 
+    ////////////////////////////////////////////////////////////////////////////
     case 'a': //read accelerometer data
-    client.print("Here is your accelerometer data");
-    break;
+    {
+      client.print("Here is your accelerometer data");
+      break;
+    }
 
+    ////////////////////////////////////////////////////////////////////////////
     case 'p': //read pwr data
-    client.print("Here is your power data");
-    break;
+    {
+      client.print("Here is your power data");
+      break;
+    }
 
+    ////////////////////////////////////////////////////////////////////////////
     case 'i': //information request
-    client.print("Dear host, here is your information");
-    break;
+    {
+      client.print("Dear host, here is your information");
+      break;
+    }
 
+    ////////////////////////////////////////////////////////////////////////////
     case 'u': //update register contents
-    Serial.println("Received request to update ADC registers");
-    Serial.println(line);
-    break;
+    {
+      Serial.println("Received request to update ADC registers");
+      Serial.println(line);
+      break;
+    }
 
+    ////////////////////////////////////////////////////////////////////////////
     case 'o': //OTA update
-    handleOTA();
-    break;
+    {
+      handleOTA();
+      break;
+    }
 
+    ////////////////////////////////////////////////////////////////////////////
+    case 'q': //AP mode
+    {
+      client.stop();
+      delay(1);
+      Serial.println("Forcing AP Mode");
+      SYSTEM_STATE = AP_MODE;
+      network_set = host_ip_set = ssid_set = password_set = false;
+      break;
+    }
+
+    ////////////////////////////////////////////////////////////////////////////
     default:
-    Serial.print(".");
-    break;
+    {
+      Serial.print(".");
+      break;
+    }
 
   }
 }
@@ -432,18 +471,16 @@ void establishHostTCPConn() {
 
   if (!client.status()) {
 
-    Serial.println("Attempting to connect to host.");
     Serial.print("host_ip: ");Serial.println(host_ip);
     Serial.print("port: ");Serial.println(TCP_port);
+    Serial.println("Attempting to connect to host.");
 
     // Connet to host
-    while (!client.connect(host_ip,TCP_port));
+    while (!client.connect(host_ip,TCP_port)); // Note: this call block indefinitely - so incorrect host_ip here is fatal
     {
-      Serial.println("Connection failed");
+      Serial.println("Still attempting to connect...");
       Serial.println("wait 1 sec...");
       delay(1000);
-
-      // TODO After a limited number of attempts, recheck wifi connection
 
     }
     client.print("Connected");
@@ -472,7 +509,6 @@ void ADC_StartDataStream() {
       if (packetBuffer[0] == 't' || packetBuffer[1] == 't' || packetBuffer[2] == 't')
       {
         // TERMINATE STREAM
-        // TODO run termination ACK protocol here so that log thread on host exits properly
         Serial.println("terminating stream");
         return;
       }
@@ -487,12 +523,11 @@ void ADC_StartDataStream() {
     if( (c%100) == 0 )Serial.print(".");
     if( (c%1000) == 0){Serial.print(c);Serial.println("");}
     c++;
-    //delayMicroseconds(2000); // TODO find working microsecond delay to increase throughput beyond 1ksps
     int k = 0;
     for (k=0;k<1000;k++);
-    //delay(1);
+    // Note: tune less than value for tx throughput cap.
+    //       k<1,000 yields about 6,000 sps
 
-    // TODO periodically run ALIVE() protocol to guard against sending to nobody
   }
 }
 
