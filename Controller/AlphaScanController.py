@@ -4,6 +4,7 @@ import time
 from threading import Thread, Event
 from pylsl import StreamInfo, StreamOutlet
 import random
+from CommandDefinitions import *
 
 class AlphaScanDevice:
     
@@ -157,6 +158,21 @@ class AlphaScanDevice:
         except:
             r_string = 'failed'
         return r_string
+        
+    def generic_tcp_command_BYTE(self, cmd):
+        ###############################################################################
+        # Get adc status
+        ###############################################################################
+        # TODO swap this for gui...
+        self.flush_TCP()
+        self.conn.send((chr(TCP_COMMAND[cmd]) + '\r').encode('utf-8'))
+        time.sleep(0.01)
+        try:
+            r_string = self.conn.recv(64)
+        except:
+            r_string = 'failed'
+        return r_string
+        
         
     def sync_adc_registers(self):
         ###############################################################################

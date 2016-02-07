@@ -8,6 +8,7 @@
 #include <ESP8266mDNS.h>
 #include <ArduinoOTA.h>
 #include "FS.h"
+#include <map>
 
 ////////////////////////////////////////////////////////////////////////////////
 // Global variables
@@ -27,20 +28,25 @@ bool network_set  = false;              //
 
 const int TCP_port = 50007;             //
 const int UDP_port = 2390;              //
-                                        //
+
 byte packetBuffer[512];                 //
 WiFiClient client;                      //
 WiFiUDP Udp;                            //
 
 bool open_a = true;                     //
 File f;                                 //
-const char path[] = "/neti_params.txt"; //
-String firmware_version = "0.0.3";      //
+
+const char network_parameters_path[] = "/neti_params.txt"; //
+const char command_map_path[]        = "/command_map.txt"; //
+String firmware_version              = "0.0.3";            //
 
 enum T_SYSTEM_STATE {
   AP_MODE,
   RUN_MODE
 } SYSTEM_STATE;
+
+std::map<uint8_t, String> COMMAND_MAP_2_str;   // TODO populate this from flash
+std::map<String, uint8_t> COMMAND_MAP_2_int;   // TODO populate from above
 
 ////////////////////////////////////////////////////////////////////////////////
 // Function prototype declarations
@@ -49,14 +55,19 @@ void establishHostTCPConn();
 void ADC_StartDataStream();
 void ADC_getRegisterContents();
 void processClientRequest();
-void acquireNetworkParams();
-String extractValue(String,String);
-void readSpiffsForParams();
-void readApForParams();
+void readApSub();
+void readSpiffsForNetParams();
+void readApForNetParams();
 void connectToWan();
 void handleOTA();
 void setupOTA();
 void generalSetup();
+void loadCommandMapSPIFFS();
+void loadCommandPair();
+void saveCommandPair();
+void loadDefaultCommandMap();
+void copyCommandMap2str();
+String extractNetParam(String,String);
 
 ////////////////////////////////////////////////////////////////////////////////
 // Function definitions
@@ -64,8 +75,8 @@ void generalSetup();
 void setup() {
 
   generalSetup();
-  readSpiffsForParams();
-  readApForParams();
+  readSpiffsForNetParams();
+  readApForNetParams();
   connectToWan();
 }
 
@@ -74,7 +85,7 @@ void loop() {
   switch (SYSTEM_STATE) {
     case AP_MODE:
     {
-      readApForParams();
+      readApForNetParams();
       connectToWan();
       break;
     }
@@ -98,6 +109,81 @@ void generalSetup() {
   Serial.begin(74880);
   Serial.println("");
   Serial.println("Firmware version: "+firmware_version);
+  loadCommandMapSPIFFS();
+}
+
+void loadCommandMapSPIFFS() {
+
+  // check if cmd file exists
+  if (SPIFFS.exists(command_map_path)) {
+
+    Serial.println("command map path exists");
+  }
+  else {
+
+    // if cmd file does not exist, load default map
+    Serial.println("command map path does not exist, loading default map...");
+    loadDefaultCommandMap();
+    return;
+  }
+
+  // open SPIFFS file
+  f = SPIFFS.open(command_map_path, "r");
+  if (!f) {
+    Serial.println("command file open failed");
+    SYSTEM_STATE = AP_MODE;
+    return;
+  }
+  else {
+    Serial.println("command file open SUCCESS");
+  }
+
+  // Read parameters from file
+  f.seek(0,SeekSet);
+  // Read SSID
+  String command_string;
+  while(f.available()) {
+
+    //Lets read line by line from the file
+    command_string = f.readStringUntil('\n');
+    loadCommandPair();
+
+  }
+
+  copyCommandMap2str();
+}
+
+void loadCommandPair() {
+  // TODO write this...match to saveCommandPair
+}
+
+void saveCommandPair() {
+  // TODO write this
+}
+
+void loadDefaultCommandMap() {
+
+  // TODO uncomment
+  // COMMAND_MAP_2_str[1] = "GEN_get_status";
+  // COMMAND_MAP_2_str[2] = "GEN_start_ota";
+  // COMMAND_MAP_2_str[3] = "GEN_start_ap";
+  // COMMAND_MAP_2_str[4] = "ADC_start_stream";
+  // COMMAND_MAP_2_str[5] = "ADC_stop_stream";
+  // COMMAND_MAP_2_str[6] = "ADC_get_register";
+  // COMMAND_MAP_2_str[7] = "ADC_update_register";
+  // COMMAND_MAP_2_str[8] = "ACC_get_status";
+  // COMMAND_MAP_2_str[9] = "PWR_get_status";
+
+  copyCommandMap2str();
+}
+
+void copyCommandMap2str() {
+
+  // TODO uncomment
+  // typedef std::map<uint8_t, String>::iterator it_type;
+  // for (it_type iterator = COMMAND_MAP_2_str.begin(); iterator != COMMAND_MAP_2_str.end(); iterator++) {
+  //   COMMAND_MAP_2_int[iterator->second] = iterator->first;
+  // }
 }
 
 void connectToWan() {
@@ -126,19 +212,19 @@ void connectToWan() {
   SYSTEM_STATE = RUN_MODE;
 }
 
-void readApForParams() {
+void readApForNetParams() {
 
   // acquire SSID and password via SoftAP
   Serial.println("acquire SSID and other network params now...");
   while(!network_set) {
 
-    acquireNetworkParams();
+    readApSub();
 
     if (network_set) {
       // Write network params to SPIFFS
 
       // open file
-      f = SPIFFS.open(path,"w");
+      f = SPIFFS.open(network_parameters_path,"w");
       if (!f) {
         Serial.println("file open failed");
         return;
@@ -164,7 +250,7 @@ void readApForParams() {
   delay(1000);
 }
 
-void readSpiffsForParams() {
+void readSpiffsForNetParams() {
   /////////////////////////////////////////////////////////////////////////////////////////////////////
   // Check SPIFFS for network parameters
   /////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -174,19 +260,19 @@ void readSpiffsForParams() {
   if(SPIFFS.begin())Serial.println("Spiffs mount success");else {Serial.println("Spiffs mount FAIL");return;}
 
   // Check to see if net_params file exists
-  Serial.print("checking if exists: ");Serial.println(path);
-  if(SPIFFS.exists(path)) {
-    Serial.println("path exists");
+  Serial.print("checking if exists: ");Serial.println(network_parameters_path);
+  if(SPIFFS.exists(network_parameters_path)) {
+    Serial.println("network_parameters_path exists");
     open_a = true;
   }
   else {
-    Serial.println("path does not exist");
+    Serial.println("network_parameters_path does not exist");
     open_a = false;
   }
 
-  // If path exists, try to open file
+  // If network_parameters_path exists, try to open file
   if (open_a) {
-    f = SPIFFS.open(path,"r");
+    f = SPIFFS.open(network_parameters_path,"r");
 
     // Check if file open succeeded
     if (!f) {
@@ -204,7 +290,7 @@ void readSpiffsForParams() {
     if(f.available()) {
       //Lets read line by line from the file
       ssid_str = f.readStringUntil('\n');
-      ssid_str = extractValue(ssid_str,"ssid");
+      ssid_str = extractNetParam(ssid_str,"ssid");
       strcpy(ssid,&(ssid_str[0]));
       ssid_set = true;
 
@@ -215,7 +301,7 @@ void readSpiffsForParams() {
     if(f.available()) {
       //Lets read line by line from the file
       password_str = f.readStringUntil('\n');
-      password_str = extractValue(password_str,"pass");
+      password_str = extractNetParam(password_str,"pass");
       strcpy(password,&(password_str[0]));
       password_set = true;
 
@@ -226,7 +312,7 @@ void readSpiffsForParams() {
     if(f.available()) {
       //Lets read line by line from the file
       host_ip_str = f.readStringUntil('\n');
-      host_ip_str = extractValue(host_ip_str,"host_ip");
+      host_ip_str = extractNetParam(host_ip_str,"host_ip");
       strcpy(host_ip,&(host_ip_str[0]));
       host_ip_set = true;
 
@@ -236,7 +322,7 @@ void readSpiffsForParams() {
     f.close();
 
     if (ssid_set && host_ip_set && password_set)
-      network_set = true;
+    network_set = true;
 
   }
   // else procees to SoftAP Mode
@@ -245,7 +331,7 @@ void readSpiffsForParams() {
   }
 }
 
-void acquireNetworkParams() {
+void readApSub() {
 
   // Define local AP variables
   const char AP_NAME_STR[] = "AlphaScanAP";
@@ -295,7 +381,7 @@ void acquireNetworkParams() {
   // Rx SSID
   else if (req.indexOf("ssid") >= 0) {
     // collect SSID into local variables
-    ssid_str = extractValue(req,"ssid");
+    ssid_str = extractNetParam(req,"ssid");
     strcpy(ssid,&(ssid_str[0]));
     custom_response = "SSID";
     ssid_set = true;
@@ -305,7 +391,7 @@ void acquireNetworkParams() {
 
   // Rx passkey
   else if (req.indexOf("pass") >= 0) {
-    password_str = extractValue(req,"pass");
+    password_str = extractNetParam(req,"pass");
     strcpy(password,&(password_str[0]));
     custom_response = "passkey";
     password_set = true;
@@ -315,7 +401,7 @@ void acquireNetworkParams() {
 
   // Rx passkey
   else if (req.indexOf("host_ip") >= 0) {
-    host_ip_str = extractValue(req,"host_ip");
+    host_ip_str = extractNetParam(req,"host_ip");
     strcpy(host_ip,&(host_ip_str[0]));
     custom_response = "host_ip";
     host_ip_set = true;
@@ -352,84 +438,94 @@ void processClientRequest() {
 
   // Switch between possible command cases
   if (line.length() == 0) return;
-  switch(line[0]) {
 
-    ////////////////////////////////////////////////////////////////////////////
-    case 's': //start streaming adc data
-    {
-      ADC_StartDataStream();
-      break;
-    }
+  uint8_t cmd = (int) line[0];
 
-    ////////////////////////////////////////////////////////////////////////////
-    case 'r': // get ADS1299 registers
-    {
-      ADC_getRegisterContents();
-      break;
-    }
+  // TODO uncomment
+  //Serial.print("Executing command: "); Serial.println(COMMAND_MAP_2_str[line[0]]);
 
-    ////////////////////////////////////////////////////////////////////////////
-    case 't': //stop streaming adc data
-    {
-      // this command does nothing in this context
-      break;
-    }
-
-    ////////////////////////////////////////////////////////////////////////////
-    case 'a': //read accelerometer data
-    {
-      client.print("Here is your accelerometer data");
-      break;
-    }
-
-    ////////////////////////////////////////////////////////////////////////////
-    case 'p': //read pwr data
-    {
-      client.print("Here is your power data");
-      break;
-    }
-
-    ////////////////////////////////////////////////////////////////////////////
-    case 'i': //information request
-    {
-      client.print("Dear host, here is your information");
-      break;
-    }
-
-    ////////////////////////////////////////////////////////////////////////////
-    case 'u': //update register contents
-    {
-      Serial.println("Received request to update ADC registers");
-      Serial.println(line);
-      break;
-    }
-
-    ////////////////////////////////////////////////////////////////////////////
-    case 'o': //OTA update
-    {
-      handleOTA();
-      break;
-    }
-
-    ////////////////////////////////////////////////////////////////////////////
-    case 'q': //AP mode
-    {
-      client.stop();
-      delay(1);
-      Serial.println("Forcing AP Mode");
-      SYSTEM_STATE = AP_MODE;
-      network_set = host_ip_set = ssid_set = password_set = false;
-      break;
-    }
-
-    ////////////////////////////////////////////////////////////////////////////
-    default:
-    {
-      Serial.print(".");
-      break;
-    }
+  ////////////////////////////////////////////////////////////////////////////
+  if (cmd ==  0x00) // Update command map -- this is always command 0x00
+  {
+    // TODO write this
 
   }
+  // TODO uncomment
+  // ////////////////////////////////////////////////////////////////////////////
+  // else if (cmd ==  COMMAND_MAP_2_int["ADC_start_stream"]) //start streaming adc data
+  // {
+  //   ADC_StartDataStream();
+  //
+  // }
+  //
+  // ////////////////////////////////////////////////////////////////////////////
+  // else if (cmd ==  COMMAND_MAP_2_int["ADC_get_register"]) // get ADS1299 registers
+  // {
+  //   ADC_getRegisterContents();
+  //
+  // }
+  //
+  // ////////////////////////////////////////////////////////////////////////////
+  // else if (cmd ==  COMMAND_MAP_2_int["ADC_stop_stream"]) //stop streaming adc data
+  // {
+  //   // this command does nothing in this context
+  //
+  // }
+  //
+  // ////////////////////////////////////////////////////////////////////////////
+  // else if (cmd ==  COMMAND_MAP_2_int["ACC_get_status"]) //read accelerometer data
+  // {
+  //   client.print("Here is your accelerometer data");
+  //
+  // }
+  //
+  // ////////////////////////////////////////////////////////////////////////////
+  // else if (cmd ==  COMMAND_MAP_2_int["PWR_get_status"]) //read pwr data
+  // {
+  //   client.print("Here is your power data");
+  //
+  // }
+  //
+  // ////////////////////////////////////////////////////////////////////////////
+  // else if (cmd ==  COMMAND_MAP_2_int["GEN_get_status"]) //information request
+  // {
+  //   client.print("Dear host, here is your information");
+  //
+  // }
+  //
+  // ////////////////////////////////////////////////////////////////////////////
+  // else if (cmd ==  COMMAND_MAP_2_int["ADC_update_register"]) //update register contents
+  // {
+  //   Serial.println("Received request to update ADC registers");
+  //   Serial.println(line);
+  //
+  // }
+  //
+  // ////////////////////////////////////////////////////////////////////////////
+  // else if (cmd ==  COMMAND_MAP_2_int["GEN_start_ota"]) //OTA update
+  // {
+  //   handleOTA();
+  //
+  // }
+  //
+  // ////////////////////////////////////////////////////////////////////////////
+  // else if (cmd ==  COMMAND_MAP_2_int["GEN_start_ap"]) //AP mode
+  // {
+  //   client.stop();
+  //   delay(1);
+  //   Serial.println("Forcing AP Mode");
+  //   SYSTEM_STATE = AP_MODE;
+  //   network_set = host_ip_set = ssid_set = password_set = false;
+  //
+  // }
+
+  ////////////////////////////////////////////////////////////////////////////
+  else
+  {
+    Serial.print("Unknown Command");
+
+  }
+
 }
 
 void setupOTA() {
@@ -498,13 +594,12 @@ void ADC_StartDataStream() {
   int noBytes = 0;
   uint32_t c  = 0;
 
-
-
   while(1)
   {
     noBytes = Udp.parsePacket();
 
     if ( noBytes ) {
+
       Udp.read(packetBuffer,noBytes);
       if (packetBuffer[0] == 't' || packetBuffer[1] == 't' || packetBuffer[2] == 't')
       {
@@ -527,13 +622,12 @@ void ADC_StartDataStream() {
     for (k=0;k<1000;k++);
     // Note: tune less than value for tx throughput cap.
     //       k<1,000 yields about 6,000 sps
-
   }
 }
 
 void ADC_getRegisterContents() {}
 
-String extractValue(String Request, String delimeter) {
+String extractNetParam(String Request, String delimeter) {
   // Standard request syntax is "delimeter_value_enddelimeter"
   // This method extracts "value"
   return Request.substring( (Request.indexOf(delimeter) + delimeter.length() + 1), Request.indexOf("end"+delimeter) - 1);
