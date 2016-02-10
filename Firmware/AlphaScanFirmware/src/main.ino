@@ -163,27 +163,25 @@ void saveCommandPair() {
 
 void loadDefaultCommandMap() {
 
-  // TODO uncomment
-  // COMMAND_MAP_2_str[1] = "GEN_get_status";
-  // COMMAND_MAP_2_str[2] = "GEN_start_ota";
-  // COMMAND_MAP_2_str[3] = "GEN_start_ap";
-  // COMMAND_MAP_2_str[4] = "ADC_start_stream";
-  // COMMAND_MAP_2_str[5] = "ADC_stop_stream";
-  // COMMAND_MAP_2_str[6] = "ADC_get_register";
-  // COMMAND_MAP_2_str[7] = "ADC_update_register";
-  // COMMAND_MAP_2_str[8] = "ACC_get_status";
-  // COMMAND_MAP_2_str[9] = "PWR_get_status";
+  COMMAND_MAP_2_str[1] = "GEN_get_status";
+  COMMAND_MAP_2_str[2] = "GEN_start_ota";
+  COMMAND_MAP_2_str[3] = "GEN_start_ap";
+  COMMAND_MAP_2_str[4] = "ADC_start_stream";
+  COMMAND_MAP_2_str[5] = "ADC_stop_stream";
+  COMMAND_MAP_2_str[6] = "ADC_get_register";
+  COMMAND_MAP_2_str[7] = "ADC_update_register";
+  COMMAND_MAP_2_str[8] = "ACC_get_status";
+  COMMAND_MAP_2_str[9] = "PWR_get_status";
 
   copyCommandMap2str();
 }
 
 void copyCommandMap2str() {
 
-  // TODO uncomment
-  // typedef std::map<uint8_t, String>::iterator it_type;
-  // for (it_type iterator = COMMAND_MAP_2_str.begin(); iterator != COMMAND_MAP_2_str.end(); iterator++) {
-  //   COMMAND_MAP_2_int[iterator->second] = iterator->first;
-  // }
+  typedef std::map<uint8_t, String>::iterator it_type;
+  for (it_type iterator = COMMAND_MAP_2_str.begin(); iterator != COMMAND_MAP_2_str.end(); iterator++) {
+    COMMAND_MAP_2_int[iterator->second] = iterator->first;
+  }
 }
 
 void connectToWan() {
@@ -441,8 +439,7 @@ void processClientRequest() {
 
   uint8_t cmd = (int) line[0];
 
-  // TODO uncomment
-  //Serial.print("Executing command: "); Serial.println(COMMAND_MAP_2_str[line[0]]);
+  Serial.print("Executing command: "); Serial.println(COMMAND_MAP_2_str[line[0]]);
 
   ////////////////////////////////////////////////////////////////////////////
   if (cmd ==  0x00) // Update command map -- this is always command 0x00
@@ -450,74 +447,74 @@ void processClientRequest() {
     // TODO write this
 
   }
-  // TODO uncomment
-  // ////////////////////////////////////////////////////////////////////////////
-  // else if (cmd ==  COMMAND_MAP_2_int["ADC_start_stream"]) //start streaming adc data
-  // {
-  //   ADC_StartDataStream();
-  //
-  // }
-  //
-  // ////////////////////////////////////////////////////////////////////////////
-  // else if (cmd ==  COMMAND_MAP_2_int["ADC_get_register"]) // get ADS1299 registers
-  // {
-  //   ADC_getRegisterContents();
-  //
-  // }
-  //
-  // ////////////////////////////////////////////////////////////////////////////
-  // else if (cmd ==  COMMAND_MAP_2_int["ADC_stop_stream"]) //stop streaming adc data
-  // {
-  //   // this command does nothing in this context
-  //
-  // }
-  //
-  // ////////////////////////////////////////////////////////////////////////////
-  // else if (cmd ==  COMMAND_MAP_2_int["ACC_get_status"]) //read accelerometer data
-  // {
-  //   client.print("Here is your accelerometer data");
-  //
-  // }
-  //
-  // ////////////////////////////////////////////////////////////////////////////
-  // else if (cmd ==  COMMAND_MAP_2_int["PWR_get_status"]) //read pwr data
-  // {
-  //   client.print("Here is your power data");
-  //
-  // }
-  //
-  // ////////////////////////////////////////////////////////////////////////////
-  // else if (cmd ==  COMMAND_MAP_2_int["GEN_get_status"]) //information request
-  // {
-  //   client.print("Dear host, here is your information");
-  //
-  // }
-  //
-  // ////////////////////////////////////////////////////////////////////////////
-  // else if (cmd ==  COMMAND_MAP_2_int["ADC_update_register"]) //update register contents
-  // {
-  //   Serial.println("Received request to update ADC registers");
-  //   Serial.println(line);
-  //
-  // }
-  //
-  // ////////////////////////////////////////////////////////////////////////////
-  // else if (cmd ==  COMMAND_MAP_2_int["GEN_start_ota"]) //OTA update
-  // {
-  //   handleOTA();
-  //
-  // }
-  //
-  // ////////////////////////////////////////////////////////////////////////////
-  // else if (cmd ==  COMMAND_MAP_2_int["GEN_start_ap"]) //AP mode
-  // {
-  //   client.stop();
-  //   delay(1);
-  //   Serial.println("Forcing AP Mode");
-  //   SYSTEM_STATE = AP_MODE;
-  //   network_set = host_ip_set = ssid_set = password_set = false;
-  //
-  // }
+
+  ////////////////////////////////////////////////////////////////////////////
+  else if (cmd ==  COMMAND_MAP_2_int["ADC_start_stream"]) //start streaming adc data
+  {
+    ADC_StartDataStream();
+
+  }
+
+  ////////////////////////////////////////////////////////////////////////////
+  else if (cmd ==  COMMAND_MAP_2_int["ADC_get_register"]) // get ADS1299 registers
+  {
+    ADC_getRegisterContents();
+
+  }
+
+  ////////////////////////////////////////////////////////////////////////////
+  else if (cmd ==  COMMAND_MAP_2_int["ADC_stop_stream"]) //stop streaming adc data
+  {
+    // this command does nothing in this context
+
+  }
+
+  ////////////////////////////////////////////////////////////////////////////
+  else if (cmd ==  COMMAND_MAP_2_int["ACC_get_status"]) //read accelerometer data
+  {
+    client.print("Here is your accelerometer data");
+
+  }
+
+  ////////////////////////////////////////////////////////////////////////////
+  else if (cmd ==  COMMAND_MAP_2_int["PWR_get_status"]) //read pwr data
+  {
+    client.print("Here is your power data");
+
+  }
+
+  ////////////////////////////////////////////////////////////////////////////
+  else if (cmd ==  COMMAND_MAP_2_int["GEN_get_status"]) //information request
+  {
+    client.print("Dear host, here is your information");
+
+  }
+
+  ////////////////////////////////////////////////////////////////////////////
+  else if (cmd ==  COMMAND_MAP_2_int["ADC_update_register"]) //update register contents
+  {
+    Serial.println("Received request to update ADC registers");
+    Serial.println(line);
+
+  }
+
+  ////////////////////////////////////////////////////////////////////////////
+  else if (cmd ==  COMMAND_MAP_2_int["GEN_start_ota"]) //OTA update
+  {
+    handleOTA();
+
+  }
+
+  ////////////////////////////////////////////////////////////////////////////
+  else if (cmd ==  COMMAND_MAP_2_int["GEN_start_ap"]) //AP mode
+  {
+    client.stop();
+    delay(1);
+    Serial.println("Forcing AP Mode");
+    SYSTEM_STATE = AP_MODE;
+    network_set = host_ip_set = ssid_set = password_set = false;
+
+  }
 
   ////////////////////////////////////////////////////////////////////////////
   else
