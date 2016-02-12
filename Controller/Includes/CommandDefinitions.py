@@ -21,6 +21,7 @@ addCommand("GEN_update_cmd_map") #NOTE: this must ALWAYS be first i.e. 0x00
 addCommand("GEN_get_status")
 addCommand("GEN_start_ota")
 addCommand("GEN_start_ap")
+# TODO add "GEN_get_device_ip"
 
 ###############################################################################
 # ADC

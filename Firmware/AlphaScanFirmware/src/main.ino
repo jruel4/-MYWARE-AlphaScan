@@ -32,6 +32,7 @@ const int UDP_port = 2390;              //
 byte packetBuffer[512];                 //
 WiFiClient client;                      //
 WiFiUDP Udp;                            //
+String line;                            //
 
 bool open_a = true;                     //
 File f;                                 //
@@ -67,6 +68,7 @@ void loadCommandPair();
 void saveCommandPair();
 void loadDefaultCommandMap();
 void copyCommandMap2str();
+void parseCommandMap();
 String extractNetParam(String,String);
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -177,7 +179,7 @@ void loadDefaultCommandMap() {
 }
 
 void copyCommandMap2str() {
-
+  // takes <uint8_t,String> and flip copies to <String, uint8_t>
   typedef std::map<uint8_t, String>::iterator it_type;
   for (it_type iterator = COMMAND_MAP_2_str.begin(); iterator != COMMAND_MAP_2_str.end(); iterator++) {
     COMMAND_MAP_2_int[iterator->second] = iterator->first;
@@ -432,7 +434,7 @@ void readApSub() {
 void processClientRequest() {
 
   // Check for command from Host
-  String line = client.readStringUntil('\r');
+  line = client.readStringUntil('\r');
 
   // Switch between possible command cases
   if (line.length() == 0) return;
@@ -445,12 +447,18 @@ void processClientRequest() {
   if (cmd ==  0x00) // Update command map -- this is always command 0x00
   {
     // TODO write this
+    Serial.println("updating command map...");
+    Serial.print("received map: "); Serial.println(line);
+
+    parseCommandMap();
 
   }
 
   ////////////////////////////////////////////////////////////////////////////
   else if (cmd ==  COMMAND_MAP_2_int["ADC_start_stream"]) //start streaming adc data
   {
+    client.print("Initializing ADC stream");
+    delay(1);
     ADC_StartDataStream();
 
   }
@@ -501,6 +509,8 @@ void processClientRequest() {
   ////////////////////////////////////////////////////////////////////////////
   else if (cmd ==  COMMAND_MAP_2_int["GEN_start_ota"]) //OTA update
   {
+    client.print("Entering OTA Mode"); // TODO might need more wait that this... since we then shutfown current WiFi setup
+    delay(1);
     handleOTA();
 
   }
@@ -523,6 +533,56 @@ void processClientRequest() {
 
   }
 
+}
+
+void parseCommandMap() { // NOTE: consider eliminating STRING and other dynamic memory constructs
+  // loop over string contents until key,value pairs are exhausted
+  Serial.println("Parsing command map...");
+  Serial.print("received map: "); Serial.println(line);
+
+  std::map<uint8_t, String> new_map;
+  int begin = line.indexOf("'") + 1;
+  int end = 0;
+  String cmd_pair;
+
+  // debuf values
+  String key;
+  String value; //TODO chang this to int
+
+  while (end > -1) {
+
+    Serial.println("Processing k,v pair...");
+
+    end = line.indexOf(',',begin+1); // not sure if search include begin index
+
+    Serial.print("found end: "); Serial.println(end);
+
+    if (end > -1) {
+      cmd_pair = line.substring(begin, end);
+      // search for single quotes to extract key
+      key = cmd_pair.substring(cmd_pair.indexOf("'")+1, cmd_pair.lastIndexOf("'")); // NOTE: might need to escape backslash
+      Serial.print("key: ");Serial.println(key);
+      // search for colon to find value
+      value = (cmd_pair.substring(cmd_pair.indexOf(":")+2, end - 1));
+      Serial.print("value: "); Serial.println(value);
+
+      // check for general validity of k,v pair, if invalid then continue
+      // if (key == 0) continue;
+
+      // Add new k,v pair to new_map
+
+      // update begin index
+      begin = end;
+    }
+  }
+
+  // Test for command number contiguity
+
+  // set COMMAND_MAP_2_str to new_map
+
+  // save COMMAND_MAP_2_str in FS
+
+  Serial.println("Finished parsing new map.");
 }
 
 void setupOTA() {

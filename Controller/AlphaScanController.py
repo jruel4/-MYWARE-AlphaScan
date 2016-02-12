@@ -21,7 +21,7 @@ class AlphaScanDevice:
         ###############################################################################
         # UDP Settings
         ###############################################################################
-        self.UDP_IP = "192.168.1.14"      #CONFIGURABLE #TODO get this automatically from TCP conn
+        self.UDP_IP = "192.168.1.17"      #CONFIGURABLE #TODO get this automatically from TCP conn before opening stream
         self.UDP_PORT = 2390              #CONFIGURABLE
         
         self.num = 10
@@ -48,7 +48,7 @@ class AlphaScanDevice:
         self.s = socket.socket(socket.AF_INET,socket.SOCK_STREAM) 
         
         self.s.bind((self.TCP_IP,self.PORT)) #TODO Deal with previously opened connection without device reset...
-        #error: [Errno 10048] Only one usage of each socket address (protocol/network address/port) is normally permitted
+        # TODO error: [Errno 10048] Only one usage of each socket address (protocol/network address/port) is normally permitted
         
         self.s.settimeout(2)
         self.s.listen(1)        
@@ -111,53 +111,6 @@ class AlphaScanDevice:
             except:
                 self.unknown_stream_errors += 1
                 
-                
-                
-                
-    def get_accel_status(self):
-        ###############################################################################
-        # UDP Stream thread target
-        ###############################################################################
-        self.flush_TCP()
-        self.conn.send('a\r'.encode('utf-8'))
-        time.sleep(0.01) # Time for device to respond
-        return self.conn.recv(64) # TODO add response validation here
-        
-    def get_power_status(self):
-        ###############################################################################
-        # UDP Stream thread target
-        ###############################################################################
-        self.flush_TCP()
-        self.conn.send('p\r'.encode('utf-8'))
-        time.sleep(0.01)
-        return self.conn.recv(64)
-        
-    def get_adc_status(self):
-        ###############################################################################
-        # Get adc status
-        ###############################################################################
-        self.flush_TCP()
-        self.conn.send('i\r'.encode('utf-8'))
-        time.sleep(0.01)
-        try:
-            r_string = self.conn.recv(64)
-        except:
-            r_string = 'failed'
-        return r_string
-        
-    def generic_tcp_command(self, cmd):
-        ###############################################################################
-        # Get adc status
-        ###############################################################################
-        # TODO use dict with unique values for commands
-        self.flush_TCP()
-        self.conn.send((cmd + '\r').encode('utf-8'))
-        time.sleep(0.01)
-        try:
-            r_string = self.conn.recv(64)
-        except:
-            r_string = 'failed'
-        return r_string
         
     def generic_tcp_command_BYTE(self, cmd):
         ###############################################################################
@@ -170,7 +123,7 @@ class AlphaScanDevice:
         try:
             r_string = self.conn.recv(64)
         except:
-            r_string = 'failed'
+            r_string = 'np_response'
         return r_string
         
         
@@ -185,11 +138,14 @@ class AlphaScanDevice:
         ###############################################################################
         # Begin UDP adc stream
         ###############################################################################
+        # TODO Acquire latest client IP
+        
+        # Start UDP rcv thread
         self.LSL_Thread = Thread(target=self.DEV_printStream)
         self.LSL_Thread.start()
-        self.DEV_streamActive.set()       
-        self.conn.send('s\r'.encode('utf-8'))
-        return "Streaming Now" # TODO need ACK validation
+        self.DEV_streamActive.set()  
+        # Send command to being streaming
+        return self.generic_tcp_command_BYTE("ADC_start_stream")
         
     def terminate_UDP_stream(self):
         ###############################################################################
@@ -197,6 +153,7 @@ class AlphaScanDevice:
         ###############################################################################
         try:
             self.sock.sendto(('ttt'.encode('utf-8')), (self.UDP_IP, self.UDP_PORT))
+            #TODO error: [Errno 9] Bad file descriptor
         except: #Make specifi to bad file descriptor
             self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
             #self.sock.setsockopt(socket.SOL_SOCKET,socket.SO_RCVBUF,8192)
@@ -235,7 +192,16 @@ class AlphaScanDevice:
         time.sleep(0.01) # Time for device to respond
         return #TODO add validation
 
-        
+    def update_command_map(self):
+        # create csv string from command map dict
+        self.flush_TCP()
+        self.conn.send((chr(TCP_COMMAND["GEN_update_cmd_map"]) + str(TCP_COMMAND) + ',  \r').encode('utf-8')) #NOTE: comma is necessary
+        time.sleep(0.01)
+        try:
+            r_string = self.conn.recv(64)
+        except:
+            r_string = 'np_response'
+        return r_string
     
     
     
