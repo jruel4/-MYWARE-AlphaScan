@@ -539,9 +539,10 @@ void parseCommandMap() { // NOTE: consider eliminating STRING and other dynamic 
   // loop over string contents until key,value pairs are exhausted
   Serial.println("Parsing command map...");
   Serial.print("received map: "); Serial.println(line);
+  Serial.println("--------------------------------------");
 
   std::map<uint8_t, String> new_map;
-  int begin = line.indexOf("'") + 1;
+  int begin = 1;
   int end = 0;
   String cmd_pair;
 
@@ -555,10 +556,12 @@ void parseCommandMap() { // NOTE: consider eliminating STRING and other dynamic 
 
     end = line.indexOf(',',begin+1); // not sure if search include begin index
 
-    Serial.print("found end: "); Serial.println(end);
+    Serial.print("found end:   "); Serial.println(end);
+    Serial.print("found begin: "); Serial.println(begin);
 
     if (end > -1) {
       cmd_pair = line.substring(begin, end);
+      Serial.print("cmd_pair: "); Serial.println(cmd_pair);
       // search for single quotes to extract key
       key = cmd_pair.substring(cmd_pair.indexOf("'")+1, cmd_pair.lastIndexOf("'")); // NOTE: might need to escape backslash
       Serial.print("key: ");Serial.println(key);
