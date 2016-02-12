@@ -64,11 +64,10 @@ void handleOTA();
 void setupOTA();
 void generalSetup();
 void loadCommandMapSPIFFS();
-void loadCommandPair();
-void saveCommandPair();
 void loadDefaultCommandMap();
 void copyCommandMap2str();
 void parseCommandMap();
+void saveCommandMap();
 String extractNetParam(String,String);
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -111,6 +110,11 @@ void generalSetup() {
   Serial.begin(74880);
   Serial.println("");
   Serial.println("Firmware version: "+firmware_version);
+  // Initiate SPIFFS
+  Serial.println("inititating file SPIFFS class");
+  if(SPIFFS.begin())Serial.println("Spiffs mount success");else {Serial.println("Spiffs mount FAIL");return;}
+
+  // load command map
   loadCommandMapSPIFFS();
 }
 
@@ -133,7 +137,8 @@ void loadCommandMapSPIFFS() {
   f = SPIFFS.open(command_map_path, "r");
   if (!f) {
     Serial.println("command file open failed");
-    SYSTEM_STATE = AP_MODE;
+    // load default instead
+    loadDefaultCommandMap();
     return;
   }
   else {
@@ -142,25 +147,18 @@ void loadCommandMapSPIFFS() {
 
   // Read parameters from file
   f.seek(0,SeekSet);
-  // Read SSID
-  String command_string;
-  while(f.available()) {
+
+  if(f.available()) {
 
     //Lets read line by line from the file
-    command_string = f.readStringUntil('\n');
-    loadCommandPair();
+    line = f.readStringUntil('\n');
+
+    parseCommandMap();
 
   }
-
-  copyCommandMap2str();
-}
-
-void loadCommandPair() {
-  // TODO write this...match to saveCommandPair
-}
-
-void saveCommandPair() {
-  // TODO write this
+  else {
+    Serial.println("failed to read command map string");
+  }
 }
 
 void loadDefaultCommandMap() {
@@ -254,10 +252,6 @@ void readSpiffsForNetParams() {
   /////////////////////////////////////////////////////////////////////////////////////////////////////
   // Check SPIFFS for network parameters
   /////////////////////////////////////////////////////////////////////////////////////////////////////
-
-  // Initiate SPIFFS
-  Serial.println("inititating file SPIFFS class");
-  if(SPIFFS.begin())Serial.println("Spiffs mount success");else {Serial.println("Spiffs mount FAIL");return;}
 
   // Check to see if net_params file exists
   Serial.print("checking if exists: ");Serial.println(network_parameters_path);
@@ -451,6 +445,7 @@ void processClientRequest() {
     Serial.print("received map: "); Serial.println(line);
 
     parseCommandMap();
+    saveCommandMap();
 
   }
 
@@ -548,7 +543,7 @@ void parseCommandMap() { // NOTE: consider eliminating STRING and other dynamic 
 
   // debuf values
   String key;
-  String value; //TODO chang this to int
+  int value;
 
   while (end > -1) {
 
@@ -566,26 +561,48 @@ void parseCommandMap() { // NOTE: consider eliminating STRING and other dynamic 
       key = cmd_pair.substring(cmd_pair.indexOf("'")+1, cmd_pair.lastIndexOf("'")); // NOTE: might need to escape backslash
       Serial.print("key: ");Serial.println(key);
       // search for colon to find value
-      value = (cmd_pair.substring(cmd_pair.indexOf(":")+2, end - 1));
+      value = (cmd_pair.substring(cmd_pair.indexOf(":")+2, end - 1)).toInt();
       Serial.print("value: "); Serial.println(value);
 
-      // check for general validity of k,v pair, if invalid then continue
+      // TODO check for general validity of k,v pair, if invalid then continue
       // if (key == 0) continue;
 
       // Add new k,v pair to new_map
+      new_map[value] = key;
 
       // update begin index
       begin = end;
     }
   }
 
-  // Test for command number contiguity
+  // TODO Test for command number contiguity
 
   // set COMMAND_MAP_2_str to new_map
+  COMMAND_MAP_2_str = new_map;
 
-  // save COMMAND_MAP_2_str in FS
+  // copy command map inverse
+  copyCommandMap2str();
 
   Serial.println("Finished parsing new map.");
+}
+
+void saveCommandMap() {
+
+  // open file
+  f = SPIFFS.open(command_map_path,"w");
+  if (!f) {
+    Serial.println("file open failed");
+    return;
+  }
+  else {
+    Serial.println("file open SUCCESS");
+  }
+
+  // write lines
+  f.seek(0,SeekSet);
+  f.println(line);
+  f.close();
+  Serial.println("command map saved");
 }
 
 void setupOTA() {
