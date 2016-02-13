@@ -171,7 +171,7 @@ class GeneralTab(QWidget):
         if self.Streaming or not self.Connected:
             self.Text_AccelStatus.setText("ILLEGAL")
             return
-        accel_status_string = self._Device.get_accel_status()
+        accel_status_string = self._Device.generic_tcp_command_BYTE("ACC_get_status")
         self.Text_AccelStatus.setText(accel_status_string)
         
     @Slot()
@@ -179,7 +179,7 @@ class GeneralTab(QWidget):
         if self.Streaming or not self.Connected:
             self.Text_PowerStatus.setText("ILLEGAL")
             return
-        power_status_string = self._Device.get_power_status()
+        power_status_string = self._Device.generic_tcp_command_BYTE("PWR_get_status")
         self.Text_PowerStatus.setText(power_status_string)
         
     @Slot()
@@ -187,7 +187,7 @@ class GeneralTab(QWidget):
         if self.Streaming or not self.Connected:
             self.Text_AdcStatus.setText("ILLEGAL")
             return
-        adc_status_string = self._Device.get_adc_status()
+        adc_status_string = self._Device.generic_tcp_command_BYTE("ADC_get_register")
         self.Text_AdcStatus.setText(adc_status_string)
     
     @Slot()
@@ -214,7 +214,7 @@ class GeneralTab(QWidget):
         
     @Slot()
     def enter_ota_mode(self):
-        r = self._Device.generic_tcp_command('o') # 'o' == ota mode
+        r = self._Device.generic_tcp_command_BYTE('GEN_start_ota') # 'o' == ota mode
         msgBox = QMessageBox()
         if '' in r:#TODO add response into firmware
             msgBox.setText("SUCCESS")
@@ -224,7 +224,7 @@ class GeneralTab(QWidget):
         
     @Slot()
     def enter_ap_mode(self):
-        r = self._Device.generic_tcp_command('q') # 'o' == ota mode
+        r = self._Device.generic_tcp_command_BYTE('GEN_start_ap') # 'o' == ota mode
         msgBox = QMessageBox()
         if '' in r:#TODO add response into firmware
             msgBox.setText("SUCCESS")
