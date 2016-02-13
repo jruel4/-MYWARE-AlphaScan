@@ -33,7 +33,7 @@ byte packetBuffer[512];                 //
 WiFiClient client;                      //
 WiFiUDP Udp;                            //
 String line;                            //
-
+char localIpString[24];                 //
 bool open_a = true;                     //
 File f;                                 //
 
@@ -203,7 +203,9 @@ void connectToWan() {
   Serial.println("");
   Serial.println("WiFi connected");
   Serial.println("IP address: ");
-  Serial.println(WiFi.localIP());
+  IPAddress myIP = WiFi.localIP();
+  sprintf(localIpString, "%d.%d.%d.%d", myIP[0], myIP[1], myIP[2], myIP[3]);
+  Serial.println(localIpString);
 
   Udp.begin(UDP_port);
 
@@ -518,6 +520,15 @@ void processClientRequest() {
     Serial.println("Forcing AP Mode");
     SYSTEM_STATE = AP_MODE;
     network_set = host_ip_set = ssid_set = password_set = false;
+
+  }
+
+  ////////////////////////////////////////////////////////////////////////////
+  else if(cmd == COMMAND_MAP_2_int["GEN_get_dev_ip"])
+  {
+    // send currently allocated device IP
+    Serial.print("sending back local ip: "); Serial.println(localIpString);
+    client.print(localIpString);
 
   }
 

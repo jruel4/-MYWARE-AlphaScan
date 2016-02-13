@@ -119,11 +119,11 @@ class AlphaScanDevice:
         # TODO swap this for gui...
         self.flush_TCP()
         self.conn.send((chr(TCP_COMMAND[cmd]) + '\r').encode('utf-8'))
-        time.sleep(0.01)
+        time.sleep(0.05)
         try:
             r_string = self.conn.recv(64)
         except:
-            r_string = 'np_response'
+            r_string = 'no_response'
         return r_string
         
         
@@ -138,8 +138,11 @@ class AlphaScanDevice:
         ###############################################################################
         # Begin UDP adc stream
         ###############################################################################
-        # TODO Acquire latest client IP
-        
+        # Acquire latest client IP
+        ip = self.generic_tcp_command_BYTE("GEN_get_dev_ip")
+        if ip == "no_response":
+            return "failed to get updated ip"
+        self.UDP_IP = ip
         # Start UDP rcv thread
         self.LSL_Thread = Thread(target=self.DEV_printStream)
         self.LSL_Thread.start()
@@ -200,11 +203,8 @@ class AlphaScanDevice:
         try:
             r_string = self.conn.recv(64)
         except:
-            r_string = 'np_response'
+            r_string = 'no_response'
         return r_string
-    
-    
-    
     
     
     
