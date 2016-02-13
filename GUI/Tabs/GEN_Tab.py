@@ -144,6 +144,14 @@ class GeneralTab(QWidget):
         self.layout.addWidget(self.Button_ApMode, 7, 0, 1, 1)
         self.Button_ApMode.clicked.connect(self.enter_ap_mode)
         
+        #######################################################################
+        # Update Command Map ##################################################
+        #######################################################################
+        
+        self.Button_UpdateCmdMap = QPushButton("Update Command Map")
+        self.layout.addWidget(self.Button_UpdateCmdMap, 8, 0, 1, 1)
+        self.Button_UpdateCmdMap.clicked.connect(self.update_command_map)
+        
     ###########################################################################
     # Slots ###################################################################
     ###########################################################################
@@ -214,7 +222,7 @@ class GeneralTab(QWidget):
         
     @Slot()
     def enter_ota_mode(self):
-        r = self._Device.generic_tcp_command_BYTE('GEN_start_ota') # 'o' == ota mode
+        r = self._Device.generic_tcp_command_BYTE('GEN_start_ota') 
         msgBox = QMessageBox()
         if '' in r:#TODO add response into firmware
             msgBox.setText("SUCCESS")
@@ -224,11 +232,38 @@ class GeneralTab(QWidget):
         
     @Slot()
     def enter_ap_mode(self):
-        r = self._Device.generic_tcp_command_BYTE('GEN_start_ap') # 'o' == ota mode
+        r = self._Device.generic_tcp_command_BYTE('GEN_start_ap') 
         msgBox = QMessageBox()
         if '' in r:#TODO add response into firmware
             msgBox.setText("SUCCESS")
         else:
             msgBox.setText("failure")
         msgBox.exec_()
+    
+    @Slot()
+    def update_command_map(self):
+        r = self._Device.update_command_map()
+        msgBox = QMessageBox()
+        msgBox.setText(r)
+        msgBox.exec_()
     ###########################################################################    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
