@@ -46,8 +46,8 @@ enum T_SYSTEM_STATE {
   RUN_MODE
 } SYSTEM_STATE;
 
-std::map<uint8_t, String> COMMAND_MAP_2_str;   // TODO populate this from flash
-std::map<String, uint8_t> COMMAND_MAP_2_int;   // TODO populate from above
+std::map<uint8_t, String> COMMAND_MAP_2_str;
+std::map<String, uint8_t> COMMAND_MAP_2_int;
 
 ////////////////////////////////////////////////////////////////////////////////
 // Function prototype declarations
@@ -440,7 +440,7 @@ void processClientRequest() {
   ////////////////////////////////////////////////////////////////////////////
   if (cmd ==  0x00) // Update command map -- this is always command 0x00
   {
-    // TODO write this
+
     Serial.println("updating command map...");
     Serial.print("received map: "); Serial.println(line);
 
@@ -505,7 +505,7 @@ void processClientRequest() {
   else if (cmd ==  COMMAND_MAP_2_int["GEN_start_ota"]) //OTA update
   {
     client.print("Entering OTA Mode"); // TODO might need more wait that this... since we then shutfown current WiFi setup
-    delay(1);
+    delay(10);
     handleOTA();
 
   }
