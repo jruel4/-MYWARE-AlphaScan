@@ -21,7 +21,7 @@ class AlphaScanDevice:
         ###############################################################################
         # UDP Settings
         ###############################################################################
-        self.UDP_IP = "192.168.1.17"      #CONFIGURABLE #TODO get this automatically from TCP conn before opening stream
+        self.UDP_IP = "192.168.1.17"      #This gets over written dynamically
         self.UDP_PORT = 2390              #CONFIGURABLE
         
         self.num = 10
@@ -34,6 +34,8 @@ class AlphaScanDevice:
         self.DEV_log = list()
         self.inbuf = list()  
         self.unknown_stream_errors = 0
+        self.begin = 0
+        self.end = 0
         
         self.info = StreamInfo('AlphaScan', 'EEG', 8, 100, 'float32', 'myuid34234')
         self.outlet = StreamOutlet(self.info)
@@ -47,8 +49,8 @@ class AlphaScanDevice:
         ###############################################################################
         self.s = socket.socket(socket.AF_INET,socket.SOCK_STREAM) 
         
-        self.s.bind((self.TCP_IP,self.PORT)) #TODO Deal with previously opened connection without device reset...
-        # TODO error: [Errno 10048] Only one usage of each socket address (protocol/network address/port) is normally permitted
+        self.s.bind((self.TCP_IP,self.PORT)) 
+        # error: [Errno 10048] Only one usage of each socket address (protocol/network address/port) is normally permitted
         
         self.s.settimeout(2)
         self.s.listen(1)        
@@ -83,7 +85,7 @@ class AlphaScanDevice:
         ###############################################################################
         # UDP Stream thread target
         ###############################################################################
-        # TODO maybe open LSL stream here
+
         self.errors = 0
         self.reads = 0
         self.unknown_stream_errors = 0
@@ -116,7 +118,7 @@ class AlphaScanDevice:
         ###############################################################################
         # Get adc status
         ###############################################################################
-        # TODO swap this for gui...
+
         self.flush_TCP()
         self.conn.send((chr(TCP_COMMAND[cmd]) + '\r').encode('utf-8'))
         time.sleep(0.05)
@@ -132,7 +134,7 @@ class AlphaScanDevice:
         # Get all registers and return as list of lists
         ###############################################################################
         return [[True if i % 2 == 0 else False for i in range(8)] for j in range(24)]
-        # TODO replace test code above with command to Firmware
+
 
     def initiate_UDP_stream(self):
         ###############################################################################
@@ -147,7 +149,8 @@ class AlphaScanDevice:
         self.LSL_Thread = Thread(target=self.DEV_printStream)
         self.LSL_Thread.start()
         self.DEV_streamActive.set()  
-        # Send command to being streaming
+        # Send command to being 
+        self.begin = time.time()
         return self.generic_tcp_command_BYTE("ADC_start_stream")
         
     def terminate_UDP_stream(self):
@@ -156,18 +159,21 @@ class AlphaScanDevice:
         ###############################################################################
         try:
             self.sock.sendto(('ttt'.encode('utf-8')), (self.UDP_IP, self.UDP_PORT))
-            #TODO error: [Errno 9] Bad file descriptor
-        except: #Make specifi to bad file descriptor
+            
+        except: #Make specific to error: [Errno 9] Bad file descriptor
             self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
             #self.sock.setsockopt(socket.SOL_SOCKET,socket.SO_RCVBUF,8192)
             self.sock.bind(('',self.UDP_PORT))
             self.sock.settimeout(0)
             self.sock.sendto(('ttt'.encode('utf-8')), (self.UDP_IP, self.UDP_PORT))
-            
+        self.end = time.time()
         self.DEV_streamActive.clear()
         time.sleep(0.01)
         self.sock.close()
-        return "Not Streaming, Inbuf size: "+str(len(self.inbuf)) # TODO need ACK validation
+        drops = self.get_drop_rate()
+        avail = ((1.0 - ((drops * 1.0) / len(self.inbuf)))*100.0)
+        pckt_rate = len(self.inbuf)/(self.end-self.begin)
+        return "Not Streaming", str(pckt_rate),  str(avail), str(len(self.inbuf)), str(drops)
     
     
     def flush_TCP(self):
@@ -193,7 +199,7 @@ class AlphaScanDevice:
         self.flush_TCP()
         self.conn.send('u'+''.join([str(t) for t in reg_to_update])+'\r'.encode('utf-8'))
         time.sleep(0.01) # Time for device to respond
-        return #TODO add validation
+        return
 
     def update_command_map(self):
         # create csv string from command map dict
@@ -205,6 +211,22 @@ class AlphaScanDevice:
         except:
             r_string = 'no_response'
         return r_string
+        
+    def get_drop_rate(self):
+        i = 0
+        drops = 0
+        total_pckts = len(self.inbuf)
+        if total_pckts == 0: return 
+        for n in self.inbuf:
+            if i != n:
+                drops += 1
+                i = n
+            if i == 255: #wrap around
+                i = 0
+            else:
+                i += 1
+        # return success rate
+        return drops
     
     
     

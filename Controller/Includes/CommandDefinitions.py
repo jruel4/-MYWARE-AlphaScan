@@ -42,7 +42,6 @@ addCommand("PWR_get_status")
 addCommand("ACC_get_status")
 
 
-# TODO add matching command schema to firmware
 
 
 

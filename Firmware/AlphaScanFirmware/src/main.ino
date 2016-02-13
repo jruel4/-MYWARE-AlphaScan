@@ -706,8 +706,10 @@ void ADC_StartDataStream() {
     if( (c%100) == 0 )Serial.print(".");
     if( (c%1000) == 0){Serial.print(c);Serial.println("");}
     c++;
-    int k = 0;
-    for (k=0;k<1000;k++);
+    long int k = 0;
+    for (k=0;k<1500;k++) { // TODO add delay factor (eg 1500) as global var to be uploaded dynamically
+      if (k == 1000 && (c % 1000 == 0)) Serial.print("-");
+    }
     // Note: tune less than value for tx throughput cap.
     //       k<1,000 yields about 6,000 sps
   }
