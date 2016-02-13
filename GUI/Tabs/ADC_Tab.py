@@ -110,5 +110,5 @@ class ADC_REG_TAB( QWidget):
                 if self.rowDict[i]['BIT_'+str(j)].isChecked() != self.ADC_RegMap[i][j]:
                     reg_to_update += [(i,j)] #i=reg,j=bit
         if len(reg_to_update) > 0:
-            self._Device.update_adc_registers(reg_to_update) #TODO add validation here
+            self._Device.generic_tcp_command_BYTE("ADC_update_register")
 
