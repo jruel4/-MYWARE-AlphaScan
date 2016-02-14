@@ -145,6 +145,9 @@ class AlphaScanDevice:
         if ip == "no_response":
             return "failed to get updated ip"
         self.UDP_IP = ip
+        
+        #TODO get ip using recvfrom during TCP handshake instead        
+        
         # Start UDP rcv thread
         self.LSL_Thread = Thread(target=self.DEV_printStream)
         self.LSL_Thread.start()

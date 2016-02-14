@@ -29,7 +29,7 @@ bool network_set  = false;              //
 const int TCP_port = 50007;             //
 const int UDP_port = 2390;              //
 
-byte packetBuffer[512];                 //
+byte packetBuffer[512];                 // NOTE: this is more memory than needed
 WiFiClient client;                      //
 WiFiUDP Udp;                            //
 String line;                            //
@@ -73,6 +73,7 @@ String extractNetParam(String,String);
 ////////////////////////////////////////////////////////////////////////////////
 // Function definitions
 ////////////////////////////////////////////////////////////////////////////////
+
 void setup() {
 
   generalSetup();
@@ -532,6 +533,10 @@ void processClientRequest() {
 
   }
 
+  else if (cmd == COMMAND_MAP_2_int["GEN_listen_beacon"])
+  {
+    listen_for_beacon();
+  }
   ////////////////////////////////////////////////////////////////////////////
   else
   {
@@ -653,6 +658,9 @@ void handleOTA() {
 
 void establishHostTCPConn() {
 
+  // TODO Put beacon protocol in here to avoid ever having incorrect host ip
+
+
   if (!client.status()) {
 
     Serial.print("host_ip: ");Serial.println(host_ip);
@@ -716,6 +724,37 @@ void ADC_StartDataStream() {
 }
 
 void ADC_getRegisterContents() {}
+
+void listen_for_beacon() {
+
+  int noBytes = 0;
+  char inbuf[50];
+  Serial.println("Listening for broadcast beacon.");
+
+  while(1)
+  {
+    noBytes = Udp.parsePacket();
+
+    if ( noBytes ) {
+
+      Udp.read(inbuf,noBytes);
+      Serial.print("RX: ");
+      int i;
+      //for (i = 0; i < noBytes; i++) Serial.print((char)packetBuffer[i]);
+      Serial.println(inbuf);
+      Serial.println("... finished.");
+      String valCheck = String(inbuf);
+      // check if this is host beacon
+      if (valCheck.indexOf("alpha_scan_beacon") > -1) {
+        Serial.println("found alpha scan host");
+        Serial.println(Udp.remoteIP());
+        Serial.println(Udp.remotePort());
+
+      }
+      break;
+    }
+  }
+}
 
 String extractNetParam(String Request, String delimeter) {
   // Standard request syntax is "delimeter_value_enddelimeter"
