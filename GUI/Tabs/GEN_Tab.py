@@ -257,6 +257,7 @@ class GeneralTab(QWidget):
         else:
             msgBox.setText("failure")
         msgBox.exec_()
+        self.disconnect_from_device()
         
     @Slot()
     def enter_ap_mode(self):
