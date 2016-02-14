@@ -26,9 +26,10 @@ bool password_set = false;              //
 bool host_ip_set  = true;               //
 bool network_set  = false;              //
 
-int TCP_port = 50007;             //
-int UDP_port = 2390;              //
+int TCP_port;                           //
+int UDP_port = 2390;                    //
 
+int UDP_Stream_Delay = 1500;            //
 byte packetBuffer[512];                 // NOTE: this is more memory than needed
 WiFiClient client;                      //
 WiFiUDP Udp;                            //
@@ -69,6 +70,7 @@ void copyCommandMap2str();
 void parseCommandMap();
 void saveCommandMap();
 void listen_for_beacon();
+void ADC_set_udp_delay();
 String extractNetParam(String,String);
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -509,7 +511,7 @@ void processClientRequest() {
   ////////////////////////////////////////////////////////////////////////////
   else if (cmd ==  COMMAND_MAP_2_int["GEN_start_ota"]) //OTA update
   {
-    client.print("Entering OTA Mode"); // TODO might need more wait that this... since we then shutfown current WiFi setup
+    client.print("Entering OTA Mode"); // NOTE might need more wait that this... since we then shutfown current WiFi setup
     delay(10);
     handleOTA();
 
@@ -535,9 +537,17 @@ void processClientRequest() {
 
   }
 
+  ////////////////////////////////////////////////////////////////////////////
   else if (cmd == COMMAND_MAP_2_int["GEN_listen_beacon"])
   {
     listen_for_beacon();
+  }
+
+  ////////////////////////////////////////////////////////////////////////////
+  else if (cmd == COMMAND_MAP_2_int["ADC_set_udp_delay"])
+  {
+    Serial.println("setting udp stream delay");
+    ADC_set_udp_delay();
   }
   ////////////////////////////////////////////////////////////////////////////
   else
@@ -582,7 +592,7 @@ void parseCommandMap() { // NOTE: consider eliminating STRING and other dynamic 
       value = (cmd_pair.substring(cmd_pair.indexOf(":")+2, end - 1)).toInt();
       Serial.print("value: "); Serial.println(value);
 
-      // TODO check for general validity of k,v pair, if invalid then continue
+      // NOTE check for general validity of k,v pair, if invalid then continue
       // if (key == 0) continue;
 
       // Add new k,v pair to new_map
@@ -593,7 +603,7 @@ void parseCommandMap() { // NOTE: consider eliminating STRING and other dynamic 
     }
   }
 
-  // TODO Test for command number contiguity
+  // NOTE Test for command number contiguity
 
   // set COMMAND_MAP_2_str to new_map
   COMMAND_MAP_2_str = new_map;
@@ -714,7 +724,7 @@ void ADC_StartDataStream() {
     if( (c%1000) == 0){Serial.print(c);Serial.println("");}
     c++;
     long int k = 0;
-    for (k=0;k<1500;k++) { // TODO add delay factor (eg 1500) as global var to be uploaded dynamically
+    for (k=0;k<UDP_Stream_Delay;k++) {
       if (k == 1000 && (c % 1000 == 0)) Serial.print("-");
     }
     // Note: tune less than value for tx throughput cap.
@@ -752,10 +762,20 @@ void listen_for_beacon() {
 
         Serial.println(host_ip);
         Serial.println(UDP_port);
+
+        // extract tcp port to connect to from beacon message
+        TCP_port = (valCheck.substring(valCheck.indexOf("xbx_")+4, valCheck.indexOf("_xex"))).toInt();
+        Serial.print("tcp_port: "); Serial.println(TCP_port);
+
       }
       break;
     }
   }
+}
+
+void ADC_set_udp_delay() {
+  UDP_Stream_Delay = (line.substring(line.indexOf("_b_")+3, line.indexOf("_e_"))).toInt();
+  Serial.print("setting delay to: "); Serial.println(UDP_Stream_Delay);
 }
 
 String extractNetParam(String Request, String delimeter) {

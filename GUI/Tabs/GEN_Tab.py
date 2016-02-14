@@ -184,7 +184,7 @@ class GeneralTab(QWidget):
     def connect_to_device(self):
         if self.Connected: return
         self.Text_ConnectStatus.setText("Connecting to AlphaScan...")
-        if self._Device.init_TCP():
+        if self._Device.connect_to_device():
             self.Connected = True
             self.Text_ConnectStatus.setText("Connected")
         else:

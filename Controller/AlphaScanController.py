@@ -14,7 +14,7 @@ class AlphaScanDevice:
         # TCP Settings
         ###############################################################################
         self.TCP_IP = ''
-        self.PORT = 50007                 #CONFIGURABLE
+        self.TCP_PORT = 50007                 #CONFIGURABLE
         self.user_input = ''
         self.data = ''
         
@@ -49,7 +49,7 @@ class AlphaScanDevice:
         ###############################################################################
         self.s = socket.socket(socket.AF_INET,socket.SOCK_STREAM) 
         
-        self.s.bind((self.TCP_IP,self.PORT)) 
+        self.s.bind((self.TCP_IP,self.TCP_PORT)) 
         # error: [Errno 10048] Only one usage of each socket address (protocol/network address/port) is normally permitted
         
         self.s.settimeout(2)
@@ -115,13 +115,13 @@ class AlphaScanDevice:
                 self.unknown_stream_errors += 1
                 
         
-    def generic_tcp_command_BYTE(self, cmd):
+    def generic_tcp_command_BYTE(self, cmd, extra = ''):
         ###############################################################################
         # Get adc status
         ###############################################################################
 
         self.flush_TCP()
-        self.conn.send((chr(TCP_COMMAND[cmd]) + '\r').encode('utf-8'))
+        self.conn.send((chr(TCP_COMMAND[cmd]) + extra + '\r').encode('utf-8'))
         time.sleep(0.05)
         try:
             r_string = self.conn.recv(64)
@@ -230,15 +230,19 @@ class AlphaScanDevice:
     
     def broadcast_disco_beacon(self):
         # send broadcast beacon for device to discover this host
-        s = socket.socket(AF_INET, SOCK_DGRAM)
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         s.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
-        s.sendto('alpha_scan_beacon',('255.255.255.255',2390)) #TODO this subnet might not work on all nets
+        s.sendto('alpha_scan_beacon_xbx_'+str(self.TCP_PORT)+'_xex',('255.255.255.255',2390)) #TODO this subnet might not work on all nets
         # send desired TCP port in this beacon 
         s.close();
     
     def connect_to_device(self):
         self.broadcast_disco_beacon()
-        self.init_TCP()
+        return self.init_TCP()
+        
+    def set_udp_delay(self, delay):
+        extra = "_b_"+str(delay)+"_e_"
+        return self.generic_tcp_command_BYTE("ADC_set_udp_delay", extra)
     
     
     
