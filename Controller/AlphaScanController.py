@@ -58,6 +58,7 @@ class AlphaScanDevice:
             self.conn,addr = self.s.accept()
             self.conn.settimeout(.05)
             time.sleep(0.01) # time for device to respond
+            self.UDP_IP = addr[0]
             return True
         except:
             return False
@@ -140,14 +141,7 @@ class AlphaScanDevice:
         ###############################################################################
         # Begin UDP adc stream
         ###############################################################################
-        # Acquire latest client IP
-        ip = self.generic_tcp_command_BYTE("GEN_get_dev_ip")
-        if ip == "no_response":
-            return "failed to get updated ip"
-        self.UDP_IP = ip
-        
-        #TODO get ip using recvfrom during TCP handshake instead        
-        
+
         # Start UDP rcv thread
         self.LSL_Thread = Thread(target=self.DEV_printStream)
         self.LSL_Thread.start()
@@ -160,6 +154,9 @@ class AlphaScanDevice:
         ###############################################################################
         # End UDP adc stream
         ###############################################################################
+        
+        #TODO NEED terminatino ACK, if NACK then resend termination command        
+        
         try:
             self.sock.sendto(('ttt'.encode('utf-8')), (self.UDP_IP, self.UDP_PORT))
             
@@ -231,8 +228,17 @@ class AlphaScanDevice:
         # return success rate
         return drops
     
+    def broadcast_disco_beacon(self):
+        # send broadcast beacon for device to discover this host
+        s = socket.socket(AF_INET, SOCK_DGRAM)
+        s.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
+        s.sendto('alpha_scan_beacon',('255.255.255.255',2390)) #TODO this subnet might not work on all nets
+        # send desired TCP port in this beacon 
+        s.close();
     
-    
+    def connect_to_device(self):
+        self.broadcast_disco_beacon()
+        self.init_TCP()
     
     
     

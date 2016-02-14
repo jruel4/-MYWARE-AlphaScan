@@ -15,7 +15,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 char ssid[20];                          //
 char password[50];                      //
-char host_ip[15];                       //
+IPAddress host_ip;                      //
 
 String ssid_str;                        //
 String password_str;                    //
@@ -26,8 +26,8 @@ bool password_set = false;              //
 bool host_ip_set  = true;               //
 bool network_set  = false;              //
 
-const int TCP_port = 50007;             //
-const int UDP_port = 2390;              //
+int TCP_port = 50007;             //
+int UDP_port = 2390;              //
 
 byte packetBuffer[512];                 // NOTE: this is more memory than needed
 WiFiClient client;                      //
@@ -68,6 +68,7 @@ void loadDefaultCommandMap();
 void copyCommandMap2str();
 void parseCommandMap();
 void saveCommandMap();
+void listen_for_beacon();
 String extractNetParam(String,String);
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -80,6 +81,7 @@ void setup() {
   readSpiffsForNetParams();
   readApForNetParams();
   connectToWan();
+  listen_for_beacon();
 }
 
 void loop() {
@@ -306,11 +308,11 @@ void readSpiffsForNetParams() {
     }
 
     // Read host_ip
-    if(f.available()) {
+    if(f.available()) { // NOTE: modift host ip parsing for for IPAddress type
       //Lets read line by line from the file
       host_ip_str = f.readStringUntil('\n');
       host_ip_str = extractNetParam(host_ip_str,"host_ip");
-      strcpy(host_ip,&(host_ip_str[0]));
+      //strcpy(host_ip,&(host_ip_str[0]));
       host_ip_set = true;
 
       Serial.print("RS_host_ip: ");Serial.println(host_ip);
@@ -399,7 +401,7 @@ void readApSub() {
   // Rx passkey
   else if (req.indexOf("host_ip") >= 0) {
     host_ip_str = extractNetParam(req,"host_ip");
-    strcpy(host_ip,&(host_ip_str[0]));
+    //strcpy(host_ip,&(host_ip_str[0])); //NOTE use cpy method compatible with IPAddress
     custom_response = "host_ip";
     host_ip_set = true;
 
@@ -658,9 +660,6 @@ void handleOTA() {
 
 void establishHostTCPConn() {
 
-  // TODO Put beacon protocol in here to avoid ever having incorrect host ip
-
-
   if (!client.status()) {
 
     Serial.print("host_ip: ");Serial.println(host_ip);
@@ -747,9 +746,12 @@ void listen_for_beacon() {
       // check if this is host beacon
       if (valCheck.indexOf("alpha_scan_beacon") > -1) {
         Serial.println("found alpha scan host");
-        Serial.println(Udp.remoteIP());
-        Serial.println(Udp.remotePort());
 
+        host_ip = Udp.remoteIP();
+        UDP_port = Udp.localPort(); // host will listen on same port that it sent to
+
+        Serial.println(host_ip);
+        Serial.println(UDP_port);
       }
       break;
     }
