@@ -43,8 +43,13 @@ addCommand("PWR_get_status")
 ###############################################################################
 addCommand("ACC_get_status")
 
-
-
+###############################################################################
+# SPIFFS
+###############################################################################
+addCommand("FS_format_fs")
+addCommand("FS_get_net_params")
+addCommand("FS_get_fs_info")
+addCommand("FS_get_command_map")
 
 
 

@@ -30,10 +30,10 @@ int TCP_port;                           //
 int UDP_port = 2390;                    //
 
 int UDP_Stream_Delay = 1500;            //
-byte packetBuffer[512];                 // NOTE: this is more memory than needed
+byte packetBuffer[64];                  //
 WiFiClient client;                      //
 WiFiUDP Udp;                            //
-String line;                            //
+String rx_cmd;                          // 
 char localIpString[24];                 //
 bool open_a = true;                     //
 File f;                                 //
@@ -67,10 +67,14 @@ void generalSetup();
 void loadCommandMapSPIFFS();
 void loadDefaultCommandMap();
 void copyCommandMap2str();
-void parseCommandMap();
+bool parseCommandMap();
 void saveCommandMap();
 void listen_for_beacon();
 void ADC_set_udp_delay();
+void FS_format();
+void FS_get_command_map();
+void FS_get_info();
+void FS_get_net_params();
 String extractNetParam(String,String);
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -156,9 +160,11 @@ void loadCommandMapSPIFFS() {
   if(f.available()) {
 
     //Lets read line by line from the file
-    line = f.readStringUntil('\n');
+    rx_cmd = f.readStringUntil('\n');
 
-    parseCommandMap();
+    if (!parseCommandMap()) {
+      loadDefaultCommandMap();
+    }
 
   }
   else {
@@ -168,6 +174,7 @@ void loadCommandMapSPIFFS() {
 
 void loadDefaultCommandMap() {
 
+  Serial.println("loading default command map");
   COMMAND_MAP_2_str[1] = "GEN_get_status";
   COMMAND_MAP_2_str[2] = "GEN_start_ota";
   COMMAND_MAP_2_str[3] = "GEN_start_ap";
@@ -177,6 +184,7 @@ void loadDefaultCommandMap() {
   COMMAND_MAP_2_str[7] = "ADC_update_register";
   COMMAND_MAP_2_str[8] = "ACC_get_status";
   COMMAND_MAP_2_str[9] = "PWR_get_status";
+  COMMAND_MAP_2_str[10] = "FS_format_fs";
 
   copyCommandMap2str();
 }
@@ -435,25 +443,28 @@ void readApSub() {
 void processClientRequest() {
 
   // Check for command from Host
-  line = client.readStringUntil('\r');
+  rx_cmd = client.readStringUntil('\r');
 
   // Switch between possible command cases
-  if (line.length() == 0) return;
+  if (rx_cmd.length() == 0) return;
 
-  uint8_t cmd = (int) line[0];
+  uint8_t cmd = (int) rx_cmd[0];
 
-  Serial.print("Executing command: "); Serial.println(COMMAND_MAP_2_str[line[0]]);
+  Serial.print("Executing command: "); Serial.println(COMMAND_MAP_2_str[rx_cmd[0]]);
 
   ////////////////////////////////////////////////////////////////////////////
   if (cmd ==  0x00) // Update command map -- this is always command 0x00
   {
 
     Serial.println("updating command map...");
-    Serial.print("received map: "); Serial.println(line);
     client.print("updating map command");
     delay(10);
-    parseCommandMap();
-    saveCommandMap();
+    if (parseCommandMap()) {
+      saveCommandMap();
+    }
+    else {
+      Serial.println("map map parse failed");
+    }
 
   }
 
@@ -505,7 +516,7 @@ void processClientRequest() {
   else if (cmd ==  COMMAND_MAP_2_int["ADC_update_register"]) //update register contents
   {
     Serial.println("Received request to update ADC registers");
-    Serial.println(line);
+    Serial.println(rx_cmd);
 
   }
 
@@ -550,6 +561,31 @@ void processClientRequest() {
     Serial.println("setting udp stream delay");
     ADC_set_udp_delay();
   }
+
+  ////////////////////////////////////////////////////////////////////////////
+  else if (cmd == COMMAND_MAP_2_int["FS_format_fs"])
+  {
+    FS_format();
+  }
+
+  ////////////////////////////////////////////////////////////////////////////
+  else if (cmd == COMMAND_MAP_2_int["FS_get_net_params"])
+  {
+    FS_get_net_params();
+  }
+
+  ////////////////////////////////////////////////////////////////////////////
+  else if (cmd == COMMAND_MAP_2_int["FS_get_fs_info"])
+  {
+    FS_get_info();
+  }
+
+  ////////////////////////////////////////////////////////////////////////////
+  else if (cmd == COMMAND_MAP_2_int["FS_get_command_map"])
+  {
+    FS_get_command_map();
+  }
+
   ////////////////////////////////////////////////////////////////////////////
   else
   {
@@ -559,10 +595,12 @@ void processClientRequest() {
 
 }
 
-void parseCommandMap() { // NOTE: consider eliminating STRING and other dynamic memory constructs
+bool parseCommandMap() {
+
+  // NOTE: consider eliminating STRING and other dynamic memory constructs
   // loop over string contents until key,value pairs are exhausted
   Serial.println("Parsing command map...");
-  Serial.print("received map: "); Serial.println(line);
+  Serial.print("received map: "); Serial.println(rx_cmd);
   Serial.println("--------------------------------------");
 
   std::map<uint8_t, String> new_map;
@@ -578,13 +616,13 @@ void parseCommandMap() { // NOTE: consider eliminating STRING and other dynamic 
 
     Serial.println("Processing k,v pair...");
 
-    end = line.indexOf(',',begin+1); // not sure if search include begin index
+    end = rx_cmd.indexOf(',',begin+1); // not sure if search include begin index
 
     Serial.print("found end:   "); Serial.println(end);
     Serial.print("found begin: "); Serial.println(begin);
 
     if (end > -1) {
-      cmd_pair = line.substring(begin, end);
+      cmd_pair = rx_cmd.substring(begin, end);
       Serial.print("cmd_pair: "); Serial.println(cmd_pair);
       // search for single quotes to extract key
       key = cmd_pair.substring(cmd_pair.indexOf("'")+1, cmd_pair.lastIndexOf("'")); // NOTE: might need to escape backslash
@@ -593,7 +631,7 @@ void parseCommandMap() { // NOTE: consider eliminating STRING and other dynamic 
       value = (cmd_pair.substring(cmd_pair.indexOf(":")+2, end - 1)).toInt();
       Serial.print("value: "); Serial.println(value);
 
-      // NOTE check for general validity of k,v pair, if invalid then continue
+      // TODO check for general validity of k,v pair, if invalid then continue
       // if (key == 0) continue;
 
       // Add new k,v pair to new_map
@@ -604,7 +642,10 @@ void parseCommandMap() { // NOTE: consider eliminating STRING and other dynamic 
     }
   }
 
-  // NOTE Test for command number contiguity
+  if (new_map.size() < 5) {
+    Serial.println("map validation failed");
+    return false;
+  }
 
   // set COMMAND_MAP_2_str to new_map
   COMMAND_MAP_2_str = new_map;
@@ -613,6 +654,7 @@ void parseCommandMap() { // NOTE: consider eliminating STRING and other dynamic 
   copyCommandMap2str();
 
   Serial.println("Finished parsing new map.");
+  return true;
 }
 
 void saveCommandMap() {
@@ -629,7 +671,7 @@ void saveCommandMap() {
 
   // write lines
   f.seek(0,SeekSet);
-  f.println(line);
+  f.println(rx_cmd);
   f.close();
   Serial.println("command map saved");
 }
@@ -775,9 +817,47 @@ void listen_for_beacon() {
 }
 
 void ADC_set_udp_delay() {
-  UDP_Stream_Delay = (line.substring(line.indexOf("_b_")+3, line.indexOf("_e_"))).toInt();
+  UDP_Stream_Delay = (rx_cmd.substring(rx_cmd.indexOf("_b_")+3, rx_cmd.indexOf("_e_"))).toInt();
   client.print("updating UDP delay");
   Serial.print("setting delay to: "); Serial.println(UDP_Stream_Delay);
+}
+
+void FS_format() {
+  Serial.println("beginning format");
+  client.print("formatting SPIFFS");
+   if (SPIFFS.format()) {
+     Serial.println("format successful");
+     client.print("format successful");
+   }
+   else {
+     Serial.println("format failure");
+     client.print("format failure");
+   }
+}
+
+void FS_get_net_params() {
+  readSpiffsForNetParams();
+  client.print("ssid:" + ssid_str + "," + "password: " + password_str);
+  Serial.println("finished getting net params");
+  // NOTE may need a control method with longer block time to return this data
+}
+
+void FS_get_command_map() {
+  loadCommandMapSPIFFS();
+  client.print(rx_cmd);
+  Serial.println("finished getting command map");
+}
+
+void FS_get_info() {
+  FSInfo fs_info;
+  SPIFFS.info(fs_info);
+  char info_str[100];
+  sprintf(info_str, "totalBytes: %d, usedByted: %d, blockSize: %d, pageSize: %d, \
+                     maxOpenFiles: %d, maxPathLen: %d",
+                     fs_info.totalBytes, fs_info.usedBytes, fs_info.blockSize,
+                     fs_info.pageSize, fs_info.maxOpenFiles, fs_info.maxPathLength);
+  Serial.println(info_str);
+  client.print(info_str);
 }
 
 String extractNetParam(String Request, String delimeter) {
