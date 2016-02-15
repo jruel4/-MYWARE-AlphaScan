@@ -450,7 +450,8 @@ void processClientRequest() {
 
     Serial.println("updating command map...");
     Serial.print("received map: "); Serial.println(line);
-
+    client.print("updating map command");
+    delay(10);
     parseCommandMap();
     saveCommandMap();
 
@@ -775,6 +776,7 @@ void listen_for_beacon() {
 
 void ADC_set_udp_delay() {
   UDP_Stream_Delay = (line.substring(line.indexOf("_b_")+3, line.indexOf("_e_"))).toInt();
+  client.print("updating UDP delay");
   Serial.print("setting delay to: "); Serial.println(UDP_Stream_Delay);
 }
 

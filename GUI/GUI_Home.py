@@ -11,6 +11,7 @@ Created on Mon Jan 25 16:42:21 2016
 
 from PySide.QtCore import *
 from PySide.QtGui import *
+#import qdarkstyle # pip this back in
 import sys
 import time
 
@@ -26,6 +27,8 @@ try:
     qt_app = QApplication(sys.argv)
 except: # could fail for reasons other than already exists... 
     pass
+
+#qt_app.setStyleSheet(qdarkstyle.load_stylesheet())
 
 class AlphaScanGui(QWidget): #TODO probably want something other than dialog here
     def __init__(self, Device, fileName, parent=None):

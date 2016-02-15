@@ -176,6 +176,22 @@ class GeneralTab(QWidget):
         self.layout.addWidget(self.Button_UpdateCmdMap, 12, 0, 1, 1)
         self.Button_UpdateCmdMap.clicked.connect(self.update_command_map)
         
+        #######################################################################
+        # Update UDP Delay Value ##############################################
+        #######################################################################
+        
+        self.Line_UdpDelayVal = QLineEdit("1500")       
+        self.Button_SetUdpDelayVal = QPushButton("Set UDP Delay")
+        
+        self.layout.addWidget(self.Line_UdpDelayVal, 13, 0)
+        self.layout.addWidget(self.Button_SetUdpDelayVal, 13, 1)
+        
+        self.Button_SetUdpDelayVal.clicked.connect(self.update_udp_delay)
+        
+        
+        
+        
+        
     ###########################################################################
     # Slots ###################################################################
     ###########################################################################
@@ -275,6 +291,14 @@ class GeneralTab(QWidget):
         msgBox = QMessageBox()
         msgBox.setText(r)
         msgBox.exec_()
+        
+    @Slot()
+    def update_udp_delay(self):
+        r = self._Device.set_udp_delay(int(self.Line_UdpDelayVal.text()))
+        msgBox = QMessageBox()
+        msgBox.setText(r)
+        msgBox.exec_()
+        
     ###########################################################################    
 
 
