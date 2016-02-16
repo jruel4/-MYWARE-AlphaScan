@@ -205,6 +205,14 @@ class GeneralTab(QWidget):
             self.Text_ConnectStatus.setText("Connected")
         else:
             self.Text_ConnectStatus.setText("Connection FAILED")
+            msgBox = QMessageBox()
+            msgBox.setText(\
+            "Make sure AlphaScan is powered on and wait about 10 " +\
+            "seconds for it to be allocated an IP Adress by your router. " +\
+            "If AlphaScan fails to connect, to will switch to Software " +\
+            "Access Point Mode")
+            #TODO automatically check if AP signal is available.
+            msgBox.exec_()
     
     @Slot()
     def disconnect_from_device(self):
