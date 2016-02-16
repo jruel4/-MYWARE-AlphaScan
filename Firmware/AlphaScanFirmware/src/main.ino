@@ -33,7 +33,7 @@ int UDP_Stream_Delay = 1500;            //
 byte packetBuffer[64];                  //
 WiFiClient client;                      //
 WiFiUDP Udp;                            //
-String rx_cmd;                          // 
+String rx_buf_string;                   //
 char localIpString[24];                 //
 bool open_a = true;                     //
 File f;                                 //
@@ -160,7 +160,7 @@ void loadCommandMapSPIFFS() {
   if(f.available()) {
 
     //Lets read line by line from the file
-    rx_cmd = f.readStringUntil('\n');
+    rx_buf_string = f.readStringUntil('\n');
 
     if (!parseCommandMap()) {
       loadDefaultCommandMap();
@@ -443,14 +443,14 @@ void readApSub() {
 void processClientRequest() {
 
   // Check for command from Host
-  rx_cmd = client.readStringUntil('\r');
+  rx_buf_string = client.readStringUntil('\r');
 
   // Switch between possible command cases
-  if (rx_cmd.length() == 0) return;
+  if (rx_buf_string.length() == 0) return;
 
-  uint8_t cmd = (int) rx_cmd[0];
+  uint8_t cmd = (int) rx_buf_string[0];
 
-  Serial.print("Executing command: "); Serial.println(COMMAND_MAP_2_str[rx_cmd[0]]);
+  Serial.print("Executing command: "); Serial.println(COMMAND_MAP_2_str[rx_buf_string[0]]);
 
   ////////////////////////////////////////////////////////////////////////////
   if (cmd ==  0x00) // Update command map -- this is always command 0x00
@@ -516,7 +516,7 @@ void processClientRequest() {
   else if (cmd ==  COMMAND_MAP_2_int["ADC_update_register"]) //update register contents
   {
     Serial.println("Received request to update ADC registers");
-    Serial.println(rx_cmd);
+    Serial.println(rx_buf_string);
 
   }
 
@@ -600,7 +600,7 @@ bool parseCommandMap() {
   // NOTE: consider eliminating STRING and other dynamic memory constructs
   // loop over string contents until key,value pairs are exhausted
   Serial.println("Parsing command map...");
-  Serial.print("received map: "); Serial.println(rx_cmd);
+  Serial.print("received map: "); Serial.println(rx_buf_string);
   Serial.println("--------------------------------------");
 
   std::map<uint8_t, String> new_map;
@@ -616,13 +616,13 @@ bool parseCommandMap() {
 
     Serial.println("Processing k,v pair...");
 
-    end = rx_cmd.indexOf(',',begin+1); // not sure if search include begin index
+    end = rx_buf_string.indexOf(',',begin+1); // not sure if search include begin index
 
     Serial.print("found end:   "); Serial.println(end);
     Serial.print("found begin: "); Serial.println(begin);
 
     if (end > -1) {
-      cmd_pair = rx_cmd.substring(begin, end);
+      cmd_pair = rx_buf_string.substring(begin, end);
       Serial.print("cmd_pair: "); Serial.println(cmd_pair);
       // search for single quotes to extract key
       key = cmd_pair.substring(cmd_pair.indexOf("'")+1, cmd_pair.lastIndexOf("'")); // NOTE: might need to escape backslash
@@ -671,7 +671,7 @@ void saveCommandMap() {
 
   // write lines
   f.seek(0,SeekSet);
-  f.println(rx_cmd);
+  f.println(rx_buf_string);
   f.close();
   Serial.println("command map saved");
 }
@@ -817,7 +817,7 @@ void listen_for_beacon() {
 }
 
 void ADC_set_udp_delay() {
-  UDP_Stream_Delay = (rx_cmd.substring(rx_cmd.indexOf("_b_")+3, rx_cmd.indexOf("_e_"))).toInt();
+  UDP_Stream_Delay = (rx_buf_string.substring(rx_buf_string.indexOf("_b_")+3, rx_buf_string.indexOf("_e_"))).toInt();
   client.print("updating UDP delay");
   Serial.print("setting delay to: "); Serial.println(UDP_Stream_Delay);
 }
@@ -844,7 +844,7 @@ void FS_get_net_params() {
 
 void FS_get_command_map() {
   loadCommandMapSPIFFS();
-  client.print(rx_cmd);
+  client.print(rx_buf_string);
   Serial.println("finished getting command map");
 }
 

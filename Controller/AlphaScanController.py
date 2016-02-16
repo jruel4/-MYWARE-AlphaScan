@@ -143,9 +143,9 @@ class AlphaScanDevice:
             r_string = 'no_response'
         return r_string
         
-    def read_tcp(self):
+    def read_tcp(self, num_bytes=64):
         try:
-            r_string = self.conn.recv(64)
+            r_string = self.conn.recv(num_bytes)
         except:
             r_string = 'no_response'
         return r_string
@@ -252,7 +252,7 @@ class AlphaScanDevice:
         # send broadcast beacon for device to discover this host
         s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         s.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
-        s.sendto('alpha_scan_beacon_xbx_'+str(self.TCP_PORT)+'_xex',('255.255.255.255',2390)) #TODO this subnet might not work on all nets
+        s.sendto('alpha_scan_beacon_xbx_'+str(self.TCP_PORT)+'_xex',('255.255.255.255',self.UDP_PORT)) #TODO this subnet might not work on all nets
         # send desired TCP port in this beacon 
         s.close();
     

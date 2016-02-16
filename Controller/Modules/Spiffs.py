@@ -22,6 +22,7 @@ Enables the following functions:
 
 SPIFFS controller should utilize generic control methods from main control class
 '''
+import time
 
 class SPIFFS:
     
@@ -29,13 +30,74 @@ class SPIFFS:
         self._Device = Device
         
     def formatFs(self):
-        pass
+        r = self._Device.generic_tcp_command_BYTE("FS_format_fs")
+        time.sleep(0.01)
+        r += self._Device.read_tcp()
+        return r
     
     def getNetworkParams(self):
-        pass
-    
+        r = self._Device.generic_tcp_command_BYTE("FS_get_net_params")
+        time.sleep(0.01)
+        r += self._Device.read_tcp()
+        return r
+        
     def getCommandMap(self):
-        pass
-    
+        r = self._Device.generic_tcp_command_BYTE("FS_get_command_map")
+        if 'no_response' in r:
+            r = 'Please read buff in a moment'
+        return r
+        
     def getFsInfo(self):
-        pass
+        r = self._Device.generic_tcp_command_BYTE("FS_get_fs_info")
+        time.sleep(0.01)
+        r += self._Device.read_tcp()
+        return r
+        
+    def readTcpBuff(self):
+        return self._Device.read_tcp(512)
+        
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
