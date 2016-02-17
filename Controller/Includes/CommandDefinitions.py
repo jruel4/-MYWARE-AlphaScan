@@ -23,6 +23,7 @@ addCommand("GEN_start_ota")
 addCommand("GEN_start_ap")
 addCommand("GEN_get_dev_ip")
 addCommand("GEN_listen_beacon")
+addCommand("GEN_get_sys_params")
 
 ###############################################################################
 # ADC
