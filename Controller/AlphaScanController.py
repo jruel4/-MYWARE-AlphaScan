@@ -42,6 +42,19 @@ class AlphaScanDevice:
         self.mysample = [random.random(), random.random(), random.random(),
             random.random(), random.random(), random.random(),
             random.random(), random.random()]
+            
+        self.SysParams = {'vcc':None,
+                          'free_heap':None,
+                          'mcu_chip_id':None,
+                          'sdk_ver':None,
+                          'boot_ver':None,
+                          'boot_mode':None,
+                          'cpu_freq_mhz':None,
+                          'flash_chip_id':None,
+                          'flash_chip_real_size':None,
+                          'flash_chip_size':None,
+                          'flash_chip_speed':None,
+                          'flash_chip_mode':None}
         
     def init_TCP(self):
         ###############################################################################
@@ -264,7 +277,20 @@ class AlphaScanDevice:
         extra = "_b_"+str(delay)+"_e_"
         return self.generic_tcp_command_BYTE("ADC_set_udp_delay", extra)
     
-    
+    def parse_sys_commands(self):
+        #read tcp buff
+        buf = self.read_tcp(1024)
+        #check for complete system params respons
+        if ('begin_sys_commands' not in buf) or ('end_sys_commands' not in buf):
+            return False
+        #else begin parsing
+        buf_arr = buf.split(",")
+        for e in buf_arr:
+            for k in self.SysParams.keys():
+                if k in e:
+                    self.SysParams[k] = e[e.find(":")+1:]
+                    break
+        return True
     
     
     

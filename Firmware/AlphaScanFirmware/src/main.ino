@@ -448,9 +448,9 @@ void processClientRequest() {
   // Switch between possible command cases
   if (rx_buf_string.length() == 0) return;
 
-  uint8_t cmd = (int) rx_buf_string[0];
+  uint8_t cmd = (uint8_t) rx_buf_string[0];
 
-  Serial.print("Executing command: "); Serial.println(COMMAND_MAP_2_str[rx_buf_string[0]]);
+  Serial.print("Executing command: "); Serial.println(COMMAND_MAP_2_str[cmd]);
 
   ////////////////////////////////////////////////////////////////////////////
   if (cmd ==  0x00) // Update command map -- this is always command 0x00
@@ -589,51 +589,50 @@ void processClientRequest() {
   ////////////////////////////////////////////////////////////////////////////
   else if (cmd == COMMAND_MAP_2_int["GEN_get_sys_params"])
   {
-    client.print("Retrieving parameters, please wait about 5 seconds...");
+    client.print("Retrieving parameters, please wait about 10 seconds...");
     Serial.println("retrieving system parameters");
 
     //retrieve system parameters
-    client.print("vcc: ");
+    client.print("begin_sys_commands");
+    client.print(",vcc:");
     client.print(ESP.getVcc());
 
-    client.print(",Free Headp: ");
+    client.print(",free_heap:");
     client.print(ESP.getFreeHeap());
 
-    client.print(",Chip ID: ");
+    client.print(",mcu_chip_id:");
     client.print(ESP.getChipId());
 
-    client.print(",sdk_ver: ");
+    client.print(",sdk_ver:");
     client.print(ESP.getSdkVersion()); //NOTE this string length should be enough...
 
-    client.print(",boot ver: ");
+    client.print(",boot_ver:");
     client.print(ESP.getBootVersion());
 
-    client.print(",boot mode: ");
+    client.print(",boot_mode:");
     client.print(ESP.getBootMode());
 
-    client.print(",cpu_freq_mhz: ");
+    client.print(",cpu_freq_mhz:");
     client.print(ESP.getCpuFreqMHz());
 
-    client.print(",flash chip id: ");
+    client.print(",flash_chip_id:");
     client.print(ESP.getFlashChipId());
 
     //gets the actual chip size based on the flash id
-    client.print(",flash chip real size: ");
+    client.print(",flash_chip_real_size:");
     client.print(ESP.getFlashChipRealSize());
 
     //gets the size of the flash as set by the compiler
-    client.print(",flash chip size: ");
+    client.print(",flash_chip_size:");
     client.print(ESP.getFlashChipSize());
 
-    client.print(",flash chip speed: ");
+    client.print(",flash_chip_speed:");
     client.print(ESP.getFlashChipSpeed());
 
-    client.print(",flash chip mode: ");
+    client.print(",flash_chip_mode:");
     client.print(ESP.getFlashChipMode());
 
-    client.print(",flash chip size by id: ");
-    client.print(ESP.getFlashChipSizeByChipId());
-
+    client.print(",end_sys_commands");
     Serial.println("finished sending systems params to host.");
 
   }

@@ -21,6 +21,7 @@ from ADC_Tab import ADC_REG_TAB
 from PWR_Tab import PWR_REG_TAB
 from AP_Tab import AP_TAB
 from FS_Tab import FS_TAB
+from SYS_Tab import SYS_TAB
 
 from AlphaScanController import AlphaScanDevice
 
@@ -65,6 +66,7 @@ class AlphaScanGui(QWidget): #TODO probably want something other than dialog her
         tabWidget.addTab(ACCEL_REG_TAB(self._Device), "Accel")
         tabWidget.addTab(AP_TAB(),"AcessPoint")
         tabWidget.addTab(FS_TAB(self._Device), "FileSystem")
+        tabWidget.addTab(SYS_TAB(self._Device), "McuParams")
 
         self.setWindowTitle("AlphaScan Controller")
         
