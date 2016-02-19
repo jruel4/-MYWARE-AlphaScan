@@ -134,7 +134,7 @@ class AlphaScanDevice:
         ###############################################################################
 
         self.flush_TCP()
-        self.conn.send((chr(TCP_COMMAND[cmd]) + extra + '\r').encode('utf-8'))
+        self.conn.send((chr(TCP_COMMAND[cmd]) + extra + '\r\n').encode('utf-8'))
         time.sleep(0.05)
         try:
             r_string = self.conn.recv(64)
@@ -148,7 +148,7 @@ class AlphaScanDevice:
         ###############################################################################
 
         self.flush_TCP()
-        self.conn.send((chr(opcode) + extra + '\r').encode('utf-8'))
+        self.conn.send((chr(opcode) + extra + '\r\n').encode('utf-8'))
         time.sleep(0.05)
         try:
             r_string = self.conn.recv(64)
@@ -230,14 +230,14 @@ class AlphaScanDevice:
     def update_adc_registers(self,reg_to_update):
         #send adc registers to update over tcp
         self.flush_TCP()
-        self.conn.send('u'+''.join([str(t) for t in reg_to_update])+'\r'.encode('utf-8'))
+        self.conn.send('u'+''.join([str(t) for t in reg_to_update])+'\r\n'.encode('utf-8'))
         time.sleep(0.01) # Time for device to respond
         return
 
     def update_command_map(self):
         # create csv string from command map dict
         self.flush_TCP()
-        self.conn.send((chr(TCP_COMMAND["GEN_update_cmd_map"]) + str(TCP_COMMAND) + ',  \r').encode('utf-8')) #NOTE: comma is necessary
+        self.conn.send((chr(TCP_COMMAND["GEN_update_cmd_map"]) + str(TCP_COMMAND) + ',  \r\n').encode('utf-8')) #NOTE: comma is necessary
         time.sleep(0.01)
         try:
             r_string = self.conn.recv(64)
