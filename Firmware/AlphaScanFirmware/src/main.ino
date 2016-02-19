@@ -34,6 +34,7 @@ byte packetBuffer[64];                  //
 WiFiClient client;                      //
 WiFiUDP Udp;                            //
 String rx_buf_string;                   //
+char   rx_buf[1024];                    //
 char localIpString[24];                 //
 bool open_a = true;                     //
 File f;                                 //
@@ -132,11 +133,11 @@ void GEN_Setup() {
 
 bool GEN_ParseCommandMap() {
 
-  // NOTE: consider eliminating STRING and other dynamic memory constructs
   // loop over string contents until key,value pairs are exhausted
-  Serial.println("Parsing command map...");
-  Serial.print("received map: "); Serial.println(rx_buf_string);
-  Serial.println("--------------------------------------");
+  //Serial.print("low level buf: ");int i; for (i=0; i<1024; i++) {Serial.print(rx_buf[i]);}
+  Serial.print("Rx Map: "); Serial.println(rx_buf_string);
+
+  //TODO extract map to local string for easy manipulation - do this in other rx_buf_string dependent functions as well
 
   std::map<uint8_t, String> new_map;
   int begin = 1;
@@ -255,17 +256,28 @@ void WiFi_ConnectToWan() {
 }
 
 void WiFi_ProcessTcpClientRequest() {
-
+  int i;
   // Check for command from host
-  rx_buf_string = client.readStringUntil('\r\n');
+  int avail = client.available();
 
-  // If command string is empty then exit routine
-  if (rx_buf_string.length() == 0) {
-    //Serial.println("buf string empty");
+  if (avail) {
+    for (i=0; i < avail; i++) {
+        rx_buf[i] = client.read();
+    }
+    rx_buf[avail] = '\0';
+  }
+  else {
     return;
   }
+
+  // TODO remove this string copy routine
+  rx_buf_string = String("");
+  for (i=0; i<avail; i++) {
+    rx_buf_string += rx_buf[i];
+  }
+
   // Extract command byte
-  uint8_t cmd = (uint8_t) rx_buf_string[0];
+  uint8_t cmd = (uint8_t) rx_buf[0];
   Serial.print("Executing command: "); Serial.println(COMMAND_MAP_2_str[cmd]);
 
   ////////////////////////////////////////////////////////////////////////////
@@ -281,7 +293,6 @@ void WiFi_ProcessTcpClientRequest() {
     else {
       Serial.println("map map parse failed");
     }
-
   }
 
   ////////////////////////////////////////////////////////////////////////////
@@ -332,7 +343,6 @@ void WiFi_ProcessTcpClientRequest() {
   else if (cmd ==  COMMAND_MAP_2_int["ADC_update_register"]) //update register contents
   {
     Serial.println("Received request to update ADC registers");
-    Serial.println(rx_buf_string);
 
   }
 
@@ -459,6 +469,11 @@ void WiFi_ProcessTcpClientRequest() {
     Serial.print("Unknown Command");
 
   }
+
+  //TODO remove this
+
+  Serial.println("Remaining buf: "); Serial.println(rx_buf_string);Serial.print("End remain buf.");
+  Serial.print("TCP buf available: ");Serial.println(client.available());
 
 }
 
@@ -777,7 +792,7 @@ void AP_SupportRoutine() {
     network_set = true;
     Serial.println("Network is set");
     delay(1);
-    client.print("HTTP/1.1 200 OK\r\nfuck off");
+    client.print("HTTP/1.1 200 OK\rfuck off");
     delay(1);
     client.stop();
     delay(1);
@@ -838,9 +853,9 @@ void AP_SupportRoutine() {
 
 
   // Send the response to the client
-  String s = "HTTP/1.1 200 OK\r\n";
-  s += "Content-Type: text/html\r\n\r\n";
-  s += "<!DOCTYPE HTML>\r\n<html>\r\n";
+  String s = "HTTP/1.1 200 OK\r";
+  s += "Content-Type: text/html\r\r";
+  s += "<!DOCTYPE HTML>\r<html>\r";
   s += custom_response;
   s += "</html>\n";
   client.print(s);
