@@ -34,7 +34,7 @@ byte packetBuffer[64];                  //
 WiFiClient client;                      //
 WiFiUDP Udp;                            //
 String rx_buf_string;                   //
-char   rx_buf[1024];                    //
+char rx_buf[1024];                      //
 char localIpString[24];                 //
 bool open_a = true;                     //
 File f;                                 //
@@ -50,6 +50,35 @@ enum T_SYSTEM_STATE {
 
 std::map<uint8_t, String> COMMAND_MAP_2_str;
 std::map<String, uint8_t> COMMAND_MAP_2_int;
+
+
+////////////////////////////////////////////////////////////////////////////////
+// ADS1299 SPI OPCODES
+////////////////////////////////////////////////////////////////////////////////
+const uint8_t ADS_WAKEUP  = (0x02); //wakeup
+const uint8_t ADS_STANDBY = (0x04); //standby
+const uint8_t ADS_RESET   = (0x06); //reset
+const uint8_t ADS_START   = (0x08); //start
+const uint8_t ADS_STOP    = (0x0A); //stop
+const uint8_t ADS_RDATAC  = (0x10); //read data continuous
+const uint8_t ADS_SDATAC  = (0x11); //stop read data continuous
+const uint8_t ADS_RDATA   = (0x12); //read data by command
+const uint8_t ADS_RREG_1  = (0x20); //read reg start at register 0
+const uint8_t ADS_RREG_2  = (0x17); //read all 24 register(s)
+const uint8_t ADS_WREG_1  = (0x40); //write registers starting at 0
+const uint8_t ADS_WREG_2  = (0x00); //write one register
+
+uint8_t AdsMap[24]        = {0};    //map of ADS registers
+int DRDY_PIN = 1;//IO1
+
+////////////////////////////////////////////////////////////////////////////////
+// BQ25120 Constants
+////////////////////////////////////////////////////////////////////////////////
+const uint8_t BQ_7_ADDR = 0x6A; // 7 bit I2C address
+const uint8_t BQ_8_ADDR = 0xD4; // 8 bit I2C address
+
+uint8_t BQ_Reg_Map[12];
+uint8_t BQ_Set_Reg[12];
 
 ////////////////////////////////////////////////////////////////////////////////
 // Function prototype declarations
@@ -76,6 +105,13 @@ void FS_Format();
 void FS_SendCommandMap();
 void FS_GetFsInfo();
 void FS_SendNetParams();
+void ADC_SetupSPI();
+void ADC_CloseSPI();
+void ADC_ReadRegisters();
+void BQ_Setup();
+void BQ_handleFaultISR();
+void BQ_readRegister(uint8_t reg_addr, int num_reg, uint8_t* BQ_Reg_Map);
+void BQ_writeRegister(uint8_t reg_addr, int num_reg, uint8_t* BQ_Set_Reg);
 String GEN_ExtractNetParams(String,String);
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -136,8 +172,6 @@ bool GEN_ParseCommandMap() {
   // loop over string contents until key,value pairs are exhausted
   //Serial.print("low level buf: ");int i; for (i=0; i<1024; i++) {Serial.print(rx_buf[i]);}
   Serial.print("Rx Map: "); Serial.println(rx_buf_string);
-
-  //TODO extract map to local string for easy manipulation - do this in other rx_buf_string dependent functions as well
 
   std::map<uint8_t, String> new_map;
   int begin = 1;
@@ -270,7 +304,6 @@ void WiFi_ProcessTcpClientRequest() {
     return;
   }
 
-  // TODO remove this string copy routine
   rx_buf_string = String("");
   for (i=0; i<avail; i++) {
     rx_buf_string += rx_buf[i];
@@ -469,11 +502,6 @@ void WiFi_ProcessTcpClientRequest() {
     Serial.print("Unknown Command");
 
   }
-
-  //TODO remove this
-
-  Serial.println("Remaining buf: "); Serial.println(rx_buf_string);Serial.print("End remain buf.");
-  Serial.print("TCP buf available: ");Serial.println(client.available());
 
 }
 
@@ -910,28 +938,61 @@ void ADC_SetupDefaultConfig() {}
 void ADC_StartDataStream() {
 
   Serial.println("Initiating stream");
-
-  // Define constants
+  int i;
   int noBytes = 0;
   uint32_t c  = 0;
 
+  //////////////////////////////////////////
+  // Setup SPI
+  //////////////////////////////////////////
+  uint8_t sample_buffer[26];
+  ADC_SetupSPI();
+  // Start read data continuous
+  SPI.transfer(ADS_RDATAC);
+  // Send start opcode OR set START pin high
+  SPI.transfer(ADS_START);
+  ////////////////////////////////////////
+  // End SPI Setup
+  ////////////////////////////////////////
+
+  // This block parses incoming UDP packets for terminate command
   while(1)
   {
     noBytes = Udp.parsePacket();
 
     if ( noBytes ) {
-
       Udp.read(packetBuffer,noBytes);
       if (packetBuffer[0] == 't' || packetBuffer[1] == 't' || packetBuffer[2] == 't')
       {
+        Serial.print("Packet Buffer: "); for (i=0; i < noBytes; i++) Serial.print(packetBuffer[i]);
         // TERMINATE STREAM
-        Serial.println("terminating stream");
+        Serial.println(" terminating stream");
+        // Close SPI
+        ADC_CloseSPI();
         return;
       }
     }
 
+    //////////////////////////////////////////
+    // Wait for DRDY LOW then Transfer data
+    //////////////////////////////////////////
+
+    // TODO Tie DRDY to transfer call, setup DRDY pin
+    // while(digitalRead(DRDY_PIN) == HIGH); //TODO define DRDY PIN INPUT, is this every time or just first time?
+
+    // Read 8 channels of data + status register
+    for (i=0; i<26; i++) { // (3 byte sample * 8 channels) + 2 status reg
+      sample_buffer[i] = SPI.transfer(0x00); // Could fold this straignt into Udp.write...
+    }
+
+    //////////////////////////////////////////
+    // Send new samples over WiFi
+    //////////////////////////////////////////
+
     // Stream ADS1299 Data
     Udp.beginPacket(host_ip,UDP_port);
+    //TODO swap fake data for real
+    // for (i=0; i<26; i++) Udp.write(sample_buffer[i]);
     Udp.write("Packet:                ");Udp.write(c);
     Udp.endPacket();
 
@@ -956,4 +1017,120 @@ void ADC_SetUdpDelay() {
   UDP_Stream_Delay = (rx_buf_string.substring(rx_buf_string.indexOf("_b_")+3, rx_buf_string.indexOf("_e_"))).toInt();
   client.print("updating UDP delay");
   Serial.print("setting delay to: "); Serial.println(UDP_Stream_Delay);
+}
+
+void ADC_SetupSPI() {
+  // Setup SPI
+  SPI.begin();
+  SPI.setDataMode(0);
+  SPI.setFrequency(2000000);
+  // NOTE eliminate pin manual pin usage for now
+  // pinMode(15,OUTPUT); // Bit bang CS
+  // digitalWrite(15,LOW); // Set CS Low for duration of serial comm
+  // pinMode(DRDY_PIN, INPUT);
+  // TODO may want to reset ADS (reset) or just SPI interface (CS)
+}
+
+void ADC_CloseSPI() {
+  // Close ADS SPI Interface
+  // TODO uncomment this: digitalWrite(15,HIGH);
+  SPI.end();
+}
+
+void ADC_ReadRegisters() {
+
+  // Setup SPI
+  ADC_SetupSPI();
+
+  // Stop read data continuous
+  SPI.transfer(ADS_SDATAC);
+
+  // Send RREG OpCodes
+  SPI.transfer(ADS_RREG_1);
+  SPI.transfer(ADS_RREG_2);
+
+  // Populate AdsMap with responses
+  int i;
+  for(i=0; i<24; i++) {
+    AdsMap[i] = SPI.transfer(0x00);
+  }
+
+  // Close SPI
+  ADC_CloseSPI();
+
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// Power Management IC (BQ25120)
+////////////////////////////////////////////////////////////////////////////////
+void BQ_Setup() {
+
+  // Initialize WIRE object
+  Wire.begin();
+
+  ////////////////////////////////////////////////////////////
+  // IO15 == BQ_CD (i.e. chip enable/disable)
+  pinMode(15,OUTPUT); // TODO shated with CS
+
+  // If Vin is valid:
+  //  HIGH = Disable charging
+  //  LOW  = Enable charging
+
+  // If Battery Only
+  //  HIGH = Active battery management
+  //  LOW  = High Z state
+
+  // TODO track Vin in order to appropriately control BQ_CD
+
+  ////////////////////////////////////////////////////////////
+  // IO3 == BQ_INT (i.e. status/interrupt fault)
+  pinMode(3,INPUT); // TODO shared with UART RX0
+
+  // LOW == charging
+
+  // High Z == charge complete or device disabled or Hi-Z mode
+
+  // 128 uS interrupt pulse == fault occured
+
+  attachInterrupt(3, BQ_handleFaultISR, RISING); //TODO ensure that interrupt can be attached to IO3!
+  // Note: above interrupt can only be active when not using IO3 for UART mode
+
+}
+
+void BQ_handleFaultISR() {
+  // TODO Read BQ over i2c for fault data - should not interrupt stream?
+}
+
+void BQ_readRegister(uint8_t reg_addr, int num_reg, uint8_t* BQ_Reg_Map) {
+  ///////////////////////////////////////////////////////////////////////
+  // Generic I2C read/write methods
+
+  // Valid Register Addresses are 0x00 - 0x0B
+  // Any attempt to read at another address will return 0xFF
+
+  // Register contents can be found on page 35 of bq25120 datasheet
+
+  // Generic BQ_I2C READ Method
+
+  // Send BQ the address to begin reading from
+  Wire.beginTransmission(BQ_8_ADDR);
+  Wire.write(reg_addr);
+  // Send repeated start command with slave addr but read bit set
+  Wire.requestFrom(BQ_8_ADDR, num_reg);// could request more bits here...
+  while (Wire.available()) {
+    BQ_Reg_Map[num_reg++] = Wire.read();
+  }
+}
+
+void BQ_writeRegister(uint8_t reg_addr, int num_reg, uint8_t* BQ_Set_Reg) {
+  // Generic BQ_I2C WRITE Method
+
+  // Send BQ the register begin writing at
+  Wire.beginTransmission(BQ_8_ADDR);
+  Wire.write(reg_addr);
+  // Send num_reg reg values from BQ_Set_Req array
+  int i;
+  for (i = 0; i < num_reg; i++) Wire.write(BQ_Set_Reg[reg_addr + i]);
+  Wire.endTransmission();
+  // Note: clock stretching up to 100 uS is built into twi library
 }

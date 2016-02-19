@@ -9,14 +9,17 @@ uint8_t BQ_Set_Reg[12];
 
 void setup() {
 
+  // Initialize WIRE object
+  Wire.begin();
+
   ////////////////////////////////////////////////////////////
   // IO15 == BQ_CD (i.e. chip enable/disable)
   pinMode(15,OUTPUT); // TODO shated with CS
-  
+
   // If Vin is valid:
   //  HIGH = Disable charging
   //  LOW  = Enable charging
-  
+
   // If Battery Only
   //  HIGH = Active battery management
   //  LOW  = High Z state
@@ -35,8 +38,8 @@ void setup() {
 
   attachInterrupt(3, BQ_handleFaultISR, RISING); //TODO ensure that interrupt can be attached to IO3!
   // Note: above interrupt can only be active when not using IO3 for UART mode
-  
-  
+
+
 }
 
 void loop() {
@@ -47,7 +50,7 @@ void loop() {
 
 // TODO Read BQ over i2c for fault data - should not interrupt stream?
 void BQ_handleFaultISR() {
-  
+
 }
 
 ///////////////////////////////////////////////////////////////////////
@@ -60,7 +63,7 @@ void BQ_handleFaultISR() {
 
 // Generic BQ_I2C READ Method
 void BQ_readRegister(uint8_t reg_addr, int num_reg, uint8_t* BQ_Reg_Map) {
-  Wire.begin();
+
   // Send BQ the address to begin reading from
   Wire.beginTransmission(BQ_8_ADDR);
   Wire.write(reg_addr);
@@ -73,7 +76,7 @@ void BQ_readRegister(uint8_t reg_addr, int num_reg, uint8_t* BQ_Reg_Map) {
 
 // Generic BQ_I2C WRITE Method
 void BQ_writeRegister(uint8_t reg_addr, int num_reg, uint8_t* BQ_Set_Reg) {
-  Wire.begin();
+
   // Send BQ the register begin writing at
   Wire.beginTransmission(BQ_8_ADDR);
   Wire.write(reg_addr);
@@ -83,25 +86,3 @@ void BQ_writeRegister(uint8_t reg_addr, int num_reg, uint8_t* BQ_Set_Reg) {
   Wire.endTransmission();
   // Note: clock stretching up to 100 uS is built into twi library
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
