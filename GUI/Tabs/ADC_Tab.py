@@ -7,6 +7,7 @@ Created on Fri Feb 05 14:04:12 2016
 
 from PySide.QtCore import *
 from PySide.QtGui import *
+import pickle
 
 class ADC_REG_TAB( QWidget):
     def __init__(self, Device, parent=None):
@@ -87,6 +88,16 @@ class ADC_REG_TAB( QWidget):
         mainLayout.addWidget(self.Button_UpdateRegister)
         self.Button_UpdateRegister.clicked.connect(self.sync_registers_to_ads)
         
+        # Save reg_map button
+        self.Button_SaveRegMap = QPushButton("Save Reg Map")
+        mainLayout.addWidget(self.Button_SaveRegMap)
+        self.Button_SaveRegMap.clicked.connect(self.save_reg_map)
+        
+        # Load reg_map button
+        self.Button_LoadRegMap = QPushButton("Load Reg Map")
+        mainLayout.addWidget(self.Button_LoadRegMap)
+        self.Button_LoadRegMap.clicked.connect(self.load_reg_map)
+        
     @Slot()
     def sync_registers_to_ads(self):
         
@@ -111,4 +122,38 @@ class ADC_REG_TAB( QWidget):
                     reg_to_update += [(i,j)] #i=reg,j=bit
         if len(reg_to_update) > 0:
             self._Device.generic_tcp_command_BYTE("ADC_update_register")
+            
+    @Slot()
+    def save_reg_map(self):
+        self.sync_reg_map_to_check()
+        #TODO make these paths unbreakable (local relative?)
+        pickle.dump(self.ADC_RegMap, open("..\\Controller\\Data\\test_profile.p", "wb"))
+        msg = QMessageBox()
+        msg.setText("Map Saved")
+        msg.exec_()
+    
+    @Slot()
+    def load_reg_map(self):
+        self.ADC_RegMap = pickle.load( open("..\\Controller\\Data\\test_profile.p", "rb"))
+        self.sync_check_to_reg_map()
+        
+    def sync_check_to_reg_map(self):
+        # set all check boxes to match RegMap
+        for i in range(len(self.rowDict)):
+            for j in range(8):
+                if self.ADC_RegMap[i][j]:
+                    self.rowDict[i]['BIT_'+str(j)].setCheckState(Qt.CheckState.Checked)
+                else:
+                    self.rowDict[i]['BIT_'+str(j)].setCheckState(Qt.CheckState.Unchecked)
+    
+    def sync_reg_map_to_check(self):
+        for i in range(len(self.rowDict)):
+            for j in range(8):
+                if self.rowDict[i]['BIT_'+str(j)].isChecked():
+                    self.ADC_RegMap[i][j] = True
+                else:
+                    self.ADC_RegMap[i][j] = False
+    
+    
+    
 
