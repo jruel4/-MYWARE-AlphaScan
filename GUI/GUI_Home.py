@@ -11,6 +11,7 @@ Created on Mon Jan 25 16:42:21 2016
 
 from PySide.QtCore import *
 from PySide.QtGui import *
+#import qdarkstyle 
 import sys
 import time
 
@@ -19,6 +20,8 @@ from ACCEL_Tab import ACCEL_REG_TAB
 from ADC_Tab import ADC_REG_TAB
 from PWR_Tab import PWR_REG_TAB
 from AP_Tab import AP_TAB
+from FS_Tab import FS_TAB
+from SYS_Tab import SYS_TAB
 
 from AlphaScanController import AlphaScanDevice
 
@@ -26,6 +29,8 @@ try:
     qt_app = QApplication(sys.argv)
 except: # could fail for reasons other than already exists... 
     pass
+
+#qt_app.setStyleSheet(qdarkstyle.load_stylesheet())
 
 class AlphaScanGui(QWidget): #TODO probably want something other than dialog here
     def __init__(self, Device, fileName, parent=None):
@@ -60,6 +65,8 @@ class AlphaScanGui(QWidget): #TODO probably want something other than dialog her
         tabWidget.addTab(PWR_REG_TAB(self._Device), "Power")
         tabWidget.addTab(ACCEL_REG_TAB(self._Device), "Accel")
         tabWidget.addTab(AP_TAB(),"AcessPoint")
+        tabWidget.addTab(FS_TAB(self._Device), "FileSystem")
+        tabWidget.addTab(SYS_TAB(self._Device), "McuParams")
 
         self.setWindowTitle("AlphaScan Controller")
         
@@ -105,8 +112,7 @@ app = AlphaScanGui(dev, fileName)
 time.sleep(0.01)
 app.run()
             
-           
-# TODO troubleshoot timing issue on crashed startup - add delays before key points       
+            
        
        
        

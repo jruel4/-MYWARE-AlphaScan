@@ -107,8 +107,6 @@ class GeneralTab(QWidget):
         self.Button_AdcBeginStream.clicked.connect(self.begin_streaming)
         self.Button_AdcStopStream.clicked.connect(self.stop_streaming)
         
-
-        
         #######################################################################
         # General Message Area ################################################
         #######################################################################
@@ -128,12 +126,38 @@ class GeneralTab(QWidget):
         self.layout.addWidget(self.Button_ClearGeneralMessage, 5,2,1,1)
         self.Button_ClearGeneralMessage.clicked.connect(self.clear_gen_msg)
         
+
+        
+        #######################################################################
+        # UDP Stream Statistics ###############################################
+        #######################################################################
+        
+        self.Text_PacketRate = QLabel("Packets / second: ")
+        self.Text_Availability = QLabel("Availability: ")
+        self.Text_TotalReceived = QLabel("Total Received: ")
+        self.Text_TotalDropped = QLabel("Total Dropped: ")
+        
+        self.Text_PacketRateVAL = QLabel("")
+        self.Text_AvailabilityVAL = QLabel("")
+        self.Text_TotalReceivedVAL = QLabel("")
+        self.Text_TotalDroppedVAL = QLabel("")
+        
+        self.layout.addWidget(self.Text_PacketRate, 6, 0)
+        self.layout.addWidget(self.Text_Availability, 7, 0)
+        self.layout.addWidget(self.Text_TotalReceived, 8, 0)
+        self.layout.addWidget(self.Text_TotalDropped, 9, 0)
+        
+        self.layout.addWidget(self.Text_PacketRateVAL, 6, 1)
+        self.layout.addWidget(self.Text_AvailabilityVAL, 7, 1)
+        self.layout.addWidget(self.Text_TotalReceivedVAL, 8, 1)
+        self.layout.addWidget(self.Text_TotalDroppedVAL, 9, 1)
+        
         #######################################################################
         # OTA Mode ############################################################
         #######################################################################
         
         self.Button_OtaMode = QPushButton("Enter OTA Mode")
-        self.layout.addWidget(self.Button_OtaMode, 6, 0, 1, 1)
+        self.layout.addWidget(self.Button_OtaMode, 10, 0, 1, 1)
         self.Button_OtaMode.clicked.connect(self.enter_ota_mode)
         
         #######################################################################
@@ -141,8 +165,32 @@ class GeneralTab(QWidget):
         #######################################################################
         
         self.Button_ApMode = QPushButton("Enter AP Mode")
-        self.layout.addWidget(self.Button_ApMode, 7, 0, 1, 1)
+        self.layout.addWidget(self.Button_ApMode, 11, 0, 1, 1)
         self.Button_ApMode.clicked.connect(self.enter_ap_mode)
+        
+        #######################################################################
+        # Update Command Map ##################################################
+        #######################################################################
+        
+        self.Button_UpdateCmdMap = QPushButton("Update Command Map")
+        self.layout.addWidget(self.Button_UpdateCmdMap, 12, 0, 1, 1)
+        self.Button_UpdateCmdMap.clicked.connect(self.update_command_map)
+        
+        #######################################################################
+        # Update UDP Delay Value ##############################################
+        #######################################################################
+        
+        self.Line_UdpDelayVal = QLineEdit("1500")       
+        self.Button_SetUdpDelayVal = QPushButton("Set UDP Delay")
+        
+        self.layout.addWidget(self.Line_UdpDelayVal, 13, 0)
+        self.layout.addWidget(self.Button_SetUdpDelayVal, 13, 1)
+        
+        self.Button_SetUdpDelayVal.clicked.connect(self.update_udp_delay)
+        
+        
+        
+        
         
     ###########################################################################
     # Slots ###################################################################
@@ -152,11 +200,19 @@ class GeneralTab(QWidget):
     def connect_to_device(self):
         if self.Connected: return
         self.Text_ConnectStatus.setText("Connecting to AlphaScan...")
-        if self._Device.init_TCP():
+        if self._Device.connect_to_device():
             self.Connected = True
             self.Text_ConnectStatus.setText("Connected")
         else:
             self.Text_ConnectStatus.setText("Connection FAILED")
+            msgBox = QMessageBox()
+            msgBox.setText(\
+            "Make sure AlphaScan is powered on and wait about 10 " +\
+            "seconds for it to be allocated an IP Adress by your router. " +\
+            "If AlphaScan fails to connect, to will switch to Software " +\
+            "Access Point Mode")
+            #TODO automatically check if AP signal is available.
+            msgBox.exec_()
     
     @Slot()
     def disconnect_from_device(self):
@@ -204,9 +260,13 @@ class GeneralTab(QWidget):
         if not self.Streaming or not self.Connected:
             self.Text_GeneralMessage.setText("ILLEGAL: Streaming must be true, Connected must be true")
             return
-        end_stream_string = self._Device.terminate_UDP_stream()
+        stat, time, avail, rx, drop = self._Device.terminate_UDP_stream()
         self.Streaming = False # TODO validate
-        self.Text_AdcStreamStatus.setText(end_stream_string)
+        self.Text_AdcStreamStatus.setText(stat)
+        self.Text_AvailabilityVAL.setText(avail)
+        self.Text_PacketRateVAL.setText(time)
+        self.Text_TotalDroppedVAL.setText(drop)
+        self.Text_TotalReceivedVAL.setText(rx)
         
     @Slot()
     def clear_gen_msg(self):
@@ -214,21 +274,57 @@ class GeneralTab(QWidget):
         
     @Slot()
     def enter_ota_mode(self):
-        r = self._Device.generic_tcp_command_BYTE('GEN_start_ota') # 'o' == ota mode
+        r = self._Device.generic_tcp_command_BYTE('GEN_start_ota') 
         msgBox = QMessageBox()
         if '' in r:#TODO add response into firmware
             msgBox.setText("SUCCESS")
         else:
             msgBox.setText("failure")
         msgBox.exec_()
+        self.disconnect_from_device()
         
     @Slot()
     def enter_ap_mode(self):
-        r = self._Device.generic_tcp_command_BYTE('GEN_start_ap') # 'o' == ota mode
+        r = self._Device.generic_tcp_command_BYTE('GEN_start_ap') 
         msgBox = QMessageBox()
         if '' in r:#TODO add response into firmware
             msgBox.setText("SUCCESS")
         else:
             msgBox.setText("failure")
         msgBox.exec_()
+    
+    @Slot()
+    def update_command_map(self):
+        r = self._Device.update_command_map()
+        msgBox = QMessageBox()
+        msgBox.setText(r)
+        msgBox.exec_()
+        
+    @Slot()
+    def update_udp_delay(self):
+        r = self._Device.set_udp_delay(int(self.Line_UdpDelayVal.text()))
+        msgBox = QMessageBox()
+        msgBox.setText(r)
+        msgBox.exec_()
+        
     ###########################################################################    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
