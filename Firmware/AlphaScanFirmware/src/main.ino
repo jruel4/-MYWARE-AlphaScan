@@ -514,8 +514,11 @@ void WiFi_ProcessTcpClientRequest() {
 
 void WiFi_ListenUdpBeacon() {
 
+  int i = 0;
   int noBytes = 0;
   char inbuf[50];
+  IPAddress broadcastIp = ~WiFi.subnetMask() | WiFi.gatewayIP();
+  Serial.print("broadcast IP: ");Serial.println(broadcastIp);
   Serial.println("Listening for broadcast beacon.");
 
   while(1)
@@ -526,8 +529,6 @@ void WiFi_ListenUdpBeacon() {
 
       Udp.read(inbuf,noBytes);
       Serial.print("RX: ");
-      int i;
-      //for (i = 0; i < noBytes; i++) Serial.print((char)packetBuffer[i]);
       Serial.println(inbuf);
       Serial.println("... finished.");
       String valCheck = String(inbuf);
@@ -547,6 +548,15 @@ void WiFi_ListenUdpBeacon() {
 
       }
       break;
+    }
+    else {
+      // Broadcast alive beacon so that control app knows to auto connect
+      Udp.beginPacket(broadcastIp, 2390);
+      Udp.write("_I_AM_ALPHA_SCAN_");
+      Udp.endPacket();
+      delay(1);
+      if (i++ % 100 == 0) Serial.print("."); if (i % 1000 == 0) Serial.println("");
+      // NOTE add serial log in here if necessary
     }
   }
 }

@@ -282,7 +282,20 @@ class AlphaScanDevice:
         s.sendto('alpha_scan_beacon_xbx_'+str(self.TCP_PORT)+'_xex',('255.255.255.255',self.UDP_PORT)) #TODO this subnet might not work on all nets
         # send desired TCP port in this beacon 
         s.close();
-    
+        
+    def listen_for_device_beacon(self):
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        s.bind(('', self.UDP_PORT))
+        s.settimeout(0.001)
+        try:
+            data,addr = s.recvfrom(1024)
+            if "I_AM_ALPHA_SCAN" in data:
+                return True
+        except:
+            pass
+        s.close()
+        return False
+        
     def connect_to_device(self):
         self.broadcast_disco_beacon()
         return self.init_TCP()

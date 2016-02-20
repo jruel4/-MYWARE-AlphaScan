@@ -196,7 +196,23 @@ class GeneralTab(QWidget):
         self.layout.addWidget(self.Button_ResetDevice, 14,0)
         self.Button_ResetDevice.clicked.connect(self.reset_device)
         
+        #######################################################################
+        # Auto Connect Enable #################################################
+        #######################################################################
         
+        self.Text_AutoConnectEnable = QLabel("Auto Connect Enable")
+        self.Check_AutoConnectEnable = QCheckBox()
+        self.Check_AutoConnectEnable.setCheckState(Qt.CheckState.Checked)
+        
+        self.layout.addWidget(self.Text_AutoConnectEnable, 15, 0)
+        self.layout.addWidget(self.Check_AutoConnectEnable, 15, 1)      
+        
+        #######################################################################
+        # Create Auto Connect Timer ###########################################
+        #######################################################################
+        self.timer = QTimer()
+        self.timer.timeout.connect(self.auto_connect)
+        self.timer.start(100)
         
     ###########################################################################
     # Slots ###################################################################
@@ -320,6 +336,24 @@ class GeneralTab(QWidget):
         msgBox.setText(r)
         msgBox.exec_()
         self.disconnect_from_device()
+        
+    @Slot()
+    def auto_connect(self):
+        if self.Check_AutoConnectEnable.isChecked() and not self.Streaming:
+            if not self.Connected:
+                #auto connect routine 
+                if self._Device.listen_for_device_beacon():
+                    self.connect_to_device()
+                else:
+                    # TODO check for Access Point Availability
+                    pass
+            else:
+                # TODO hearbeat routine
+                pass 
+        
+        
+            
+            
     ###########################################################################    
 
 
