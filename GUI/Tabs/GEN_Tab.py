@@ -188,7 +188,13 @@ class GeneralTab(QWidget):
         
         self.Button_SetUdpDelayVal.clicked.connect(self.update_udp_delay)
         
+        #######################################################################
+        # Reset Device ########################################################
+        #######################################################################
         
+        self.Button_ResetDevice = QPushButton("Reset Device")
+        self.layout.addWidget(self.Button_ResetDevice, 14,0)
+        self.Button_ResetDevice.clicked.connect(self.reset_device)
         
         
         
@@ -307,6 +313,13 @@ class GeneralTab(QWidget):
         msgBox.setText(r)
         msgBox.exec_()
         
+    @Slot()
+    def reset_device(self):
+        r = self._Device.generic_tcp_command_BYTE("GEN_reset_device")
+        msgBox = QMessageBox()
+        msgBox.setText(r)
+        msgBox.exec_()
+        self.disconnect_from_device()
     ###########################################################################    
 
 

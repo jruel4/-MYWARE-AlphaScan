@@ -497,10 +497,17 @@ void WiFi_ProcessTcpClientRequest() {
   }
 
   ////////////////////////////////////////////////////////////////////////////
+  else if (cmd == COMMAND_MAP_2_int["GEN_reset_device"])
+  {
+    Serial.println("Resetting Device");
+    client.print("Resetting Device");
+    ESP.reset(); // difference between reset and restart?
+  }
+
+  ////////////////////////////////////////////////////////////////////////////
   else
   {
     Serial.print("Unknown Command");
-
   }
 
 }
