@@ -338,6 +338,11 @@ void WiFi_ProcessTcpClientRequest() {
   }
 
   ////////////////////////////////////////////////////////////////////////////
+  else if (cmd == 0x02) // Alive query
+  {
+    client.print("_ALIVE_ACK_");
+  }
+  ////////////////////////////////////////////////////////////////////////////
   else if (cmd ==  COMMAND_MAP_2_int["ADC_start_stream"]) //start streaming adc data
   {
     client.print("Initializing ADC stream");

@@ -213,6 +213,8 @@ class GeneralTab(QWidget):
         self.timer = QTimer()
         self.timer.timeout.connect(self.auto_connect)
         self.timer.start(100)
+        self.heartbeatIntervalCounter = 0
+        self.heartbeatFailCounter = 0
         
     ###########################################################################
     # Slots ###################################################################
@@ -341,15 +343,33 @@ class GeneralTab(QWidget):
     def auto_connect(self):
         if self.Check_AutoConnectEnable.isChecked() and not self.Streaming:
             if not self.Connected:
-                #auto connect routine 
+                # connect routine 
                 if self._Device.listen_for_device_beacon():
                     self.connect_to_device()
                 else:
                     # TODO check for Access Point Availability
                     pass
             else:
-                # TODO hearbeat routine
-                pass 
+                # hearbeat routine, send ALIVE? query, and if no answer then disconnect_from_device
+                # TODO This has risk of colliding with user actions, consider using an IDLE flag
+                if self.heartbeatIntervalCounter > 40: 
+                    # reset counter and send alive query
+                    self.heartbeatIntervalCounter = 0
+                    r = self._Device.generic_tcp_command_BYTE("GEN_alive_query")
+                    if "ALIVE_ACK" not in r:
+                        self.heartbeatFailCounter += 1
+                    else:
+                        self.heartbeatFailCounter = 0
+                        
+                    if self.heartbeatFailCounter > 1:
+                        self.disconnect_from_device()
+                        self.heartbeatFailCounter = 0
+                else:
+                    self.heartbeatIntervalCounter += 1
+                    
+        elif self.Check_AutoConnectEnable.isChecked():
+            #TODO check for stream validity
+            pass
         
         
             
