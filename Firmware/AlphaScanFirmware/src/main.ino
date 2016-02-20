@@ -342,6 +342,7 @@ void WiFi_ProcessTcpClientRequest() {
   {
     client.print("_ALIVE_ACK_");
   }
+
   ////////////////////////////////////////////////////////////////////////////
   else if (cmd ==  COMMAND_MAP_2_int["ADC_start_stream"]) //start streaming adc data
   {

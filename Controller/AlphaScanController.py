@@ -133,10 +133,10 @@ class AlphaScanDevice:
         # Get adc status
         ###############################################################################
 
-        self.flush_TCP()
-        self.conn.send((chr(TCP_COMMAND[cmd]) + extra + chr(127)).encode('utf-8'))
-        time.sleep(0.05)
         try:
+            self.flush_TCP()
+            self.conn.send((chr(TCP_COMMAND[cmd]) + extra + chr(127)).encode('utf-8'))
+            time.sleep(0.05)
             r_string = self.conn.recv(64)
         except:
             r_string = 'no_response'
@@ -283,17 +283,17 @@ class AlphaScanDevice:
         # send desired TCP port in this beacon 
         s.close();
         
-    def listen_for_device_beacon(self):
-        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        s.bind(('', self.UDP_PORT))
-        s.settimeout(0.001)
+    def listen_for_device_beacon(self):   
         try:
+            s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+            s.bind(('', self.UDP_PORT))
+            s.settimeout(0.001)
             data,addr = s.recvfrom(1024)
+            s.close()
             if "I_AM_ALPHA_SCAN" in data:
                 return True
         except:
             pass
-        s.close()
         return False
         
     def connect_to_device(self):

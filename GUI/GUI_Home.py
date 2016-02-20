@@ -11,7 +11,7 @@ Created on Mon Jan 25 16:42:21 2016
 
 from PySide.QtCore import *
 from PySide.QtGui import *
-#import qdarkstyle 
+import qdarkstyle 
 import sys
 import time
 
@@ -30,6 +30,7 @@ try:
 except: # could fail for reasons other than already exists... 
     pass
 
+qApp.setStyle(u'Cleanlooks')
 #qt_app.setStyleSheet(qdarkstyle.load_stylesheet())
 
 class AlphaScanGui(QWidget): #TODO probably want something other than dialog here
@@ -52,21 +53,32 @@ class AlphaScanGui(QWidget): #TODO probably want something other than dialog her
         # Add device streaming and connected labels to status area
         self.StreamingStatus = QLabel("Not Streaming") #TODO connect these
         self.ConnectionStatus = QLabel("Not Connected")
+        self.DebugConsole = QTextEdit("Debug Console...")
         
         statusArea.addWidget(self.StreamingStatus)
         statusArea.addWidget(self.ConnectionStatus)
+        statusArea.addWidget(self.DebugConsole)
 
         # Create tab objects        
-        self.genTab = GeneralTab(self._Device)        
+        self.genTab = GeneralTab(self._Device)  
+        self.apTab = AP_TAB()
+        self.fsTab = FS_TAB(self._Device)
+        self.sysTab = SYS_TAB(self._Device)
+        self.adcTab = ADC_REG_TAB(self._Device)
+        self.pwrTab = PWR_REG_TAB(self._Device)
+        self.acclTab = ACCEL_REG_TAB(self._Device)
         
         # Create tabs with objects
         tabWidget.addTab(self.genTab, "General")
-        tabWidget.addTab(ADC_REG_TAB(self._Device), "ADC")
-        tabWidget.addTab(PWR_REG_TAB(self._Device), "Power")
-        tabWidget.addTab(ACCEL_REG_TAB(self._Device), "Accel")
-        tabWidget.addTab(AP_TAB(),"AcessPoint")
-        tabWidget.addTab(FS_TAB(self._Device), "FileSystem")
-        tabWidget.addTab(SYS_TAB(self._Device), "McuParams")
+        tabWidget.addTab(self.apTab,"AcessPoint")
+        tabWidget.addTab(self.fsTab, "FileSystem")
+        tabWidget.addTab(self.sysTab, "McuParams")
+        tabWidget.addTab(self.adcTab, "ADC")
+        tabWidget.addTab(self.pwrTab, "Power")
+        tabWidget.addTab(self.acclTab, "Accel")
+        
+        # TODO set max height of tabWidget to height of shortest tab
+ 
 
         self.setWindowTitle("AlphaScan Controller")
         

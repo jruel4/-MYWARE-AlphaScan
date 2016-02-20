@@ -11,10 +11,15 @@ from PySide.QtGui import *
 class ACCEL_REG_TAB( QWidget):
     def __init__(self, Device, parent=None):
         super(ACCEL_REG_TAB, self).__init__(parent)
-
+        
+        scrollArea = QScrollArea(self)
+        scrollArea.setWidgetResizable(True)
+        container = QWidget()
         # Create and set grid layout
-        mainLayout =  QGridLayout()        
-        self.setLayout(mainLayout)
+        mainLayout =  QGridLayout()
+
+        scrollArea.setWidget(container)        
+        container.setLayout(mainLayout)
         
         # Set layout formatting
         mainLayout.setAlignment(Qt.AlignTop)
@@ -73,8 +78,11 @@ class ACCEL_REG_TAB( QWidget):
             for j in range(8):
                 self.rowDict[i]['BIT_'+str(j)] = QCheckBox()
             
-        # Populat grid layout with widgets
+        # Populate grid layout with widgets
         for i in range(len(self.rowDict)):
             for j in range(len(colLabels)):
                 mainLayout.addWidget(self.rowDict[i][colLabels[j]], i+1, j)
+                
+        # Limit height
+        #self.setMaximumHeight(200)
 
