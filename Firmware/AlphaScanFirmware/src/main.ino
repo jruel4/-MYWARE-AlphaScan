@@ -329,6 +329,15 @@ void WiFi_ProcessTcpClientRequest() {
   }
 
   ////////////////////////////////////////////////////////////////////////////
+  else if (cmd ==  0x01) //OTA update
+  {
+    client.print("Entering OTA Mode"); // NOTE might need more wait that this... since we then shutfown current WiFi setup
+    delay(10);
+    OTA_Handle();
+
+  }
+
+  ////////////////////////////////////////////////////////////////////////////
   else if (cmd ==  COMMAND_MAP_2_int["ADC_start_stream"]) //start streaming adc data
   {
     client.print("Initializing ADC stream");
@@ -376,15 +385,6 @@ void WiFi_ProcessTcpClientRequest() {
   else if (cmd ==  COMMAND_MAP_2_int["ADC_update_register"]) //update register contents
   {
     Serial.println("Received request to update ADC registers");
-
-  }
-
-  ////////////////////////////////////////////////////////////////////////////
-  else if (cmd ==  COMMAND_MAP_2_int["GEN_start_ota"]) //OTA update
-  {
-    client.print("Entering OTA Mode"); // NOTE might need more wait that this... since we then shutfown current WiFi setup
-    delay(10);
-    OTA_Handle();
 
   }
 

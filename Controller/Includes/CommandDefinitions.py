@@ -18,8 +18,8 @@ def addCommand(name):
 # General 
 ###############################################################################
 addCommand("GEN_update_cmd_map") #NOTE: this must ALWAYS be first i.e. 0x00
+addCommand("GEN_start_ota")      #NOTE: this must ALWAYS be second i.e. 0x01
 addCommand("GEN_get_status")
-addCommand("GEN_start_ota")
 addCommand("GEN_start_ap")
 addCommand("GEN_get_dev_ip")
 addCommand("GEN_listen_beacon")
