@@ -9,22 +9,24 @@ from PySide.QtCore import *
 from PySide.QtGui import *
 
 class ACCEL_REG_TAB( QWidget):
-    def __init__(self, Device, parent=None):
+    def __init__(self, Device, Debug, parent=None):
         super(ACCEL_REG_TAB, self).__init__(parent)
         
-        scrollArea = QScrollArea(self)
-        scrollArea.setWidgetResizable(True)
-        container = QWidget()
+        self._Device = Device
+        self._Debug = Debug
+        
+        self.scrollArea = QScrollArea(self)
+        self.scrollArea.setWidgetResizable(True)
+        self.container = QWidget()
+        
         # Create and set grid layout
         mainLayout =  QGridLayout()
-
-        scrollArea.setWidget(container)        
-        container.setLayout(mainLayout)
+        self.scrollArea.setWidget(self.container)        
+        self.container.setLayout(mainLayout)
         
         # Set layout formatting
         mainLayout.setAlignment(Qt.AlignTop)
-        mainLayout.setColumnStretch(10,1)
-
+        
         # Define column labels
         colLabels = ['ADDRESS', 'REGISTER', 'DEFAULT', 'BIT_7', 'BIT_6', 'BIT_5', 'BIT_4', 'BIT_3', 'BIT_2', 'BIT_1', 'BIT_0', ]
 
@@ -82,7 +84,51 @@ class ACCEL_REG_TAB( QWidget):
         for i in range(len(self.rowDict)):
             for j in range(len(colLabels)):
                 mainLayout.addWidget(self.rowDict[i][colLabels[j]], i+1, j)
-                
-        # Limit height
-        #self.setMaximumHeight(200)
+                                                
+#==============================================================================
+#         # Color background to fill 
+#         self.setAutoFillBackground(True)
+#         p = self.palette()
+#         p.setColor(self.backgroundRole(), 'cyan')
+#         self.setPalette(p)
+#         
+#         self.scrollArea.setAutoFillBackground(True)
+#         p = self.scrollArea.palette()
+#         p.setColor(self.scrollArea.backgroundRole(), 'red')
+#         self.scrollArea.setPalette(p)
+#         
+#         self.container.setAutoFillBackground(True)
+#         p = self.container.palette()
+#         p.setColor(self.container.backgroundRole(), 'blue')
+#         self.container.setPalette(p)
+#==============================================================================
+        
+        self.Button_udpateGeo = QPushButton("update geo")
+        mainLayout.addWidget(self.Button_udpateGeo)
+        self.Button_udpateGeo.clicked.connect(self.update_geo)
+        
+        
 
+
+    @Slot()
+    def update_geo(self):
+        self._Debug.append("self.geometry(): " + str(self.geometry()))
+        self._Debug.append("self.contentsRect(): " + str(self.contentsRect()))
+        self._Debug.append("self.getContentsMargins(): " + str(self.getContentsMargins()))
+        self._Debug.append("self.scrollArea.geometry(): " + str(self.scrollArea.geometry()))
+        self._Debug.append("self.container.geometry(): " + str(self.container.geometry()))
+        self._Debug.append("self.container.contentsRect(): " + str(self.container.contentsRect()))
+        self._Debug.append("self.scrollArea.getContentsMargins(): " + str(self.scrollArea.getContentsMargins()))
+        self._Debug.append("self.container.getContentsMargins(): " + str(self.container.getContentsMargins()))
+        
+        self._Debug.append("self.geo.width: "+str(self.geometry().width()))
+        self.scrollArea.setGeometry(0,0,self.geometry().width(), self.geometry().height())
+        self._Debug.append("---------------")
+        
+        
+        
+        
+        
+        
+        
+        

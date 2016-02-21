@@ -12,8 +12,9 @@ from Spiffs import SPIFFS
 class FS_TAB(QWidget):
     
     # Define Init Method
-    def __init__(self, Device):
+    def __init__(self, Device, Debug):
         super(FS_TAB, self).__init__(None)
+        self._Debug = Debug
         
         #######################################################################
         # Basic Init ##########################################################
@@ -27,13 +28,14 @@ class FS_TAB(QWidget):
         
         # Set layout formatting
         self.layout.setAlignment(Qt.AlignTop)
-        self.layout.setColumnStretch(3,1)
+        #TODO self.layout.setColumnStretch(3,1)
         self.layout.setRowStretch(6,1)
         
         #######################################################################
         # Get File system info
         #######################################################################
         self.Text_FsInfo = QTextEdit("file system info goes here...")
+        self.Text_FsInfo.setReadOnly(True)
         self.Button_GetFsInfo = QPushButton("Get FS Info")
         
         self.layout.addWidget(self.Text_FsInfo, 0, 0, 2, 1)
@@ -45,6 +47,7 @@ class FS_TAB(QWidget):
         # Get network parameters
         #######################################################################
         self.Text_NetParams = QTextEdit("net params go here")
+        self.Text_NetParams.setReadOnly(True)
         self.Button_GetNetparams = QPushButton("Get Network params")
         
         self.layout.addWidget(self.Text_NetParams, 4, 0, 1, 1)
@@ -56,6 +59,7 @@ class FS_TAB(QWidget):
         # Get command map
         #######################################################################
         self.Text_CommandMap = QTextEdit("Command map goes here")
+        self.Text_CommandMap.setReadOnly(True)
         self.Button_GetCommandMap = QPushButton("Get Command Map")
         self.Button_PullFromBuff = QPushButton("Read buffer")
         self.Button_ClearCommandText = QPushButton("Clear command text")

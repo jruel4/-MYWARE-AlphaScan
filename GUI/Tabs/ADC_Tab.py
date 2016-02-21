@@ -10,9 +10,10 @@ from PySide.QtGui import *
 import pickle
 
 class ADC_REG_TAB( QWidget):
-    def __init__(self, Device, parent=None):
+    def __init__(self, Device, Debug, parent=None):
         super(ADC_REG_TAB, self).__init__(parent)
         self._Device = Device
+        self._Debug = Debug
         
         # Create and set grid layout
         mainLayout =  QGridLayout()        
@@ -20,7 +21,7 @@ class ADC_REG_TAB( QWidget):
         
         # Set layout formatting
         mainLayout.setAlignment(Qt.AlignTop)
-        mainLayout.setColumnStretch(10,1)
+        #TODO mainLayout.setColumnStretch(10,1)
         
         # Define column labels
         colLabels = ['ADDRESS', 'REGISTER', 'DEFAULT', 'BIT_7', 'BIT_6', 'BIT_5', 'BIT_4', 'BIT_3', 'BIT_2', 'BIT_1', 'BIT_0', ]

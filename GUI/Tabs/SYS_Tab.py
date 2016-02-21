@@ -22,7 +22,7 @@ import time
 class SYS_TAB(QWidget):
     
     # Define Init Method
-    def __init__(self, Device):
+    def __init__(self, Device, Debug):
         super(SYS_TAB, self).__init__(None)
         
         #######################################################################
@@ -30,6 +30,7 @@ class SYS_TAB(QWidget):
         #######################################################################
         
         self._Device = Device
+        self._Debug = Debug
         
         # Set layout
         self.layout = QGridLayout()
@@ -37,7 +38,7 @@ class SYS_TAB(QWidget):
         
         # Set layout formatting
         self.layout.setAlignment(Qt.AlignTop)
-        self.layout.setColumnStretch(3,1)
+        #TODO self.layout.setColumnStretch(3,1)
         
         #######################################################################
         # Display system parameters

@@ -38,6 +38,7 @@ class AlphaScanGui(QWidget): #TODO probably want something other than dialog her
         super(AlphaScanGui, self).__init__(parent)
         self._Device = Device
         
+        
         # Creat main layout
         mainLayout =  QVBoxLayout()
         self.setLayout(mainLayout)
@@ -54,19 +55,20 @@ class AlphaScanGui(QWidget): #TODO probably want something other than dialog her
         self.StreamingStatus = QLabel("Not Streaming") #TODO connect these
         self.ConnectionStatus = QLabel("Not Connected")
         self.DebugConsole = QTextEdit("Debug Console...")
+        self.DebugConsole.setReadOnly(True)
         
         statusArea.addWidget(self.StreamingStatus)
         statusArea.addWidget(self.ConnectionStatus)
         statusArea.addWidget(self.DebugConsole)
 
         # Create tab objects        
-        self.genTab = GeneralTab(self._Device)  
-        self.apTab = AP_TAB()
-        self.fsTab = FS_TAB(self._Device)
-        self.sysTab = SYS_TAB(self._Device)
-        self.adcTab = ADC_REG_TAB(self._Device)
-        self.pwrTab = PWR_REG_TAB(self._Device)
-        self.acclTab = ACCEL_REG_TAB(self._Device)
+        self.genTab = GeneralTab(self._Device, self.DebugConsole)  
+        self.apTab = AP_TAB(self.DebugConsole)
+        self.fsTab = FS_TAB(self._Device, self.DebugConsole)
+        self.sysTab = SYS_TAB(self._Device, self.DebugConsole)
+        self.adcTab = ADC_REG_TAB(self._Device, self.DebugConsole)
+        self.pwrTab = PWR_REG_TAB(self._Device, self.DebugConsole)
+        self.acclTab = ACCEL_REG_TAB(self._Device, self.DebugConsole)
         
         # Create tabs with objects
         tabWidget.addTab(self.genTab, "General")
@@ -75,10 +77,7 @@ class AlphaScanGui(QWidget): #TODO probably want something other than dialog her
         tabWidget.addTab(self.sysTab, "McuParams")
         tabWidget.addTab(self.adcTab, "ADC")
         tabWidget.addTab(self.pwrTab, "Power")
-        tabWidget.addTab(self.acclTab, "Accel")
-        
-        # TODO set max height of tabWidget to height of shortest tab
- 
+        tabWidget.addTab(self.acclTab, "Accel") 
 
         self.setWindowTitle("AlphaScan Controller")
         
@@ -87,6 +86,9 @@ class AlphaScanGui(QWidget): #TODO probably want something other than dialog her
         self.timer.timeout.connect(self.update)
         self.timer.start(100)
         
+        # Partially lock geometry
+        self.setFixedWidth(self.geometry().width())
+    
     @Slot()
     def update(self):
         if self.genTab.Streaming:

@@ -11,14 +11,15 @@ from PySide.QtGui import *
 class GeneralTab(QWidget):
     
     # Define Init Method
-    def __init__(self,Device):
+    def __init__(self,Device, Debug):
         super(GeneralTab, self).__init__(None)
         
         #######################################################################
         # Basic Init ##########################################################
         #######################################################################
         
-        self._Device = Device        
+        self._Device = Device      
+        self._Debug = Debug
         
         # Define status vars
         self.Connected = False
@@ -30,7 +31,7 @@ class GeneralTab(QWidget):
         
         # Set layout formatting
         self.layout.setAlignment(Qt.AlignTop)
-        self.layout.setColumnStretch(3,1)
+        #TODO self.layout.setColumnStretch(3,1)
         # TODO prevent horizontal stretch
         
         #######################################################################
