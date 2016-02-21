@@ -520,7 +520,7 @@ void WiFi_ProcessTcpClientRequest() {
 
 void WiFi_ListenUdpBeacon() {
 
-  uint64_t cnt = 0;
+  volatile uint64_t cnt = 0;
   int noBytes = 0;
   char inbuf[50];
   IPAddress broadcastIp = ~WiFi.subnetMask() | WiFi.gatewayIP();
@@ -562,11 +562,8 @@ void WiFi_ListenUdpBeacon() {
       Udp.write("_I_AM_ALPHA_SCAN_");
       Udp.endPacket();
       delay(1);
-      Serial.print(".");
-      //if ( (cnt % 1000000000) == 0) Serial.print(".");
-      if ( (cnt % 1000000000000000) == 0) {
+      if ( (cnt % 100000 ) == 0 ) {
         Serial.print(".");
-        cnt = 0;
       }
     }
   }
