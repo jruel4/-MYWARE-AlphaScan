@@ -520,7 +520,7 @@ void WiFi_ProcessTcpClientRequest() {
 
 void WiFi_ListenUdpBeacon() {
 
-  int i = 0;
+  uint64_t cnt = 0;
   int noBytes = 0;
   char inbuf[50];
   IPAddress broadcastIp = ~WiFi.subnetMask() | WiFi.gatewayIP();
@@ -529,10 +529,10 @@ void WiFi_ListenUdpBeacon() {
 
   while(1)
   {
+    cnt++;
     noBytes = Udp.parsePacket();
 
     if ( noBytes ) {
-
       Udp.read(inbuf,noBytes);
       Serial.print("RX: ");
       Serial.println(inbuf);
@@ -555,14 +555,19 @@ void WiFi_ListenUdpBeacon() {
       }
       break;
     }
-    else {
+
+    else if ( (cnt % 10000) == 0 ) { // TODO don't flood network indefinitely...
       // Broadcast alive beacon so that control app knows to auto connect
       Udp.beginPacket(broadcastIp, 2390);
       Udp.write("_I_AM_ALPHA_SCAN_");
       Udp.endPacket();
       delay(1);
-      if (i++ % 100 == 0) Serial.print("."); if (i % 1000 == 0) Serial.println("");
-      // NOTE add serial log in here if necessary
+      Serial.print(".");
+      //if ( (cnt % 1000000000) == 0) Serial.print(".");
+      if ( (cnt % 1000000000000000) == 0) {
+        Serial.print(".");
+        cnt = 0;
+      }
     }
   }
 }

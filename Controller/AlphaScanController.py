@@ -287,7 +287,7 @@ class AlphaScanDevice:
         try:
             s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
             s.bind(('', self.UDP_PORT))
-            s.settimeout(0.001)
+            s.settimeout(0.05) #TODO this blocking causes slight lag while active
             data,addr = s.recvfrom(1024)
             s.close()
             if "I_AM_ALPHA_SCAN" in data:

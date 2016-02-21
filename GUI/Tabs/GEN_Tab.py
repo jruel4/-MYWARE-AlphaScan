@@ -368,6 +368,7 @@ class GeneralTab(QWidget):
             if not self.Connected:
                 # connect routine 
                 if self._Device.listen_for_device_beacon():
+                    self._Debug.append("Device found, attempting to connect...")
                     self.connect_to_device()
                 else:
                     # TODO check for Access Point Availability
