@@ -55,6 +55,38 @@ class AlphaScanDevice:
                           'flash_chip_size':None,
                           'flash_chip_speed':None,
                           'flash_chip_mode':None}
+        # Debug port variables
+        self.debug_port_open = False
+        self.debug_port_no = 2391
+        #self.open_debug_port()
+        
+        
+    def open_debug_port(self):
+        try:
+            self.debug_sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+            self.debug_sock.bind(('',self.debug_port_no))
+            self.debug_sock.settimeout(0)
+            self.debug_port_open = True
+            return True
+        except:
+            return False
+    
+    def close_debug_port(self):
+        try:
+            self.debug_sock.close()
+            self.debug_port_open = False
+            return True
+        except:
+            return False
+    
+    def read_debug_port(self):
+        if not self.debug_port_open: return False
+        try:
+            r = self.debug_sock.recv(1024)
+            if len(r) > 0:
+                return r
+        except:
+            return False
         
     def init_TCP(self):
         ###############################################################################

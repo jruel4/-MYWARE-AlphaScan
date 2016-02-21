@@ -29,6 +29,9 @@ bool network_set  = false;              //
 int TCP_port;                           //
 int UDP_port = 2390;                    //
 
+WiFiUDP DebugUdp;                       //
+int DEBUG_port = 2391;                  //
+
 int UDP_Stream_Delay = 1500;            //
 byte packetBuffer[64];                  //
 WiFiClient client;                      //
@@ -113,6 +116,7 @@ void BQ_handleFaultISR();
 void BQ_readRegister(uint8_t reg_addr, int num_reg, uint8_t* BQ_Reg_Map);
 void BQ_writeRegister(uint8_t reg_addr, int num_reg, uint8_t* BQ_Set_Reg);
 String GEN_ExtractNetParams(String,String);
+void DB_printDebug(const char* msg);
 
 ////////////////////////////////////////////////////////////////////////////////
 // Function definitions
@@ -285,6 +289,7 @@ void WiFi_ConnectToWan() {
   Serial.println(localIpString);
 
   Udp.begin(UDP_port);
+  DebugUdp.begin(DEBUG_port);
 
   SYSTEM_STATE = RUN_MODE;
 }
@@ -552,6 +557,8 @@ void WiFi_ListenUdpBeacon() {
         TCP_port = (valCheck.substring(valCheck.indexOf("xbx_")+4, valCheck.indexOf("_xex"))).toInt();
         Serial.print("tcp_port: "); Serial.println(TCP_port);
 
+        DB_printDebug("TCP connection established.");
+
       }
       break;
     }
@@ -564,6 +571,9 @@ void WiFi_ListenUdpBeacon() {
       delay(1);
       if ( (cnt % 100000 ) == 0 ) {
         Serial.print(".");
+        if ( (cnt % 1000000 ) == 0 ) {
+          Serial.println("");
+        }
       }
     }
   }
@@ -1158,4 +1168,15 @@ void BQ_writeRegister(uint8_t reg_addr, int num_reg, uint8_t* BQ_Set_Reg) {
   for (i = 0; i < num_reg; i++) Wire.write(BQ_Set_Reg[reg_addr + i]);
   Wire.endTransmission();
   // Note: clock stretching up to 100 uS is built into twi library
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// Debug Methods
+////////////////////////////////////////////////////////////////////////////////
+void DB_printDebug(const char* msg) {
+  // NOTE could check if connected for good measure
+  DebugUdp.beginPacket( host_ip, DEBUG_port);
+  DebugUdp.write(msg);
+  DebugUdp.endPacket();
+  delay(1);
 }

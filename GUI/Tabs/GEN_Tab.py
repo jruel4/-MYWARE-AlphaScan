@@ -209,15 +209,6 @@ class GeneralTab(QWidget):
         self.layout.addWidget(self.Check_AutoConnectEnable, 15, 1)      
         
         #######################################################################
-        # Create Auto Connect Timer ###########################################
-        #######################################################################
-        self.timer = QTimer()
-        self.timer.timeout.connect(self.auto_connect)
-        self.timer.start(100)
-        self.heartbeatIntervalCounter = 0
-        self.heartbeatFailCounter = 0
-        
-        #######################################################################
         # Style Selection #####################################################
         #######################################################################
         
@@ -234,6 +225,34 @@ class GeneralTab(QWidget):
         self.styleComboBox.activated[str].connect(self.handleStyleChanged)
         self.layout.addWidget(self.styleComboBox, 16, 0)
                 
+        #######################################################################
+        # Debug logging enabled ###############################################
+        #######################################################################
+        
+        self.Text_DebugLogEnable = QLabel("Debug Logging Enable")
+        self.Check_DebugLogEnable = QCheckBox()
+        #self.Check_DebugLogEnable.setCheckState(Qt.CheckState.Checked)
+        
+        self.layout.addWidget(self.Text_DebugLogEnable, 17, 0)
+        self.layout.addWidget(self.Check_DebugLogEnable, 17, 1) 
+        
+        self.Check_DebugLogEnable.stateChanged.connect(self.toggle_debug_state)
+        
+        #######################################################################
+        # Create Auto Connect Timer ###########################################
+        #######################################################################
+        self.auto_conn_timer = QTimer()
+        self.auto_conn_timer.timeout.connect(self.auto_connect)
+        self.auto_conn_timer.start(100)
+        self.heartbeatIntervalCounter = 0
+        self.heartbeatFailCounter = 0
+        
+        #######################################################################
+        # Create Debug Log Timer ##############################################
+        #######################################################################
+        self.debug_log_timer = QTimer()
+        self.debug_log_timer.timeout.connect(self.read_debug_log)
+        self.debug_log_timer.start(100)
         
     ###########################################################################
     # Slots ###################################################################
@@ -391,10 +410,29 @@ class GeneralTab(QWidget):
                 else:
                     self.heartbeatIntervalCounter += 1
                     
-        elif self.Check_AutoConnectEnable.isChecked():
+        elif self.Check_AutoConnectEnable.isChecked() and self.Streaming:
             #TODO check for stream validity
             pass
         
+    @Slot()
+    def read_debug_log(self):
+        if self.Check_DebugLogEnable.isChecked() and self.Connected and not self.Streaming:
+            r = self._Device.read_debug_port()
+            if r:
+                self._Debug.append(r)
+    
+    @Slot()
+    def toggle_debug_state(self):
+        if self.Check_DebugLogEnable.isChecked():
+            if self._Device.open_debug_port():
+                self._Debug.append("Debug Enabled")
+            else:
+                self._Debug.append("Debug Enable Failed")
+        else:
+            if self._Device.close_debug_port():
+                self._Debug.append("Debug Disabled")
+            else:
+                self._Debug.append("Debug Disable Failed")
         
             
             
