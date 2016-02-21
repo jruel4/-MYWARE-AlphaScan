@@ -52,7 +52,7 @@ class AlphaScanGui(QWidget): #TODO probably want something other than dialog her
         mainLayout.addLayout(statusArea)
         
         # Add device streaming and connected labels to status area
-        self.StreamingStatus = QLabel("Not Streaming") #TODO connect these
+        self.StreamingStatus = QLabel("Not Streaming") 
         self.ConnectionStatus = QLabel("Not Connected")
         self.DebugConsole = QTextEdit("Debug Console...")
         self.DebugConsole.setReadOnly(True)
@@ -86,7 +86,7 @@ class AlphaScanGui(QWidget): #TODO probably want something other than dialog her
         self.timer.timeout.connect(self.update)
         self.timer.start(100)
         
-        # Partially lock geometry
+        # Lock app width
         self.setFixedWidth(self.geometry().width())
     
     @Slot()

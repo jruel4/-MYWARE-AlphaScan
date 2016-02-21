@@ -106,9 +106,6 @@ class ACCEL_REG_TAB( QWidget):
         self.Button_udpateGeo = QPushButton("update geo")
         mainLayout.addWidget(self.Button_udpateGeo)
         self.Button_udpateGeo.clicked.connect(self.update_geo)
-        
-        
-
 
     @Slot()
     def update_geo(self):
@@ -120,11 +117,15 @@ class ACCEL_REG_TAB( QWidget):
         self._Debug.append("self.container.contentsRect(): " + str(self.container.contentsRect()))
         self._Debug.append("self.scrollArea.getContentsMargins(): " + str(self.scrollArea.getContentsMargins()))
         self._Debug.append("self.container.getContentsMargins(): " + str(self.container.getContentsMargins()))
-        
         self._Debug.append("self.geo.width: "+str(self.geometry().width()))
+        
         self.scrollArea.setGeometry(0,0,self.geometry().width(), self.geometry().height())
+
         self._Debug.append("---------------")
         
+    def resizeEvent(self, event):
+        event.accept()
+        self.update_geo()
         
         
         
