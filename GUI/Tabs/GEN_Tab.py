@@ -208,22 +208,24 @@ class GeneralTab(QWidget):
         self.layout.addWidget(self.Text_AutoConnectEnable, 15, 0)
         self.layout.addWidget(self.Check_AutoConnectEnable, 15, 1)      
         
-        #######################################################################
-        # Style Selection #####################################################
-        #######################################################################
-        
-        self.styleComboBox = QComboBox()
-        # add styles from QStyleFactory
-        self.styleComboBox.addItems(QStyleFactory.keys())
-        # find current style
-        index = self.styleComboBox.findText(
-                    qApp.style().objectName(),
-                    Qt.MatchFixedString)
-        # set current style
-        self.styleComboBox.setCurrentIndex(index)
-        # set style change handler
-        self.styleComboBox.activated[str].connect(self.handleStyleChanged)
-        self.layout.addWidget(self.styleComboBox, 16, 0)
+#==============================================================================
+#         #######################################################################
+#         # Style Selection #####################################################
+#         #######################################################################
+#         
+#         self.styleComboBox = QComboBox()
+#         # add styles from QStyleFactory
+#         self.styleComboBox.addItems(QStyleFactory.keys())
+#         # find current style
+#         index = self.styleComboBox.findText(
+#                     qApp.style().objectName(),
+#                     Qt.MatchFixedString)
+#         # set current style
+#         self.styleComboBox.setCurrentIndex(index)
+#         # set style change handler
+#         self.styleComboBox.activated[str].connect(self.handleStyleChanged)
+#         self.layout.addWidget(self.styleComboBox, 16, 0)
+#==============================================================================
                 
         #######################################################################
         # Debug logging enabled ###############################################

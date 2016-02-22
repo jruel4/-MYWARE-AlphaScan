@@ -6,7 +6,7 @@
  None,
  False,
  False,
- <PyInstaller.utils.win32.winmanifest.Manifest object at 0x0000000002EDFA58>,
+ <PyInstaller.utils.win32.winmanifest.Manifest object at 0x000000000452E160>,
  True,
  'GUI_Home.pkg',
  [('out00-PYZ.pyz',
@@ -39,7 +39,7 @@
  [],
  False,
  False,
- 1455839159L,
+ 1456089013L,
  [('run.exe',
    'c:\\miniconda2\\envs\\alphascandev\\lib\\site-packages\\PyInstaller\\bootloader\\Windows-64bit\\run.exe',
    'EXECUTABLE')])
