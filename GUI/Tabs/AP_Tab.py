@@ -11,8 +11,9 @@ from ApConnect import ApConnection
 
 class AP_TAB(QWidget):
     
-    def __init__(self, parent=None):
+    def __init__(self, Debug, parent=None):
         super(AP_TAB, self).__init__(parent)
+        self._Debug = Debug
         self.conn = ApConnection()
         #######################################################################
         # Basic Init ##########################################################
@@ -24,7 +25,7 @@ class AP_TAB(QWidget):
         
         # Set layout formatting
         self.layout.setAlignment(Qt.AlignTop)
-        self.layout.setColumnStretch(3,1)
+        #TODO self.layout.setColumnStretch(3,1)
         
          #TODO create available
         self.Text_ApAvailable = QLabel("AP not available")   

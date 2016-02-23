@@ -54,7 +54,40 @@ class AlphaScanDevice:
                           'flash_chip_real_size':None,
                           'flash_chip_size':None,
                           'flash_chip_speed':None,
-                          'flash_chip_mode':None}
+                          'flash_chip_mode':None,
+                          'free_sketch_space':None}
+        # Debug port variables
+        self.debug_port_open = False
+        self.debug_port_no = 2391
+        #self.open_debug_port()
+        
+        
+    def open_debug_port(self):
+        try:
+            self.debug_sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+            self.debug_sock.bind(('',self.debug_port_no))
+            self.debug_sock.settimeout(0)
+            self.debug_port_open = True
+            return True
+        except:
+            return False
+    
+    def close_debug_port(self):
+        try:
+            self.debug_sock.close()
+            self.debug_port_open = False
+            return True
+        except:
+            return False
+    
+    def read_debug_port(self):
+        if not self.debug_port_open: return False
+        try:
+            r = self.debug_sock.recv(1024)
+            if len(r) > 0:
+                return r
+        except:
+            return False
         
     def init_TCP(self):
         ###############################################################################
@@ -133,10 +166,10 @@ class AlphaScanDevice:
         # Get adc status
         ###############################################################################
 
-        self.flush_TCP()
-        self.conn.send((chr(TCP_COMMAND[cmd]) + extra + '\r\n').encode('utf-8'))
-        time.sleep(0.05)
         try:
+            self.flush_TCP()
+            self.conn.send((chr(TCP_COMMAND[cmd]) + extra + chr(127)).encode('utf-8'))
+            time.sleep(0.05)
             r_string = self.conn.recv(64)
         except:
             r_string = 'no_response'
@@ -148,7 +181,21 @@ class AlphaScanDevice:
         ###############################################################################
 
         self.flush_TCP()
-        self.conn.send((chr(opcode) + extra + '\r\n').encode('utf-8'))
+        self.conn.send((chr(opcode) + extra + chr(127)).encode('utf-8'))
+        time.sleep(0.05)
+        try:
+            r_string = self.conn.recv(64)
+        except:
+            r_string = 'no_response'
+        return r_string
+        
+    def generic_tcp_command_STRING(self, txt):
+        ###############################################################################
+        # Get adc status
+        ###############################################################################
+
+        self.flush_TCP()
+        self.conn.send((txt + chr(127)).encode('utf-8'))
         time.sleep(0.05)
         try:
             r_string = self.conn.recv(64)
@@ -230,14 +277,14 @@ class AlphaScanDevice:
     def update_adc_registers(self,reg_to_update):
         #send adc registers to update over tcp
         self.flush_TCP()
-        self.conn.send('u'+''.join([str(t) for t in reg_to_update])+'\r\n'.encode('utf-8'))
+        self.conn.send('u'+''.join([str(t) for t in reg_to_update])+chr(127).encode('utf-8'))
         time.sleep(0.01) # Time for device to respond
         return
 
     def update_command_map(self):
         # create csv string from command map dict
         self.flush_TCP()
-        self.conn.send((chr(TCP_COMMAND["GEN_update_cmd_map"]) + str(TCP_COMMAND) + ',  \r\n').encode('utf-8')) #NOTE: comma is necessary
+        self.conn.send((chr(TCP_COMMAND["GEN_update_cmd_map"]) + "_begin_cmd_map_" + str(TCP_COMMAND) + ',  '+chr(127)).encode('utf-8')) #NOTE: comma is necessary
         time.sleep(0.01)
         try:
             r_string = self.conn.recv(64)
@@ -265,10 +312,23 @@ class AlphaScanDevice:
         # send broadcast beacon for device to discover this host
         s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         s.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
-        s.sendto('alpha_scan_beacon_xbx_'+str(self.TCP_PORT)+'_xex',('255.255.255.255',self.UDP_PORT)) #TODO this subnet might not work on all nets
+        s.sendto('alpha_scan_beacon_xbx_'+str(self.TCP_PORT)+'_xex',('255.255.255.255',self.UDP_PORT)) #TODO this subnet might not work on all LAN's (see firmware method)
         # send desired TCP port in this beacon 
         s.close();
-    
+        
+    def listen_for_device_beacon(self):   
+        try:
+            s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+            s.bind(('', self.UDP_PORT))
+            s.settimeout(0.05) #TODO this blocking causes slight lag while active
+            data,addr = s.recvfrom(1024)
+            s.close()
+            if "I_AM_ALPHA_SCAN" in data:
+                return True
+        except:
+            pass
+        return False
+        
     def connect_to_device(self):
         self.broadcast_disco_beacon()
         return self.init_TCP()

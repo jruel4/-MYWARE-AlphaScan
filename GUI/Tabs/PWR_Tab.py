@@ -9,16 +9,18 @@ from PySide.QtCore import *
 from PySide.QtGui import *
 
 class PWR_REG_TAB( QWidget):
-    def __init__(self, Device, parent=None):
+    def __init__(self, Device, Debug, parent=None):
         super(PWR_REG_TAB, self).__init__(parent)
-
+        
+        self._Debug = Debug
+        
         # Create and set grid layout
         mainLayout =  QGridLayout()        
         self.setLayout(mainLayout)
         
         # Set layout formatting
         mainLayout.setAlignment(Qt.AlignTop)
-        mainLayout.setColumnStretch(10,1)
+        #TODO mainLayout.setColumnStretch(10,1)
 
         # Define column labels
         colLabels = ['ADDRESS', 'REGISTER', 'DEFAULT', 'BIT_7', 'BIT_6', 'BIT_5', 'BIT_4', 'BIT_3', 'BIT_2', 'BIT_1', 'BIT_0', ]

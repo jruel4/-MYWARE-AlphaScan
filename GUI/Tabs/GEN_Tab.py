@@ -11,14 +11,15 @@ from PySide.QtGui import *
 class GeneralTab(QWidget):
     
     # Define Init Method
-    def __init__(self,Device):
+    def __init__(self,Device, Debug):
         super(GeneralTab, self).__init__(None)
         
         #######################################################################
         # Basic Init ##########################################################
         #######################################################################
         
-        self._Device = Device        
+        self._Device = Device      
+        self._Debug = Debug
         
         # Define status vars
         self.Connected = False
@@ -30,7 +31,7 @@ class GeneralTab(QWidget):
         
         # Set layout formatting
         self.layout.setAlignment(Qt.AlignTop)
-        self.layout.setColumnStretch(3,1)
+        #TODO self.layout.setColumnStretch(3,1)
         # TODO prevent horizontal stretch
         
         #######################################################################
@@ -188,13 +189,80 @@ class GeneralTab(QWidget):
         
         self.Button_SetUdpDelayVal.clicked.connect(self.update_udp_delay)
         
+        #######################################################################
+        # Reset Device ########################################################
+        #######################################################################
         
+        self.Button_ResetDevice = QPushButton("Reset Device")
+        self.layout.addWidget(self.Button_ResetDevice, 14,0)
+        self.Button_ResetDevice.clicked.connect(self.reset_device)
         
+        #######################################################################
+        # Auto Connect Enable #################################################
+        #######################################################################
         
+        self.Text_AutoConnectEnable = QLabel("Auto Connect Enable")
+        self.Check_AutoConnectEnable = QCheckBox()
+        self.Check_AutoConnectEnable.setCheckState(Qt.CheckState.Checked)
+        
+        self.layout.addWidget(self.Text_AutoConnectEnable, 15, 0)
+        self.layout.addWidget(self.Check_AutoConnectEnable, 15, 1)      
+        
+#==============================================================================
+#         #######################################################################
+#         # Style Selection #####################################################
+#         #######################################################################
+#         
+#         self.styleComboBox = QComboBox()
+#         # add styles from QStyleFactory
+#         self.styleComboBox.addItems(QStyleFactory.keys())
+#         # find current style
+#         index = self.styleComboBox.findText(
+#                     qApp.style().objectName(),
+#                     Qt.MatchFixedString)
+#         # set current style
+#         self.styleComboBox.setCurrentIndex(index)
+#         # set style change handler
+#         self.styleComboBox.activated[str].connect(self.handleStyleChanged)
+#         self.layout.addWidget(self.styleComboBox, 16, 0)
+#==============================================================================
+                
+        #######################################################################
+        # Debug logging enabled ###############################################
+        #######################################################################
+        
+        self.Text_DebugLogEnable = QLabel("Debug Logging Enable")
+        self.Check_DebugLogEnable = QCheckBox()
+        #self.Check_DebugLogEnable.setCheckState(Qt.CheckState.Checked)
+        
+        self.layout.addWidget(self.Text_DebugLogEnable, 17, 0)
+        self.layout.addWidget(self.Check_DebugLogEnable, 17, 1) 
+        
+        self.Check_DebugLogEnable.stateChanged.connect(self.toggle_debug_state)
+        
+        #######################################################################
+        # Create Auto Connect Timer ###########################################
+        #######################################################################
+        self.auto_conn_timer = QTimer()
+        self.auto_conn_timer.timeout.connect(self.auto_connect)
+        self.auto_conn_timer.start(100)
+        self.heartbeatIntervalCounter = 0
+        self.heartbeatFailCounter = 0
+        
+        #######################################################################
+        # Create Debug Log Timer ##############################################
+        #######################################################################
+        self.debug_log_timer = QTimer()
+        self.debug_log_timer.timeout.connect(self.read_debug_log)
+        self.debug_log_timer.start(100)
         
     ###########################################################################
     # Slots ###################################################################
     ###########################################################################
+
+    @Slot()    
+    def handleStyleChanged(self, style):
+        qApp.setStyle(style)
         
     @Slot()
     def connect_to_device(self):
@@ -307,6 +375,69 @@ class GeneralTab(QWidget):
         msgBox.setText(r)
         msgBox.exec_()
         
+    @Slot()
+    def reset_device(self):
+        r = self._Device.generic_tcp_command_BYTE("GEN_reset_device")
+        msgBox = QMessageBox()
+        msgBox.setText(r)
+        msgBox.exec_()
+        self.disconnect_from_device()
+        
+    @Slot()
+    def auto_connect(self):
+        if self.Check_AutoConnectEnable.isChecked() and not self.Streaming:
+            if not self.Connected:
+                # connect routine 
+                if self._Device.listen_for_device_beacon():
+                    self._Debug.append("Device found, attempting to connect...")
+                    self.connect_to_device()
+                else:
+                    # TODO check for Access Point Availability
+                    pass
+            else:
+                # hearbeat routine, send ALIVE? query, and if no answer then disconnect_from_device
+                # TODO This has risk of colliding with user actions, consider using an IDLE flag
+                if self.heartbeatIntervalCounter > 40: 
+                    # reset counter and send alive query
+                    self.heartbeatIntervalCounter = 0
+                    r = self._Device.generic_tcp_command_BYTE("GEN_alive_query")
+                    if "ALIVE_ACK" not in r:
+                        self.heartbeatFailCounter += 1
+                    else:
+                        self.heartbeatFailCounter = 0
+                        
+                    if self.heartbeatFailCounter > 1:
+                        self.disconnect_from_device()
+                        self.heartbeatFailCounter = 0
+                else:
+                    self.heartbeatIntervalCounter += 1
+                    
+        elif self.Check_AutoConnectEnable.isChecked() and self.Streaming:
+            #TODO check for stream validity
+            pass
+        
+    @Slot()
+    def read_debug_log(self):
+        if self.Check_DebugLogEnable.isChecked() and self.Connected and not self.Streaming:
+            r = self._Device.read_debug_port()
+            if r:
+                self._Debug.append(r)
+    
+    @Slot()
+    def toggle_debug_state(self):
+        if self.Check_DebugLogEnable.isChecked():
+            if self._Device.open_debug_port():
+                self._Debug.append("Debug Enabled")
+            else:
+                self._Debug.append("Debug Enable Failed")
+        else:
+            if self._Device.close_debug_port():
+                self._Debug.append("Debug Disabled")
+            else:
+                self._Debug.append("Debug Disable Failed")
+        
+            
+            
     ###########################################################################    
 
 
