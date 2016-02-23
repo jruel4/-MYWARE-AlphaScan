@@ -2,6 +2,9 @@
 // Includes
 ////////////////////////////////////////////////////////////////////////////////
 #include <ESP8266WiFi.h>
+#include <WiFiClient.h>
+#include <ESP8266WebServer.h>
+#include <ESP8266mDNS.h>
 #include <SPI.h>
 #include <Wire.h>
 #include <WiFiUDP.h>
@@ -44,7 +47,7 @@ File f;                                 //
 
 const char network_parameters_path[] = "/neti_params.txt"; //
 const char command_map_path[]        = "/command_map.txt"; //
-String firmware_version              = "0.0.3";            //
+String firmware_version              = "0.0.4";            //
 
 enum T_SYSTEM_STATE {
   AP_MODE,
@@ -115,6 +118,7 @@ void BQ_Setup();
 void BQ_handleFaultISR();
 void BQ_readRegister(uint8_t reg_addr, int num_reg, uint8_t* BQ_Reg_Map);
 void BQ_writeRegister(uint8_t reg_addr, int num_reg, uint8_t* BQ_Set_Reg);
+void WiFi_WebUpdate();
 String GEN_ExtractNetParams(String,String);
 void DB_printDebug(const char* msg);
 
@@ -301,7 +305,7 @@ void WiFi_ProcessTcpClientRequest() {
 
   if (avail) {
     for (i=0; i < avail; i++) {
-        rx_buf[i] = client.read();
+      rx_buf[i] = client.read();
     }
     rx_buf[avail] = '\0';
   }
@@ -525,6 +529,11 @@ void WiFi_ProcessTcpClientRequest() {
   }
 
   ////////////////////////////////////////////////////////////////////////////
+  else if (cmd == COMMAND_MAP_2_int["GEN_web_update"])
+  {
+    WiFi_WebUpdate();
+  }
+  ////////////////////////////////////////////////////////////////////////////
   else
   {
     Serial.print("Unknown Command");
@@ -573,19 +582,19 @@ void WiFi_ListenUdpBeacon() {
     }
 
     else if ( (cnt % 10000) == 0 ) { // TODO don't flood network indefinitely...
-      // Broadcast alive beacon so that control app knows to auto connect
-      Udp.beginPacket(broadcastIp, 2390);
-      Udp.write("_I_AM_ALPHA_SCAN_");
-      Udp.endPacket();
-      delay(1);
-      if ( (cnt % 100000 ) == 0 ) {
-        Serial.print(".");
-        if ( (cnt % 1000000 ) == 0 ) {
-          Serial.println("");
-        }
+    // Broadcast alive beacon so that control app knows to auto connect
+    Udp.beginPacket(broadcastIp, 2390);
+    Udp.write("_I_AM_ALPHA_SCAN_");
+    Udp.endPacket();
+    delay(1);
+    if ( (cnt % 100000 ) == 0 ) {
+      Serial.print(".");
+      if ( (cnt % 1000000 ) == 0 ) {
+        Serial.println("");
       }
     }
   }
+}
 }
 
 void WiFi_EstTcpHostConn() {
@@ -607,6 +616,82 @@ void WiFi_EstTcpHostConn() {
     client.print("Connected");
     Serial.println("Connected to host");
     DB_printDebug("Connected to host");
+  }
+}
+
+void WiFi_WebUpdate() {
+
+  // Close down existing wifi
+  Serial.println("Closing Current WiFi connection");
+  client.stop();
+  WiFi.disconnect();
+  delay(1000);
+
+  ESP8266WebServer server(80);
+  const char* serverIndex = "<form method='POST' action='/update' enctype='multipart/form-data'><input type='file' name='update'><input type='submit' value='Update'></form>";
+  const char* host = "esp8266-webupdate";
+
+  //
+  Serial.println("Booting update server");
+
+  WiFi.mode(WIFI_AP_STA);
+  WiFi.begin(ssid, password);
+  if(WiFi.waitForConnectResult() == WL_CONNECTED){
+
+    Serial.print("IP address: ");
+    Serial.println(WiFi.localIP());
+
+    MDNS.begin(host);
+
+    server.on("/", HTTP_GET, [&server, &serverIndex](){
+      server.sendHeader("Connection", "close");
+      server.sendHeader("Access-Control-Allow-Origin", "*");
+      server.send(200, "text/html", serverIndex);
+    });
+
+
+    server.on("/update", HTTP_POST, [&server](){
+      server.sendHeader("Connection", "close");
+      server.sendHeader("Access-Control-Allow-Origin", "*");
+      server.send(200, "text/plain", (Update.hasError())?"FAIL":"OK");
+      ESP.restart();
+    },[&server](){
+      HTTPUpload& upload = server.upload();
+      if(upload.status == UPLOAD_FILE_START){
+        Serial.setDebugOutput(true);
+        WiFiUDP::stopAll();
+        Serial.printf("Update: %s\n", upload.filename.c_str());
+        uint32_t maxSketchSpace = (ESP.getFreeSketchSpace() - 0x1000) & 0xFFFFF000;
+        if(!Update.begin(maxSketchSpace)){//start with max available size
+          Update.printError(Serial);
+        }
+      } else if(upload.status == UPLOAD_FILE_WRITE){
+        if(Update.write(upload.buf, upload.currentSize) != upload.currentSize){
+          Update.printError(Serial);
+        }
+      } else if(upload.status == UPLOAD_FILE_END){
+        if(Update.end(true)){ //true to set the size to the current progress
+          Serial.printf("Update Success: %u\nRebooting...\n", upload.totalSize);
+        } else {
+          Update.printError(Serial);
+        }
+        Serial.setDebugOutput(false);
+      }
+      yield();
+    });
+
+
+    server.begin();
+    MDNS.addService("http", "tcp", 80);
+
+    Serial.printf("Ready! Navigate to the device IP in your bowser\n");
+  } else {
+    Serial.println("WiFi Failed");
+  }
+
+  while(1) {
+    server.handleClient();
+    delay(1);
   }
 }
 
@@ -742,14 +827,14 @@ void FS_LoadCommandMap() {
 void FS_Format() {
   Serial.println("beginning format");
   client.print("formatting SPIFFS");
-   if (SPIFFS.format()) {
-     Serial.println("format successful");
-     client.print("format successful");
-   }
-   else {
-     Serial.println("format failure");
-     client.print("format failure");
-   }
+  if (SPIFFS.format()) {
+    Serial.println("format successful");
+    client.print("format successful");
+  }
+  else {
+    Serial.println("format failure");
+    client.print("format failure");
+  }
 }
 
 void FS_SendNetParams() {
@@ -789,9 +874,9 @@ void FS_GetFsInfo() {
   SPIFFS.info(fs_info);
   char info_str[100];
   sprintf(info_str, "totalBytes: %d, usedByted: %d, blockSize: %d, pageSize: %d, \
-                     maxOpenFiles: %d, maxPathLen: %d",
-                     fs_info.totalBytes, fs_info.usedBytes, fs_info.blockSize,
-                     fs_info.pageSize, fs_info.maxOpenFiles, fs_info.maxPathLength);
+  maxOpenFiles: %d, maxPathLen: %d",
+  fs_info.totalBytes, fs_info.usedBytes, fs_info.blockSize,
+  fs_info.pageSize, fs_info.maxOpenFiles, fs_info.maxPathLength);
   Serial.println(info_str);
   client.print(info_str);
 }

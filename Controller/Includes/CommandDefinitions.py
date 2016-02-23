@@ -26,6 +26,7 @@ addCommand("GEN_get_dev_ip")
 addCommand("GEN_listen_beacon")
 addCommand("GEN_get_sys_params")
 addCommand("GEN_reset_device")
+addCommand("GEN_web_update")
 
 ###############################################################################
 # ADC

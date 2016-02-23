@@ -208,6 +208,14 @@ class GeneralTab(QWidget):
         self.layout.addWidget(self.Text_AutoConnectEnable, 15, 0)
         self.layout.addWidget(self.Check_AutoConnectEnable, 15, 1)      
         
+        #######################################################################
+        # Web Update Mode #####################################################
+        #######################################################################
+        
+        self.Button_WebUpdateMode = QPushButton("Enter Web Update Mode")
+        self.layout.addWidget(self.Button_WebUpdateMode, 16, 0, 1, 1)
+        self.Button_WebUpdateMode.clicked.connect(self.enter_web_update_mode)
+        
 #==============================================================================
 #         #######################################################################
 #         # Style Selection #####################################################
@@ -343,6 +351,17 @@ class GeneralTab(QWidget):
     @Slot()
     def enter_ota_mode(self):
         r = self._Device.generic_tcp_command_BYTE('GEN_start_ota') 
+        msgBox = QMessageBox()
+        if '' in r:#TODO add response into firmware
+            msgBox.setText("SUCCESS")
+        else:
+            msgBox.setText("failure")
+        msgBox.exec_()
+        self.disconnect_from_device()
+        
+    @Slot()
+    def enter_web_update_mode(self):
+        r = self._Device.generic_tcp_command_BYTE('GEN_web_update') 
         msgBox = QMessageBox()
         if '' in r:#TODO add response into firmware
             msgBox.setText("SUCCESS")
