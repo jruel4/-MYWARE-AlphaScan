@@ -11,7 +11,7 @@ Created on Mon Jan 25 16:42:21 2016
 
 from PySide.QtCore import *
 from PySide.QtGui import *
-import qdarkstyle 
+#import qdarkstyle 
 import sys
 import time
 

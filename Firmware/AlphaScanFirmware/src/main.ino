@@ -47,7 +47,7 @@ File f;                                 //
 
 const char network_parameters_path[] = "/neti_params.txt"; //
 const char command_map_path[]        = "/command_map.txt"; //
-String firmware_version              = "0.0.4";            //
+String firmware_version              = "0.0.5";            //
 
 enum T_SYSTEM_STATE {
   AP_MODE,
@@ -827,13 +827,16 @@ void FS_LoadCommandMap() {
 void FS_Format() {
   Serial.println("beginning format");
   client.print("formatting SPIFFS");
+  DB_printDebug("Beginning SPIFFS format");
   if (SPIFFS.format()) {
     Serial.println("format successful");
     client.print("format successful");
+    DB_printDebug("Format Successful");
   }
   else {
     Serial.println("format failure");
     client.print("format failure");
+    DB_printDebug("Format Failed");
   }
 }
 
@@ -950,7 +953,7 @@ void AP_SupportRoutine() {
     network_set = true;
     Serial.println("Network is set");
     delay(1);
-    client.print("HTTP/1.1 200 OK\rfuck off");
+    client.print("HTTP/1.1 200 OK\r");
     delay(1);
     client.stop();
     delay(1);
@@ -960,6 +963,7 @@ void AP_SupportRoutine() {
   // Read the first line of the request
   String req = client.readStringUntil('\r'); //NOTE \r is not included in query text yet this terminates anyways...
   Serial.print("Request received: ");Serial.print(req);Serial.println("");
+
   client.flush();
 
   // Parse request
@@ -1009,11 +1013,10 @@ void AP_SupportRoutine() {
     custom_response = "unknown_request";
   }
 
-
   // Send the response to the client
-  String s = "HTTP/1.1 200 OK\r";
-  s += "Content-Type: text/html\r\r";
-  s += "<!DOCTYPE HTML>\r<html>\r";
+  String s = "HTTP/1.1 200 OK\r\n";
+  s += "Content-Type: text/html\r\n\r\n";
+  s += "<!DOCTYPE HTML>\r\n<html>\r\n";
   s += custom_response;
   s += "</html>\n";
   client.print(s);

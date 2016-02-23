@@ -1,6 +1,4 @@
 missing module named PyQt4.QtCore.QCoreApplication - imported by PyQt4.QtCore, c:\miniconda2\envs\alphascandev\lib\site-packages\PyInstaller\loader\rthooks\pyi_rth_qt4plugins.py
-missing module named PyQt4.QtCore.QTextStream - imported by PyQt4.QtCore, qdarkstyle
-missing module named PyQt4.QtCore.QFile - imported by PyQt4.QtCore, qdarkstyle
 missing module named PySide.QtCore.QCoreApplication - imported by PySide.QtCore, c:\miniconda2\envs\alphascandev\lib\site-packages\PyInstaller\loader\rthooks\pyi_rth_qt4plugins.py
 missing module named _subprocess.STD_OUTPUT_HANDLE - imported by _subprocess, subprocess
 missing module named _subprocess.CREATE_NEW_PROCESS_GROUP - imported by _subprocess, subprocess
@@ -204,7 +202,7 @@ missing module named socket.timeout - imported by socket, requests.packages.urll
 missing module named IronPythonConsole - imported by pyreadline.console.ironpython_console
 missing module named clr - imported by pyreadline.clipboard.ironpython_clipboard, pyreadline.console.ironpython_console
 missing module named errno.EINVAL - imported by errno, StringIO
-missing module named cStringIO.StringIO - imported by cStringIO, gettext, pprint, socket, email.parser, email.message, tempfile, quopri, httplib, urllib, email.generator, email.iterators, shlex, pickle, plistlib, cgi, urllib2, xml.sax, encodings.uu_codec, encodings.quopri_codec
+missing module named cStringIO.StringIO - imported by cStringIO, gettext, pprint, socket, email.parser, email.message, tempfile, quopri, httplib, urllib, email.generator, email.iterators, shlex, pickle, cgi, plistlib, urllib2, xml.sax, encodings.uu_codec, encodings.quopri_codec
 missing module named binascii.a2b_uu - imported by binascii, encodings.uu_codec
 missing module named binascii.b2a_uu - imported by binascii, encodings.uu_codec
 missing module named binascii.unhexlify - imported by binascii, requests.packages.urllib3.util.ssl_
@@ -343,9 +341,3 @@ missing module named 'ndg.httpsclient'.SubjectAltName - imported by 'ndg.httpscl
 missing module named 'ndg.httpsclient' - imported by requests.packages.urllib3.contrib.pyopenssl
 missing module named ndg.SUBJ_ALT_NAME_SUPPORT - imported by ndg, requests.packages.urllib3.contrib.pyopenssl
 missing module named ndg - imported by requests.packages.urllib3.contrib.pyopenssl
-missing module named PyQt5.QtCore.QTextStream - imported by PyQt5.QtCore, qdarkstyle
-missing module named PyQt5.QtCore.QFile - imported by PyQt5.QtCore, qdarkstyle
-missing module named PyQt5.QtCore - imported by PyQt5, qdarkstyle.pyqt5_style_rc, qdarkstyle
-missing module named PyQt5 - imported by qdarkstyle.pyqt5_style_rc, PyQt5.QtCore
-missing module named PySide.QtCore.QTextStream - imported by PySide.QtCore, qdarkstyle
-missing module named PySide.QtCore.QFile - imported by PySide.QtCore, qdarkstyle
