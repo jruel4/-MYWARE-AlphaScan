@@ -54,7 +54,8 @@ class AlphaScanDevice:
                           'flash_chip_real_size':None,
                           'flash_chip_size':None,
                           'flash_chip_speed':None,
-                          'flash_chip_mode':None}
+                          'flash_chip_mode':None,
+                          'free_sketch_space':None}
         # Debug port variables
         self.debug_port_open = False
         self.debug_port_no = 2391

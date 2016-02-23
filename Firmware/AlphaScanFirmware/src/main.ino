@@ -506,6 +506,10 @@ void WiFi_ProcessTcpClientRequest() {
     client.print(",flash_chip_mode:");
     client.print(ESP.getFlashChipMode());
 
+    //TODO support this in controller/GUI
+    client.print(",free_sketch_space:");
+    client.print(ESP.getFreeSketchSpace());
+
     client.print(",end_sys_commands");
     Serial.println("finished sending systems params to host.");
     DB_printDebug("Finished retrieving, you may now load data.");

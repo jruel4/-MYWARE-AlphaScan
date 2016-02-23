@@ -56,6 +56,7 @@ class SYS_TAB(QWidget):
         self.Text_FlashChipSpeed = QLabel("Flash Chip Speed: ")
         self.Text_FlashChipMode = QLabel("Flash Chip Mode: ")
         self.Text_FlashChipSize = QLabel("Flash Chip Size: ")
+        self.Text_FreeSketchSpace = QLabel("Free Sketch Space: ")
         
         self.Text_VccVAL = QLabel("")
         self.Text_FreeHeapVAL = QLabel("")
@@ -69,6 +70,7 @@ class SYS_TAB(QWidget):
         self.Text_FlashChipSpeedVAL = QLabel("")
         self.Text_FlashChipModeVAL = QLabel("")
         self.Text_FlashChipSizeVAL = QLabel("")
+        self.Text_FreeSketchSpaceVAL = QLabel("")
         
         self.layout.addWidget(self.Text_Vcc, 0, 0)
         self.layout.addWidget(self.Text_FreeHeap, 1, 0)
@@ -82,6 +84,7 @@ class SYS_TAB(QWidget):
         self.layout.addWidget(self.Text_FlashChipSpeed, 9, 0)
         self.layout.addWidget(self.Text_FlashChipMode, 10, 0)
         self.layout.addWidget(self.Text_FlashChipSize, 11, 0)
+        self.layout.addWidget(self.Text_FreeSketchSpace, 12, 0)
         
         self.layout.addWidget(self.Text_VccVAL, 0, 1)
         self.layout.addWidget(self.Text_FreeHeapVAL, 1, 1)
@@ -95,6 +98,7 @@ class SYS_TAB(QWidget):
         self.layout.addWidget(self.Text_FlashChipSpeedVAL, 9, 1)
         self.layout.addWidget(self.Text_FlashChipModeVAL, 10, 1)
         self.layout.addWidget(self.Text_FlashChipSizeVAL, 11, 1)
+        self.layout.addWidget(self.Text_FreeSketchSpaceVAL, 12, 1)
         
         #######################################################################
         # Add control buttons
@@ -103,8 +107,8 @@ class SYS_TAB(QWidget):
         self.Button_RequestSysParams = QPushButton("Request System MCU Parameters")
         self.Button_RefreshDisplay = QPushButton("Refresh Displayed Paramters")
         
-        self.layout.addWidget(self.Button_RequestSysParams, 12, 0)
-        self.layout.addWidget(self.Button_RefreshDisplay, 13, 0)
+        self.layout.addWidget(self.Button_RequestSysParams, 13, 0)
+        self.layout.addWidget(self.Button_RefreshDisplay, 14, 0)
         
         self.Button_RequestSysParams.clicked.connect(self.request_sys_params)
         self.Button_RefreshDisplay.clicked.connect(self.refresh_display)
@@ -132,6 +136,7 @@ class SYS_TAB(QWidget):
             self.Text_FlashChipSpeedVAL.setText(self._Device.SysParams["flash_chip_speed"])
             self.Text_FlashChipModeVAL.setText(self._Device.SysParams["flash_chip_mode"])
             self.Text_FlashChipSizeVAL.setText(self._Device.SysParams["flash_chip_size"])
+            self.Text_FreeSketchSpaceVAL.setText(self._Device.SysParams["free_sketch_space"])
         else:
             msg = QMessageBox()
             msg.setText("Did not find complete response in buffer")
