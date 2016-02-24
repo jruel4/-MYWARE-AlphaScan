@@ -251,6 +251,7 @@ class AlphaScanDevice:
         time.sleep(0.01)
         self.sock.close()
         drops = self.get_drop_rate()
+        if not drops: return "no data"
         avail = ((1.0 - ((drops * 1.0) / len(self.inbuf)))*100.0)
         pckt_rate = len(self.inbuf)/(self.end-self.begin)
         return "Not Streaming", str(pckt_rate),  str(avail), str(len(self.inbuf)), str(drops)
@@ -296,7 +297,7 @@ class AlphaScanDevice:
         i = 0
         drops = 0
         total_pckts = len(self.inbuf)
-        if total_pckts == 0: return 
+        if total_pckts == 0: return False
         for n in self.inbuf:
             if i != n:
                 drops += 1

@@ -47,7 +47,7 @@ File f;                                 //
 
 const char network_parameters_path[] = "/neti_params.txt"; //
 const char command_map_path[]        = "/command_map.txt"; //
-String firmware_version              = "0.0.5";            //
+String firmware_version              = "0.0.6";            //
 
 enum T_SYSTEM_STATE {
   AP_MODE,

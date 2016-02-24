@@ -117,10 +117,12 @@ class GeneralTab(QWidget):
         self.layout.addWidget(self.Text_GeneralMessage, 5,0,1,2)
         
         # Add message formatting
-        self.Text_GeneralMessage.setAutoFillBackground(True)
-        p = self.Text_GeneralMessage.palette()
-        p.setColor(self.Text_GeneralMessage.backgroundRole(), 'cyan')
-        self.Text_GeneralMessage.setPalette(p)
+#==============================================================================
+#         self.Text_GeneralMessage.setAutoFillBackground(True)
+#         p = self.Text_GeneralMessage.palette()
+#         p.setColor(self.Text_GeneralMessage.backgroundRole(), 'cyan')
+#         self.Text_GeneralMessage.setPalette(p)
+#==============================================================================
         
         # Add clear general message button
         self.Button_ClearGeneralMessage = QPushButton("Clear Message")
@@ -402,6 +404,11 @@ class GeneralTab(QWidget):
         msgBox.exec_()
         self.disconnect_from_device()
         
+    @Slot()
+    def disable_auto_connect(self):
+        self._Debug.append("Disabling auto connect to save tcp buffer response")
+        self.Check_AutoConnectEnable.setCheckState(Qt.CheckState.Unchecked)
+    
     @Slot()
     def auto_connect(self):
         if self.Check_AutoConnectEnable.isChecked() and not self.Streaming:

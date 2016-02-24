@@ -21,6 +21,8 @@ import time
 
 class SYS_TAB(QWidget):
     
+    SIG_reserve_tcp_buffer = Signal()
+    
     # Define Init Method
     def __init__(self, Device, Debug):
         super(SYS_TAB, self).__init__(None)
@@ -45,7 +47,7 @@ class SYS_TAB(QWidget):
         #######################################################################
         
         self.Text_Vcc = QLabel("VCC: ")
-        self.Text_FreeHeap = QLabel("Free Head: ")
+        self.Text_FreeHeap = QLabel("Free Heap: ")
         self.Text_ChipId = QLabel("Chip ID: ")
         self.Text_SdkVer = QLabel("SDK Version: ")
         self.Text_BootVer = QLabel("Boot Version: ")
@@ -115,6 +117,9 @@ class SYS_TAB(QWidget):
         
     @Slot()
     def request_sys_params(self):
+        # Disable auto-connect as it interferes with param retrieval
+        self.SIG_reserve_tcp_buffer.emit()
+        # Execute device command
         r = self._Device.generic_tcp_command_BYTE("GEN_get_sys_params")
         msg = QMessageBox()
         msg.setText(r)

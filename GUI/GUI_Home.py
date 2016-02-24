@@ -81,6 +81,10 @@ class AlphaScanGui(QWidget): #TODO probably want something other than dialog her
 
         self.setWindowTitle("AlphaScan Controller")
         
+        # Connect signals
+        self.sysTab.SIG_reserve_tcp_buffer.connect(self.genTab.disable_auto_connect)
+        self.fsTab.SIG_reserve_tcp_buffer.connect(self.genTab.disable_auto_connect)
+        
         # Create periodic timer for updating streaming and connection status
         self.timer = QTimer()
         self.timer.timeout.connect(self.update)

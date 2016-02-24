@@ -79,10 +79,12 @@ class ADC_REG_TAB( QWidget):
         self.ADC_RegMap = [[False for i in range(8)] for j in range(24)] 
         
         # Set widget formatting
-        ColLabelWidgets[0].setAutoFillBackground(True)
-        p = ColLabelWidgets[0].palette()
-        p.setColor(ColLabelWidgets[0].backgroundRole(), 'blue')
-        ColLabelWidgets[0].setPalette(p)
+#==============================================================================
+#         ColLabelWidgets[0].setAutoFillBackground(True)
+#         p = ColLabelWidgets[0].palette()
+#         p.setColor(ColLabelWidgets[0].backgroundRole(), 'blue')
+#         ColLabelWidgets[0].setPalette(p)
+#==============================================================================
         
         # Add Button_UpdateRegister
         self.Button_UpdateRegister = QPushButton("Update Registers")
