@@ -36,6 +36,7 @@ class AlphaScanDevice:
         self.unknown_stream_errors = 0
         self.begin = 0
         self.end = 0
+        self.IS_CONNECTED = False
         
         self.info = StreamInfo('AlphaScan', 'EEG', 8, 100, 'float32', 'myuid34234')
         self.outlet = StreamOutlet(self.info)
@@ -105,8 +106,10 @@ class AlphaScanDevice:
             self.conn.settimeout(.05)
             time.sleep(0.01) # time for device to respond
             self.UDP_IP = addr[0]
+            self.IS_CONNECTED = True
             return True
         except:
+            self.IS_CONNECTED = False
             return False
             
     def close_TCP(self):
@@ -116,6 +119,7 @@ class AlphaScanDevice:
         try:
             self.conn.close() #conn might not exist yet
             self.s.close()
+            self.IS_CONNECTED = False
         except:
             pass        
         
@@ -165,7 +169,8 @@ class AlphaScanDevice:
         ###############################################################################
         # Get adc status
         ###############################################################################
-
+        if not self.IS_CONNECTED or self.DEV_streamActive.is_set():
+            return "ILLEGAL: Must be connected and not streaming"
         try:
             self.flush_TCP()
             self.conn.send((chr(TCP_COMMAND[cmd]) + extra + chr(127)).encode('utf-8'))
@@ -251,8 +256,8 @@ class AlphaScanDevice:
         time.sleep(0.01)
         self.sock.close()
         drops = self.get_drop_rate()
-        if not drops: return "no data"
-        avail = ((1.0 - ((drops * 1.0) / len(self.inbuf)))*100.0)
+        if not drops: avail = 0
+        else: avail = ((1.0 - ((drops * 1.0) / len(self.inbuf)))*100.0)
         pckt_rate = len(self.inbuf)/(self.end-self.begin)
         return "Not Streaming", str(pckt_rate),  str(avail), str(len(self.inbuf)), str(drops)
     
@@ -284,6 +289,8 @@ class AlphaScanDevice:
 
     def update_command_map(self):
         # create csv string from command map dict
+        if not self.IS_CONNECTED or self.DEV_streamActive.is_set():
+            return "ILLEGAL: Must be connected and not streaming"
         self.flush_TCP()
         self.conn.send((chr(TCP_COMMAND["GEN_update_cmd_map"]) + "_begin_cmd_map_" + str(TCP_COMMAND) + ',  '+chr(127)).encode('utf-8')) #NOTE: comma is necessary
         time.sleep(0.01)

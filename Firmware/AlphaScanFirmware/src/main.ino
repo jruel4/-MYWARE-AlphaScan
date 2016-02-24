@@ -327,7 +327,7 @@ void WiFi_ProcessTcpClientRequest() {
   {
 
     Serial.println("updating command map...");
-    client.print("updating map command");
+    client.print("updating map_command");
     delay(10);
     if (GEN_ParseCommandMap()) {
       FS_SaveCommandMap();
@@ -408,6 +408,8 @@ void WiFi_ProcessTcpClientRequest() {
   ////////////////////////////////////////////////////////////////////////////
   else if (cmd ==  COMMAND_MAP_2_int["GEN_start_ap"]) //AP mode
   {
+    client.print("Entering ap_mode");
+    delay(500);
     client.stop();
     delay(1);
     Serial.println("Forcing AP Mode");
@@ -531,6 +533,7 @@ void WiFi_ProcessTcpClientRequest() {
   ////////////////////////////////////////////////////////////////////////////
   else if (cmd == COMMAND_MAP_2_int["GEN_web_update"])
   {
+    client.print("Entering web_update mode");
     WiFi_WebUpdate();
   }
   ////////////////////////////////////////////////////////////////////////////

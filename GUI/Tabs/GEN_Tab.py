@@ -326,8 +326,8 @@ class GeneralTab(QWidget):
     
     @Slot()
     def begin_streaming(self):
-        if self.Streaming or not self.Connected:
-            self.Text_GeneralMessage.setText("ILLEGAL: Streaming must be false, Connected must be true")
+        if not self.Connected:
+            self.Text_GeneralMessage.setText("ILLEGAL: Connected must be true")
             return
         begin_stream_string = self._Device.initiate_UDP_stream()
         self.Streaming = True # TODO validate
@@ -354,10 +354,10 @@ class GeneralTab(QWidget):
     def enter_ota_mode(self):
         r = self._Device.generic_tcp_command_BYTE('GEN_start_ota') 
         msgBox = QMessageBox()
-        if '' in r:#TODO add response into firmware
+        if 'OTA' in r:#TODO add response into firmware
             msgBox.setText("SUCCESS")
         else:
-            msgBox.setText("failure")
+            msgBox.setText(r)
         msgBox.exec_()
         self.disconnect_from_device()
         
@@ -365,10 +365,10 @@ class GeneralTab(QWidget):
     def enter_web_update_mode(self):
         r = self._Device.generic_tcp_command_BYTE('GEN_web_update') 
         msgBox = QMessageBox()
-        if '' in r:#TODO add response into firmware
+        if 'web_update' in r:#TODO add response into firmware
             msgBox.setText("SUCCESS")
         else:
-            msgBox.setText("failure")
+            msgBox.setText(r)
         msgBox.exec_()
         self.disconnect_from_device()
         
@@ -376,17 +376,20 @@ class GeneralTab(QWidget):
     def enter_ap_mode(self):
         r = self._Device.generic_tcp_command_BYTE('GEN_start_ap') 
         msgBox = QMessageBox()
-        if '' in r:#TODO add response into firmware
+        if 'ap_mode' in r:#TODO add response into firmware
             msgBox.setText("SUCCESS")
         else:
-            msgBox.setText("failure")
+            msgBox.setText(r)
         msgBox.exec_()
     
     @Slot()
     def update_command_map(self):
         r = self._Device.update_command_map()
         msgBox = QMessageBox()
-        msgBox.setText(r)
+        if 'map_command' in r:#TODO add response into firmware
+            msgBox.setText("SUCCESS")
+        else:
+            msgBox.setText(r)
         msgBox.exec_()
         
     @Slot()
