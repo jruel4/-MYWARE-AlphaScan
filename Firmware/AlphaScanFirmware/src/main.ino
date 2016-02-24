@@ -279,7 +279,7 @@ void WiFi_ConnectToWan() {
     Serial.print(".");
     attempts++;
 
-    if (attempts > 30) { // may want to tune this number up for poor connections
+    if (attempts > 40) { // may want to tune this number up for poor connections
       Serial.println("WiFi parameters appear to be invalid, switching to AP Mode...");
       SYSTEM_STATE = AP_MODE;
       return;
@@ -899,8 +899,19 @@ void AP_ReadNetParams() {
     AP_SupportRoutine();
 
     if (network_set) {
-      // Write network params to SPIFFS
 
+      WiFiServer server(80);
+      client = server.available();
+      client.flush();
+
+      String s = "HTTP/1.1 200 OK\r\n";
+      client.print(s);
+
+      delay(1);
+
+      client.stop();
+
+      // Write network params to SPIFFS
       // open file
       f = SPIFFS.open(network_parameters_path,"w");
       if (!f) {
@@ -917,6 +928,8 @@ void AP_ReadNetParams() {
       f.println("pass_" + password_str + "_endpass");
       f.println("host_ip_" + host_ip_str + "_endhost_ip");
       f.close();
+
+      break;
     }
   }
 
@@ -952,8 +965,7 @@ void AP_SupportRoutine() {
     if(c++ % 1000000 == 0)Serial.print(".");if(c % 10000000 ==0)Serial.println("");
   }
 
-  if (ssid_set && host_ip_set && password_set) {
-    network_set = true;
+  if (network_set) {
     Serial.println("Network is set");
     delay(1);
     client.print("HTTP/1.1 200 OK\r");
@@ -1005,6 +1017,18 @@ void AP_SupportRoutine() {
     host_ip_set = true;
 
     Serial.print("received host_ip: ");Serial.println(host_ip);
+  }
+
+  // Finalize Params
+  else if (req.indexOf("finalize_params") >= 0) {
+    if (ssid_set && password_set) {
+      network_set = true;
+      custom_response = "finalized";
+    }
+    else {
+      network_set = false;
+      custom_response = "Failure"; //TODO add more details to response
+    }
   }
 
   // Echo network params

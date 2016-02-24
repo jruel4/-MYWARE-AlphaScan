@@ -72,7 +72,20 @@ class AP_TAB(QWidget):
         self.layout.addWidget(self.Button_SendPASSWORD, 5, 1)
         
         # TODO create GO button
+        self.Button_FinalizeParams = QPushButton("Finalize Configuration")
+        self.layout.addWidget(self.Button_FinalizeParams)
+        self.Button_FinalizeParams.clicked.connect(self.finalize_params)
         
+    @Slot()
+    def finalize_params(self):
+        if not self.check_availability(): return
+        r = self.conn.query_ap('finalize_params')
+        msgBox = QMessageBox()
+        if 'finalized' in r:
+            msgBox.setText("SUCCESS")
+        else:
+            msgBox.setText("failure")
+        msgBox.exec_()
         
     @Slot()
     def check_ap_status(self):

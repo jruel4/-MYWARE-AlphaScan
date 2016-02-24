@@ -31,9 +31,6 @@ class SPIFFS:
         
     def formatFs(self):
         r = self._Device.generic_tcp_command_BYTE("FS_format_fs")
-        if "ILLEGAL" in r: return r
-        time.sleep(0.01)
-        r += self._Device.read_tcp()
         return r
     
     def getNetworkParams(self):

@@ -382,6 +382,7 @@ class GeneralTab(QWidget):
         else:
             msgBox.setText(r)
         msgBox.exec_()
+        self.disconnect_from_device()
     
     @Slot()
     def update_command_map(self):
