@@ -205,7 +205,7 @@ class GeneralTab(QWidget):
         
         self.Text_AutoConnectEnable = QLabel("Auto Connect Enable")
         self.Check_AutoConnectEnable = QCheckBox()
-        self.Check_AutoConnectEnable.setCheckState(Qt.CheckState.Checked)
+        self.Check_AutoConnectEnable.setCheckState(Qt.CheckState.Unchecked)
         
         self.layout.addWidget(self.Text_AutoConnectEnable, 15, 0)
         self.layout.addWidget(self.Check_AutoConnectEnable, 15, 1)      
@@ -243,7 +243,7 @@ class GeneralTab(QWidget):
         
         self.Text_DebugLogEnable = QLabel("Debug Logging Enable")
         self.Check_DebugLogEnable = QCheckBox()
-        #self.Check_DebugLogEnable.setCheckState(Qt.CheckState.Checked)
+        self.Check_DebugLogEnable.setCheckState(Qt.CheckState.Unchecked)
         
         self.layout.addWidget(self.Text_DebugLogEnable, 17, 0)
         self.layout.addWidget(self.Check_DebugLogEnable, 17, 1) 
@@ -276,6 +276,7 @@ class GeneralTab(QWidget):
         
     @Slot()
     def connect_to_device(self):
+        # TODO find out where this blocks!
         if self.Connected: return
         self.Text_ConnectStatus.setText("Connecting to AlphaScan...")
         if self._Device.connect_to_device():

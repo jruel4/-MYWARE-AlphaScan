@@ -169,7 +169,7 @@ class AlphaScanDevice:
         ###############################################################################
         # Get adc status
         ###############################################################################
-        if not self.IS_CONNECTED or self.DEV_streamActive.is_set():
+        if not self.IS_CONNECTED or (self.DEV_streamActive.is_set() and "ADC_start_stream" not in cmd):
             return "ILLEGAL: Must be connected and not streaming"
         try:
             self.flush_TCP()
