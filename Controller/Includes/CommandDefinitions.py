@@ -36,6 +36,7 @@ addCommand("ADC_stop_stream")
 addCommand("ADC_get_register")
 addCommand("ADC_update_register")
 addCommand("ADC_set_udp_delay")
+addCommand("ADC_send_hex_cmd")
 
 ###############################################################################
 # POWER

@@ -360,7 +360,8 @@ class AlphaScanDevice:
                     break
         return True
     
-    
+    def ADC_send_hex_cmd(self,cmd):
+        self.generic_tcp_command_BYTE("ADC_send_hex_cmd", chr(cmd))
     
     
     

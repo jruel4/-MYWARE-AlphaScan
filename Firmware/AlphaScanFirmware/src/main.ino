@@ -121,6 +121,7 @@ void BQ_writeRegister(uint8_t reg_addr, int num_reg, uint8_t* BQ_Set_Reg);
 void WiFi_WebUpdate();
 String GEN_ExtractNetParams(String,String);
 void DB_printDebug(const char* msg);
+uint8_t ADC_sendHexCommand(uint8_t cmd);
 
 ////////////////////////////////////////////////////////////////////////////////
 // Function definitions
@@ -536,6 +537,22 @@ void WiFi_ProcessTcpClientRequest() {
     client.print("Entering web_update mode");
     WiFi_WebUpdate();
   }
+
+  ////////////////////////////////////////////////////////////////////////////
+  else if(cmd == COMMAND_MAP_2_int["ADC_send_hex_cmd"])
+  {
+    if ((uint8_t)rx_buf[1] == 66) {
+      Serial.println("Retrieving data frame");
+      //TODO send 27 0x00 cmds to ADC for data frame
+    }
+    else {
+      Serial.print("Sending hex command to ADC: ");Serial.println(rx_buf[1], HEX);
+      uint8_t rx = ADC_sendHexCommand((uint8_t) rx_buf[1]);
+      Serial.print("Received: ");Serial.println(rx,BIN);
+    }
+
+  }
+
   ////////////////////////////////////////////////////////////////////////////
   else
   {
@@ -1220,6 +1237,12 @@ void ADC_ReadRegisters() {
 
 }
 
+uint8_t ADC_sendHexCommand(uint8_t cmd) {
+  ADC_SetupSPI();
+  uint8_t rx = SPI.transfer(cmd);
+  ADC_CloseSPI();
+  return rx;
+}
 ////////////////////////////////////////////////////////////////////////////////
 // Power Management IC (BQ25120)
 ////////////////////////////////////////////////////////////////////////////////

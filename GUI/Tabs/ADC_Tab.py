@@ -108,6 +108,20 @@ class ADC_REG_TAB( QWidget):
         mainLayout.addWidget(self.Button_LoadRegMap)
         self.Button_LoadRegMap.clicked.connect(self.load_reg_map)
         
+        # Send Hex command button
+        self.Line_HexCommand = QLineEdit("Enter integer here")
+        self.Button_HexCommand = QPushButton("Send Hex command")
+        self.Button_HexCommand.clicked.connect(self.send_hex_cmd)
+        nextRow = mainLayout.rowCount() + 1
+        mainLayout.addWidget(self.Line_HexCommand, nextRow,0)
+        mainLayout.addWidget(self.Button_HexCommand, nextRow,1)
+        
+    @Slot()
+    def send_hex_cmd(self):
+        cmd = int(self.Line_HexCommand.text())
+        #TODO add command input validation 
+        self._Device.generic_tcp_command_BYTE("ADC_send_hex_cmd", chr(cmd))
+        
     @Slot()
     def sync_registers_to_ads(self):
         
