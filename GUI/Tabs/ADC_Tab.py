@@ -15,13 +15,20 @@ class ADC_REG_TAB( QWidget):
         self._Device = Device
         self._Debug = Debug
         
-        # Create and set grid layout
-        mainLayout =  QGridLayout()        
-        self.setLayout(mainLayout)
+        # Create Scroll Area
+        self.scrollArea = QScrollArea(self)
+        self.scrollArea.setWidgetResizable(True)
+        
+        # Create Contailer
+        self.container = QWidget()
+        self.scrollArea.setWidget(self.container) 
+
+        # Create Layout        
+        mainLayout =  QGridLayout()   
+        self.container.setLayout(mainLayout)
         
         # Set layout formatting
         mainLayout.setAlignment(Qt.AlignTop)
-        #TODO mainLayout.setColumnStretch(10,1)
         
         # Define column labels
         colLabels = ['ADDRESS', 'REGISTER', 'DEFAULT', 'BIT_7', 'BIT_6', 'BIT_5', 'BIT_4', 'BIT_3', 'BIT_2', 'BIT_1', 'BIT_0', ]
@@ -158,5 +165,23 @@ class ADC_REG_TAB( QWidget):
                     self.ADC_RegMap[i][j] = False
     
     
-    
+    @Slot()
+    def update_geo(self):
+        self._Debug.append("self.geometry(): " + str(self.geometry()))
+        self._Debug.append("self.contentsRect(): " + str(self.contentsRect()))
+        self._Debug.append("self.getContentsMargins(): " + str(self.getContentsMargins()))
+        self._Debug.append("self.scrollArea.geometry(): " + str(self.scrollArea.geometry()))
+        self._Debug.append("self.container.geometry(): " + str(self.container.geometry()))
+        self._Debug.append("self.container.contentsRect(): " + str(self.container.contentsRect()))
+        self._Debug.append("self.scrollArea.getContentsMargins(): " + str(self.scrollArea.getContentsMargins()))
+        self._Debug.append("self.container.getContentsMargins(): " + str(self.container.getContentsMargins()))
+        self._Debug.append("self.geo.width: "+str(self.geometry().width()))
+        
+        self.scrollArea.setGeometry(0,0,self.geometry().width(), self.geometry().height())
+
+        self._Debug.append("---------------")
+        
+    def resizeEvent(self, event):
+        event.accept()
+        self.update_geo()
 
