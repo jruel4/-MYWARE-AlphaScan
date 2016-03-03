@@ -74,6 +74,10 @@ const uint8_t ADS_RREG_2  = (0x17); //read all 24 register(s)
 const uint8_t ADS_WREG_1  = (0x40); //write registers starting at 0
 const uint8_t ADS_WREG_2  = (0x00); //write one register
 
+const uint8_t ADS_BEG_SPI = (0xBB);
+const uint8_t ADS_END_SPI = (0xEE);
+const uint8_t ADS_GET_PKT = (0xDD);
+
 uint8_t AdsMap[24]        = {0};    //map of ADS registers
 int DRDY_PIN = 1;//IO1
 
@@ -541,14 +545,30 @@ void WiFi_ProcessTcpClientRequest() {
   ////////////////////////////////////////////////////////////////////////////
   else if(cmd == COMMAND_MAP_2_int["ADC_send_hex_cmd"])
   {
-    if ((uint8_t)rx_buf[1] == 66) {
+    Serial.println("Getting hex command from rx buf string");
+    int adc_cmd = (rx_buf_string.substring(rx_buf_string.indexOf("_b_")+3,rx_buf_string.indexOf("_e_"))).toInt();
+
+    Serial.print("Processing ADS command: ");Serial.println(adc_cmd,HEX);
+
+    if (adc_cmd == 189) {
       Serial.println("Retrieving data frame");
-      //TODO send 27 0x00 cmds to ADC for data frame
+
+      for (i=0;i<27;i++) {
+        Serial.println(SPI.transfer(0x00),BIN);
+      }
+    }
+    else if (adc_cmd == 187) {
+      Serial.println("Setting up SPI");
+      ADC_SetupSPI();
+    }
+    else if (adc_cmd == 188) {
+      Serial.println("Closing SPI");
+      ADC_CloseSPI();
     }
     else {
-      Serial.print("Sending hex command to ADC: ");Serial.println(rx_buf[1], HEX);
-      uint8_t rx = ADC_sendHexCommand((uint8_t) rx_buf[1]);
-      Serial.print("Received: ");Serial.println(rx,BIN);
+      Serial.print("Sending hex command to ADC: ");Serial.println(adc_cmd, HEX);
+      //uint8_t rx = ADC_sendHexCommand((uint8_t) rx_buf[1
+      Serial.print("Received: ");Serial.println(SPI.transfer((uint8_t)adc_cmd),BIN);
     }
 
   }
@@ -1158,7 +1178,7 @@ void ADC_StartDataStream() {
     // while(digitalRead(DRDY_PIN) == HIGH); //TODO define DRDY PIN INPUT, is this every time or just first time?
 
     // Read 8 channels of data + status register
-    for (i=0; i<26; i++) { // (3 byte sample * 8 channels) + 2 status reg
+    for (i=0; i<27; i++) { // (3 byte sample * 8 channels) + 2 status reg
       sample_buffer[i] = SPI.transfer(0x00); // Could fold this straignt into Udp.write...
     }
 
@@ -1238,11 +1258,10 @@ void ADC_ReadRegisters() {
 }
 
 uint8_t ADC_sendHexCommand(uint8_t cmd) {
-  ADC_SetupSPI();
   uint8_t rx = SPI.transfer(cmd);
-  ADC_CloseSPI();
   return rx;
 }
+
 ////////////////////////////////////////////////////////////////////////////////
 // Power Management IC (BQ25120)
 ////////////////////////////////////////////////////////////////////////////////

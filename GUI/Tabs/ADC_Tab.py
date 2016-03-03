@@ -119,8 +119,9 @@ class ADC_REG_TAB( QWidget):
     @Slot()
     def send_hex_cmd(self):
         cmd = int(self.Line_HexCommand.text())
+        self._Debug.append("Sending: "+str(cmd))
         #TODO add command input validation 
-        self._Device.generic_tcp_command_BYTE("ADC_send_hex_cmd", chr(cmd))
+        self._Device.generic_tcp_command_BYTE("ADC_send_hex_cmd", "_b_"+str(cmd)+"_e_")
         
     @Slot()
     def sync_registers_to_ads(self):
