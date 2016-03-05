@@ -79,7 +79,7 @@ const uint8_t ADS_END_SPI = (0xEE);
 const uint8_t ADS_GET_PKT = (0xDD);
 
 uint8_t AdsMap[24]        = {0};    //map of ADS registers
-int DRDY_PIN = 1;//IO1
+int DRDY_PIN = 15;//IO15 (Swapping with CS for test)
 
 ////////////////////////////////////////////////////////////////////////////////
 // BQ25120 Constants
@@ -1173,10 +1173,10 @@ void ADC_StartDataStream() {
     //////////////////////////////////////////
 
     // TODO Tie DRDY to transfer call, setup DRDY pin
-    // while(digitalRead(DRDY_PIN) == HIGH); //TODO define DRDY PIN INPUT, is this every time or just first time?
+    while(digitalRead(DRDY_PIN) == HIGH); //TODO define DRDY PIN INPUT, is this every time or just first time
 
     // Read 8 channels of data + status register
-    for (i=0; i<27; i++) { // (3 byte sample * 8 channels) + 2 status reg
+    for (i=0; i<27; i++) { // (3 byte sample * 8 channels) + 3 status reg
       sample_buffer[i] = SPI.transfer(0x00); // Could fold this straignt into Udp.write...
     }
 
@@ -1221,7 +1221,7 @@ void ADC_SetupSPI() {
   // NOTE eliminate pin manual pin usage for now
   // pinMode(15,OUTPUT); // Bit bang CS
   // digitalWrite(15,LOW); // Set CS Low for duration of serial comm
-  // pinMode(DRDY_PIN, INPUT);
+  pinMode(DRDY_PIN, INPUT);
   // TODO may want to reset ADS (reset) or just SPI interface (CS)
 }
 
