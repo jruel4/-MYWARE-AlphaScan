@@ -109,7 +109,7 @@ class ADC_REG_TAB( QWidget):
         self.Button_LoadRegMap.clicked.connect(self.load_reg_map)
         
         # Send Hex command button
-        self.Line_HexCommand = QLineEdit("Enter integer here")
+        self.Line_HexCommand = QLineEdit("0")
         self.Button_HexCommand = QPushButton("Send Hex command")
         self.Button_HexCommand.clicked.connect(self.send_hex_cmd)
         nextRow = mainLayout.rowCount() + 1

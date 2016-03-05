@@ -148,7 +148,7 @@ class AlphaScanDevice:
         while self.DEV_streamActive.is_set():
             try:
                 self.data = self.sock.recv(128)
-                self.inbuf += [ord(self.data[23:])]
+                self.inbuf += [ord(self.data[27:])]
                 # send to lsl stream
                 
                 self.outlet.push_sample(self.mysample)

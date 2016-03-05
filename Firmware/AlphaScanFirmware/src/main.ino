@@ -1142,10 +1142,8 @@ void ADC_StartDataStream() {
   //////////////////////////////////////////
   // Setup SPI
   //////////////////////////////////////////
-  uint8_t sample_buffer[26];
+  uint8_t sample_buffer[27];
   ADC_SetupSPI();
-  // Start read data continuous
-  SPI.transfer(ADS_RDATAC);
   // Send start opcode OR set START pin high
   SPI.transfer(ADS_START);
   ////////////////////////////////////////
@@ -1188,9 +1186,7 @@ void ADC_StartDataStream() {
 
     // Stream ADS1299 Data
     Udp.beginPacket(host_ip,UDP_port);
-    //TODO swap fake data for real
-    // for (i=0; i<26; i++) Udp.write(sample_buffer[i]);
-    Udp.write("Packet:                ");Udp.write(c);
+    Udp.write(sample_buffer,27);Udp.write(c);
     Udp.endPacket();
 
     // Log loop progress and delay
@@ -1221,6 +1217,7 @@ void ADC_SetupSPI() {
   SPI.begin();
   SPI.setDataMode(0);
   SPI.setFrequency(2000000);
+
   // NOTE eliminate pin manual pin usage for now
   // pinMode(15,OUTPUT); // Bit bang CS
   // digitalWrite(15,LOW); // Set CS Low for duration of serial comm
