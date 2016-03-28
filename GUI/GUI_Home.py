@@ -33,11 +33,10 @@ except: # could fail for reasons other than already exists...
 qApp.setStyle(u'Cleanlooks')
 #qt_app.setStyleSheet(qdarkstyle.load_stylesheet())
 
-class AlphaScanGui(QWidget): #TODO probably want something other than dialog here
+class AlphaScanGui(QWidget):
     def __init__(self, Device, fileName, parent=None):
         super(AlphaScanGui, self).__init__(parent)
         self._Device = Device
-        
         
         # Creat main layout
         mainLayout =  QVBoxLayout()

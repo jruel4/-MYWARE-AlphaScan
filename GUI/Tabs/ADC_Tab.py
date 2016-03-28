@@ -96,7 +96,7 @@ class ADC_REG_TAB( QWidget):
         # Add Button_UpdateRegister
         self.Button_UpdateRegister = QPushButton("Update Registers")
         mainLayout.addWidget(self.Button_UpdateRegister)
-        self.Button_UpdateRegister.clicked.connect(self.sync_registers_to_ads)
+        self.Button_UpdateRegister.clicked.connect(self.pull_registers_from_ads)
         
         # Save reg_map button
         self.Button_SaveRegMap = QPushButton("Save Reg Map")
@@ -124,10 +124,10 @@ class ADC_REG_TAB( QWidget):
         self._Device.generic_tcp_command_BYTE("ADC_send_hex_cmd", "_b_"+str(cmd)+"_e_")
         
     @Slot()
-    def sync_registers_to_ads(self):
+    def pull_registers_from_ads(self):
         
         # TODO check to ensure that (not streaming) and (connected)
-        self.ADC_RegMap = self._Device.sync_adc_registers()
+        self.ADC_RegMap = self._Device.pull_adc_registers()
         
         # set all check boxes to match RegMap
         for i in range(len(self.rowDict)):

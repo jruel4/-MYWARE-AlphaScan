@@ -553,9 +553,14 @@ void WiFi_ProcessTcpClientRequest() {
     if (adc_cmd == 189) {
       Serial.println("Retrieving data frame");
 
+      //digitalWrite(15,LOW);
+
       for (i=0;i<27;i++) {
         Serial.println(SPI.transfer(0x00),BIN);
+        //delay(1);
       }
+
+      //digitalWrite(15,HIGH);
     }
     else if (adc_cmd == 187) {
       Serial.println("Setting up SPI");
@@ -565,10 +570,16 @@ void WiFi_ProcessTcpClientRequest() {
       Serial.println("Closing SPI");
       ADC_CloseSPI();
     }
+    else if (adc_cmd == 190) {
+      Serial.println("Configuring for square wave test");
+      ADC_SquareTest();
+    }
     else {
       Serial.print("Sending hex command to ADC: ");Serial.println(adc_cmd, HEX);
       //uint8_t rx = ADC_sendHexCommand((uint8_t) rx_buf[1
+      //digitalWrite(15,LOW);
       Serial.print("Received: ");Serial.println(SPI.transfer((uint8_t)adc_cmd),BIN);
+      //digitalWrite(15,HIGH);
     }
 
   }
@@ -633,8 +644,8 @@ void WiFi_ListenUdpBeacon() {
         Serial.println("");
       }
     }
+    }
   }
-}
 }
 
 void WiFi_EstTcpHostConn() {
@@ -1139,6 +1150,10 @@ void ADC_StartDataStream() {
   int noBytes = 0;
   uint32_t c  = 0;
 
+  // Clear out input buffer
+  noBytes = Udp.parsePacket();
+  if (noBytes) noBytes = Udp.parsePacket();
+
   //////////////////////////////////////////
   // Setup SPI
   //////////////////////////////////////////
@@ -1164,6 +1179,7 @@ void ADC_StartDataStream() {
         Serial.println(" terminating stream");
         // Close SPI
         ADC_CloseSPI();
+
         return;
       }
     }
@@ -1172,8 +1188,16 @@ void ADC_StartDataStream() {
     // Wait for DRDY LOW then Transfer data
     //////////////////////////////////////////
 
-    // TODO Tie DRDY to transfer call, setup DRDY pin
-    while(digitalRead(DRDY_PIN) == HIGH); //TODO define DRDY PIN INPUT, is this every time or just first time
+    int drdy_count = 0;
+    pinMode(15,INPUT);
+    while(digitalRead(DRDY_PIN) == HIGH) {
+      drdy_count++;
+      if (drdy_count > 10000) {
+        Serial.println("DRDY timed out");
+        ADC_CloseSPI();
+        return;
+      }
+    }
 
     // Read 8 channels of data + status register
     for (i=0; i<27; i++) { // (3 byte sample * 8 channels) + 3 status reg
@@ -1204,6 +1228,8 @@ void ADC_StartDataStream() {
 
 void ADC_GetRegisterContents() {
   client.print("Here is your register contents.");
+  // TODO fill in SPI controls for getting register contents
+
 }
 
 void ADC_SetUdpDelay() {
@@ -1221,13 +1247,17 @@ void ADC_SetupSPI() {
   // NOTE eliminate pin manual pin usage for now
   // pinMode(15,OUTPUT); // Bit bang CS
   // digitalWrite(15,LOW); // Set CS Low for duration of serial comm
-  pinMode(DRDY_PIN, INPUT);
+  //pinMode(15, OUTPUT);
+  //digitalWrite(15,HIGH);
   // TODO may want to reset ADS (reset) or just SPI interface (CS)
 }
 
 void ADC_CloseSPI() {
   // Close ADS SPI Interface
-  // TODO uncomment this: digitalWrite(15,HIGH);
+  // TODO uncomment this: digitalWrite(CS_PIN,HIGH);
+  SPI.transfer(ADS_SDATAC);
+  delay(1);
+  SPI.transfer(ADS_STOP);
   SPI.end();
 }
 
@@ -1252,6 +1282,36 @@ void ADC_ReadRegisters() {
   // Close SPI
   ADC_CloseSPI();
 
+}
+
+void ADC_SquareTest() {
+
+  // SDATAC
+  SPI.transfer(ADS_SDATAC);
+  delay(1);
+
+  SPI.transfer(ADS_WREG_1 | 0x1); // write starting at 1 (config1)
+  delay(1);
+  SPI.transfer(0x1); //write 2 registers( config 1 and 2 )
+  delay(1);
+
+  // WREG CONFIG 1 96h
+  SPI.transfer(0x96);
+  delay(1);
+  // WREG CONFIG 2 D0h
+  SPI.transfer(0xD0);
+  delay(1);
+
+  // WREG CHnSET   05h (for all channels)
+  SPI.transfer(ADS_WREG_1 | 0x5);// write starting at 5 (CH1Set)
+  delay(1);
+  SPI.transfer(0x7); //write 8 registers (all CHnSets)
+  delay(1);
+  int i = 0;
+  for (i = 0; i<8; i++) {
+    SPI.transfer(0x05);
+    delay(1);
+  }
 }
 
 uint8_t ADC_sendHexCommand(uint8_t cmd) {

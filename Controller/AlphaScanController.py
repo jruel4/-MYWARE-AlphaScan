@@ -27,7 +27,7 @@ class AlphaScanDevice:
         self.num = 10
         self.MESSAGE = chr(self.num)
         self.num_iter = self.num * 100
-        self.errors = 0
+        self.skips = 0
         self.reads = 0
         self.DEV_streamActive = Event()
         self.DEV_streamActive.clear()
@@ -37,6 +37,13 @@ class AlphaScanDevice:
         self.begin = 0
         self.end = 0
         self.IS_CONNECTED = False
+        self.time_alpha = 0
+        self.time_beta = 0
+        self.time_intervals = list()
+        self.time_interval_count = 0
+        
+        self.sqwave = list()
+        
         
         self.info = StreamInfo('AlphaScan', 'EEG', 8, 100, 'float32', 'myuid34234')
         self.outlet = StreamOutlet(self.info)
@@ -133,14 +140,17 @@ class AlphaScanDevice:
             pass
     
     def DEV_printStream(self):
+        global sqwave
         ###############################################################################
         # UDP Stream thread target
         ###############################################################################
 
-        self.errors = 0
+        self.skips = 0
         self.reads = 0
         self.unknown_stream_errors = 0
+        self.time_interval_count = 0
         self.inbuf = list()
+        self.time_intervals = list()
         self.DEV_streamActive.set()
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.sock.bind(('',self.UDP_PORT))
@@ -149,14 +159,16 @@ class AlphaScanDevice:
             try:
                 self.data = self.sock.recv(128)
                 self.inbuf += [ord(self.data[27:])]
-                # send to lsl stream
-                
+                self.sqwave += [self.data]
                 self.outlet.push_sample(self.mysample)
-                
                 self.reads += 1
+                
+                #TODO count interval
+                self.count_time_interval()
+                
             except socket.error as e:
                 if e.errno == 10035:
-                    self.errors += 1
+                    self.skips += 1
                 elif e.errno == 9:
                     self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
                     self.sock.bind(('',self.UDP_PORT))
@@ -215,12 +227,26 @@ class AlphaScanDevice:
             r_string = 'no_response'
         return r_string
     
-    def sync_adc_registers(self):
+    def pull_adc_registers(self): 
         ###############################################################################
         # Get all registers and return as list of lists
         ###############################################################################
-        return [[True if i % 2 == 0 else False for i in range(8)] for j in range(24)]
-
+        
+        # send generic command to retrieve adc registers
+        self.generic_tcp_command_BYTE("ADC_get_register")
+        # wait for response, loop a few times to account for possible delay then timeout
+        for i in range(4):
+            time.sleep(0.05)
+            r = self.read_tcp(num_bytes=2048) # ensure this is enough to get whole map
+            if (len(r) > 24) and ("_b_adc_map_" in r) and ("_e_adc_map_" in r):
+                # TODO parse r for map reg format
+                pass
+                # return map
+            else:
+                continue
+        
+        return False # Create better error message here, or use proper exception handling...
+            
 
     def initiate_UDP_stream(self):
         ###############################################################################
@@ -362,6 +388,18 @@ class AlphaScanDevice:
     
     def ADC_send_hex_cmd(self,cmd):
         self.generic_tcp_command_BYTE("ADC_send_hex_cmd", chr(cmd))
+        
+    def count_time_interval(self):
+        self.time_beta = time.time()
+        self.time_interval_count += 1
+        try:        
+            if (self.inbuf[-1] == (self.inbuf[-2] + 1)):
+                self.time_intervals += [self.time_beta - self.time_alpha]
+        except:
+            pass
+        self.time_alpha = self.time_beta
+            
+                
     
     
     
@@ -373,5 +411,6 @@ class AlphaScanDevice:
     
     
     
-    
+
+
     
