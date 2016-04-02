@@ -50,8 +50,8 @@ const char command_map_path[]        = "/command_map.txt"; //
 String firmware_version              = "0.0.6";            //
 
 enum T_SYSTEM_STATE {
-  AP_MODE,
-  RUN_MODE
+    AP_MODE,
+    RUN_MODE
 } SYSTEM_STATE;
 
 std::map<uint8_t, String> COMMAND_MAP_2_str;
@@ -136,35 +136,35 @@ uint8_t ADC_sendHexCommand(uint8_t cmd);
 ////////////////////////////////////////////////////////////////////////////////
 void setup() {
 
-  GEN_Setup();
-  FS_LoadCommandMap();
-  FS_ReadFsNetParams();
-  AP_ReadNetParams();
-  WiFi_ConnectToWan();
-  WiFi_ListenUdpBeacon();
+    GEN_Setup();
+    FS_LoadCommandMap();
+    FS_ReadFsNetParams();
+    AP_ReadNetParams();
+    WiFi_ConnectToWan();
+    WiFi_ListenUdpBeacon();
 }
 
 void loop() {
 
-  switch (SYSTEM_STATE) {
-    case AP_MODE:
-    {
-      AP_ReadNetParams();
-      WiFi_ConnectToWan();
-      break;
+    switch (SYSTEM_STATE) {
+        case AP_MODE:
+            {
+                AP_ReadNetParams();
+                WiFi_ConnectToWan();
+                break;
+            }
+        case RUN_MODE:
+            {
+                WiFi_EstTcpHostConn();
+                WiFi_ProcessTcpClientRequest();
+                break;
+            }
+        default:
+            {
+                Serial.println("Invalid SYSTEM_STATE");
+                break;
+            }
     }
-    case RUN_MODE:
-    {
-      WiFi_EstTcpHostConn();
-      WiFi_ProcessTcpClientRequest();
-      break;
-    }
-    default:
-    {
-      Serial.println("Invalid SYSTEM_STATE");
-      break;
-    }
-  }
 
 }
 
@@ -173,102 +173,102 @@ void loop() {
 ////////////////////////////////////////////////////////////////////////////////
 void GEN_Setup() {
 
-  Serial.begin(74880);
-  Serial.println("");
-  Serial.println("Firmware version: "+firmware_version);
+    Serial.begin(74880);
+    Serial.println("");
+    Serial.println("Firmware version: "+firmware_version);
 
 
 }
 
 bool GEN_ParseCommandMap() {
 
-  // loop over string contents until key,value pairs are exhausted
-  //Serial.print("low level buf: ");int i; for (i=0; i<1024; i++) {Serial.print(rx_buf[i]);}
-  Serial.print("Rx Map: "); Serial.println(rx_buf_string);
+    // loop over string contents until key,value pairs are exhausted
+    //Serial.print("low level buf: ");int i; for (i=0; i<1024; i++) {Serial.print(rx_buf[i]);}
+    Serial.print("Rx Map: "); Serial.println(rx_buf_string);
 
-  std::map<uint8_t, String> new_map;
-  int begin = 1;
-  int end = 0;
-  String cmd_pair;
+    std::map<uint8_t, String> new_map;
+    int begin = 1;
+    int end = 0;
+    String cmd_pair;
 
-  // debuf values
-  String key;
-  int value;
+    // debuf values
+    String key;
+    int value;
 
-  while (end > -1) {
+    while (end > -1) {
 
-    Serial.println("Processing k,v pair...");
+        Serial.println("Processing k,v pair...");
 
-    end = rx_buf_string.indexOf(',',begin+1); // not sure if search include begin index
+        end = rx_buf_string.indexOf(',',begin+1); // not sure if search include begin index
 
-    Serial.print("found end:   "); Serial.println(end);
-    Serial.print("found begin: "); Serial.println(begin);
+        Serial.print("found end:   "); Serial.println(end);
+        Serial.print("found begin: "); Serial.println(begin);
 
-    if (end > -1) {
-      cmd_pair = rx_buf_string.substring(begin, end);
-      Serial.print("cmd_pair: "); Serial.println(cmd_pair);
-      // search for single quotes to extract key
-      key = cmd_pair.substring(cmd_pair.indexOf("'")+1, cmd_pair.lastIndexOf("'")); // NOTE: might need to escape backslash
-      Serial.print("key: ");Serial.println(key);
-      // search for colon to find value
-      value = (cmd_pair.substring(cmd_pair.indexOf(":")+2, end - 1)).toInt();
-      Serial.print("value: "); Serial.println(value);
+        if (end > -1) {
+            cmd_pair = rx_buf_string.substring(begin, end);
+            Serial.print("cmd_pair: "); Serial.println(cmd_pair);
+            // search for single quotes to extract key
+            key = cmd_pair.substring(cmd_pair.indexOf("'")+1, cmd_pair.lastIndexOf("'")); // NOTE: might need to escape backslash
+            Serial.print("key: ");Serial.println(key);
+            // search for colon to find value
+            value = (cmd_pair.substring(cmd_pair.indexOf(":")+2, end - 1)).toInt();
+            Serial.print("value: "); Serial.println(value);
 
-      // TODO check for general validity of k,v pair, if invalid then continue
-      // if (key == 0) continue;
+            // TODO check for general validity of k,v pair, if invalid then continue
+            // if (key == 0) continue;
 
-      // Add new k,v pair to new_map
-      new_map[value] = key;
+            // Add new k,v pair to new_map
+            new_map[value] = key;
 
-      // update begin index
-      begin = end;
+            // update begin index
+            begin = end;
+        }
     }
-  }
 
-  if (new_map.size() < 5) {
-    Serial.println("map validation failed");
-    return false;
-  }
+    if (new_map.size() < 5) {
+        Serial.println("map validation failed");
+        return false;
+    }
 
-  // set COMMAND_MAP_2_str to new_map
-  COMMAND_MAP_2_str = new_map;
+    // set COMMAND_MAP_2_str to new_map
+    COMMAND_MAP_2_str = new_map;
 
-  // copy command map inverse
-  GEN_CopyCommandMapToStr();
+    // copy command map inverse
+    GEN_CopyCommandMapToStr();
 
-  Serial.println("Finished parsing new map.");
-  return true;
+    Serial.println("Finished parsing new map.");
+    return true;
 }
 
 void GEN_LoadDefaultCommandMap() {
 
-  Serial.println("loading default command map");
-  COMMAND_MAP_2_str[1] = "GEN_get_status";
-  COMMAND_MAP_2_str[2] = "GEN_start_ota";
-  COMMAND_MAP_2_str[3] = "GEN_start_ap";
-  COMMAND_MAP_2_str[4] = "ADC_start_stream";
-  COMMAND_MAP_2_str[5] = "ADC_stop_stream";
-  COMMAND_MAP_2_str[6] = "ADC_get_register";
-  COMMAND_MAP_2_str[7] = "ADC_update_register";
-  COMMAND_MAP_2_str[8] = "ACC_get_status";
-  COMMAND_MAP_2_str[9] = "PWR_get_status";
-  COMMAND_MAP_2_str[10] = "FS_Format_fs";
+    Serial.println("loading default command map");
+    COMMAND_MAP_2_str[1] = "GEN_get_status";
+    COMMAND_MAP_2_str[2] = "GEN_start_ota";
+    COMMAND_MAP_2_str[3] = "GEN_start_ap";
+    COMMAND_MAP_2_str[4] = "ADC_start_stream";
+    COMMAND_MAP_2_str[5] = "ADC_stop_stream";
+    COMMAND_MAP_2_str[6] = "ADC_get_register";
+    COMMAND_MAP_2_str[7] = "ADC_update_register";
+    COMMAND_MAP_2_str[8] = "ACC_get_status";
+    COMMAND_MAP_2_str[9] = "PWR_get_status";
+    COMMAND_MAP_2_str[10] = "FS_Format_fs";
 
-  GEN_CopyCommandMapToStr();
+    GEN_CopyCommandMapToStr();
 }
 
 void GEN_CopyCommandMapToStr() {
-  // takes <uint8_t,String> and flip copies to <String, uint8_t>
-  typedef std::map<uint8_t, String>::iterator it_type;
-  for (it_type iterator = COMMAND_MAP_2_str.begin(); iterator != COMMAND_MAP_2_str.end(); iterator++) {
-    COMMAND_MAP_2_int[iterator->second] = iterator->first;
-  }
+    // takes <uint8_t,String> and flip copies to <String, uint8_t>
+    typedef std::map<uint8_t, String>::iterator it_type;
+    for (it_type iterator = COMMAND_MAP_2_str.begin(); iterator != COMMAND_MAP_2_str.end(); iterator++) {
+        COMMAND_MAP_2_int[iterator->second] = iterator->first;
+    }
 }
 
 String GEN_ExtractNetParams(String Request, String delimeter) {
-  // Standard request syntax is "delimeter_value_enddelimeter"
-  // This method extracts "value"
-  return Request.substring( (Request.indexOf(delimeter) + delimeter.length() + 1), Request.indexOf("end"+delimeter) - 1);
+    // Standard request syntax is "delimeter_value_enddelimeter"
+    // This method extracts "value"
+    return Request.substring( (Request.indexOf(delimeter) + delimeter.length() + 1), Request.indexOf("end"+delimeter) - 1);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -276,663 +276,676 @@ String GEN_ExtractNetParams(String Request, String delimeter) {
 ////////////////////////////////////////////////////////////////////////////////
 void WiFi_ConnectToWan() {
 
-  WiFi.begin(ssid, password);
+    WiFi.begin(ssid, password);
 
-  int attempts = 0;
-  while (WiFi.status() != WL_CONNECTED) {
-    delay(500);
-    Serial.print(".");
-    attempts++;
+    int attempts = 0;
+    while (WiFi.status() != WL_CONNECTED) {
+        delay(500);
+        Serial.print(".");
+        attempts++;
 
-    if (attempts > 40) { // may want to tune this number up for poor connections
-      Serial.println("WiFi parameters appear to be invalid, switching to AP Mode...");
-      SYSTEM_STATE = AP_MODE;
-      return;
+        if (attempts > 40) { // may want to tune this number up for poor connections
+            Serial.println("WiFi parameters appear to be invalid, switching to AP Mode...");
+            SYSTEM_STATE = AP_MODE;
+            return;
+        }
     }
-  }
-  Serial.println("");
-  Serial.println("WiFi connected");
-  Serial.println("IP address: ");
-  IPAddress myIP = WiFi.localIP();
-  sprintf(localIpString, "%d.%d.%d.%d", myIP[0], myIP[1], myIP[2], myIP[3]);
-  Serial.println(localIpString);
+    Serial.println("");
+    Serial.println("WiFi connected");
+    Serial.println("IP address: ");
+    IPAddress myIP = WiFi.localIP();
+    sprintf(localIpString, "%d.%d.%d.%d", myIP[0], myIP[1], myIP[2], myIP[3]);
+    Serial.println(localIpString);
 
-  Udp.begin(UDP_port);
-  DebugUdp.begin(DEBUG_port);
+    Udp.begin(UDP_port);
+    DebugUdp.begin(DEBUG_port);
 
-  SYSTEM_STATE = RUN_MODE;
+    SYSTEM_STATE = RUN_MODE;
 }
 
 void WiFi_ProcessTcpClientRequest() {
-  int i;
-  // Check for command from host
-  int avail = client.available();
+    int i;
+    // Check for command from host
+    int avail = client.available();
 
-  if (avail) {
-    for (i=0; i < avail; i++) {
-      rx_buf[i] = client.read();
-    }
-    rx_buf[avail] = '\0';
-  }
-  else {
-    return;
-  }
-
-  rx_buf_string = String("");
-  for (i=0; i<avail; i++) {
-    rx_buf_string += rx_buf[i];
-  }
-
-  // Extract command byte
-  uint8_t cmd = (uint8_t) rx_buf[0];
-  Serial.print("Executing command: "); Serial.println(COMMAND_MAP_2_str[cmd]);
-
-  ////////////////////////////////////////////////////////////////////////////
-  if (cmd ==  0x00) // Update command map -- this is always command 0x00
-  {
-
-    Serial.println("updating command map...");
-    client.print("updating map_command");
-    delay(10);
-    if (GEN_ParseCommandMap()) {
-      FS_SaveCommandMap();
+    if (avail) {
+        for (i=0; i < avail; i++) {
+            rx_buf[i] = client.read();
+        }
+        rx_buf[avail] = '\0';
     }
     else {
-      Serial.println("map map parse failed");
-    }
-  }
-
-  ////////////////////////////////////////////////////////////////////////////
-  else if (cmd ==  0x01) //OTA update
-  {
-    client.print("Entering OTA Mode"); // NOTE might need more wait that this... since we then shutfown current WiFi setup
-    DB_printDebug("Device is entering OTA Mode. You must use OTA or reset device manually.");
-    delay(10);
-    OTA_Handle();
-
-  }
-
-  ////////////////////////////////////////////////////////////////////////////
-  else if (cmd == 0x02) // Alive query
-  {
-    client.print("_ALIVE_ACK_");
-  }
-
-  ////////////////////////////////////////////////////////////////////////////
-  else if (cmd ==  COMMAND_MAP_2_int["ADC_start_stream"]) //start streaming adc data
-  {
-    client.print("Initializing ADC stream");
-    DB_printDebug("Initializeing ADC stream");
-    delay(1);
-    ADC_StartDataStream();
-
-  }
-
-  ////////////////////////////////////////////////////////////////////////////
-  else if (cmd ==  COMMAND_MAP_2_int["ADC_get_register"]) // get ADS1299 registers
-  {
-    ADC_GetRegisterContents();
-
-  }
-
-  ////////////////////////////////////////////////////////////////////////////
-  else if (cmd ==  COMMAND_MAP_2_int["ADC_stop_stream"]) //stop streaming adc data
-  {
-    // this command does nothing in this context
-
-  }
-
-  ////////////////////////////////////////////////////////////////////////////
-  else if (cmd ==  COMMAND_MAP_2_int["ACC_get_status"]) //read accelerometer data
-  {
-    client.print("Here is your accelerometer data");
-
-  }
-
-  ////////////////////////////////////////////////////////////////////////////
-  else if (cmd ==  COMMAND_MAP_2_int["PWR_get_status"]) //read pwr data
-  {
-    client.print("Here is your power data");
-
-  }
-
-  ////////////////////////////////////////////////////////////////////////////
-  else if (cmd ==  COMMAND_MAP_2_int["GEN_get_status"]) //information request
-  {
-    client.print("Dear host, here is your information");
-
-  }
-
-  ////////////////////////////////////////////////////////////////////////////
-  else if (cmd ==  COMMAND_MAP_2_int["ADC_update_register"]) //update register contents
-  {
-    Serial.println("Received request to update ADC registers");
-
-  }
-
-  ////////////////////////////////////////////////////////////////////////////
-  else if (cmd ==  COMMAND_MAP_2_int["GEN_start_ap"]) //AP mode
-  {
-    client.print("Entering ap_mode");
-    delay(500);
-    client.stop();
-    delay(1);
-    Serial.println("Forcing AP Mode");
-    SYSTEM_STATE = AP_MODE;
-    network_set = host_ip_set = ssid_set = password_set = false;
-
-  }
-
-  ////////////////////////////////////////////////////////////////////////////
-  else if(cmd == COMMAND_MAP_2_int["GEN_get_dev_ip"])
-  {
-    // send currently allocated device IP
-    Serial.print("sending back local ip: "); Serial.println(localIpString);
-    client.print(localIpString);
-    DB_printDebug("Device Ip is: ");
-    DB_printDebug(localIpString);
-  }
-
-  ////////////////////////////////////////////////////////////////////////////
-  else if (cmd == COMMAND_MAP_2_int["GEN_listen_beacon"])
-  {
-    WiFi_ListenUdpBeacon();
-  }
-
-  ////////////////////////////////////////////////////////////////////////////
-  else if (cmd == COMMAND_MAP_2_int["ADC_set_udp_delay"])
-  {
-    Serial.println("setting udp stream delay");
-    ADC_SetUdpDelay();
-  }
-
-  ////////////////////////////////////////////////////////////////////////////
-  else if (cmd == COMMAND_MAP_2_int["FS_format_fs"])
-  {
-    FS_Format();
-  }
-
-  ////////////////////////////////////////////////////////////////////////////
-  else if (cmd == COMMAND_MAP_2_int["FS_get_net_params"])
-  {
-    FS_SendNetParams();
-  }
-
-  ////////////////////////////////////////////////////////////////////////////
-  else if (cmd == COMMAND_MAP_2_int["FS_get_fs_info"])
-  {
-    FS_GetFsInfo();
-  }
-
-  ////////////////////////////////////////////////////////////////////////////
-  else if (cmd == COMMAND_MAP_2_int["FS_get_command_map"])
-  {
-    FS_SendCommandMap();
-  }
-
-  ////////////////////////////////////////////////////////////////////////////
-  else if (cmd == COMMAND_MAP_2_int["GEN_get_sys_params"])
-  {
-    client.print("Retrieving parameters, please wait about 10 seconds...");
-    Serial.println("retrieving system parameters");
-    DB_printDebug("retrieving system parameters, please wait...");
-
-    //retrieve system parameters
-    client.print("begin_sys_commands");
-    client.print(",vcc:");
-    client.print(ESP.getVcc());
-
-    client.print(",free_heap:");
-    client.print(ESP.getFreeHeap());
-
-    client.print(",mcu_chip_id:");
-    client.print(ESP.getChipId());
-
-    client.print(",sdk_ver:");
-    client.print(ESP.getSdkVersion()); //NOTE this string length should be enough...
-
-    client.print(",boot_ver:");
-    client.print(ESP.getBootVersion());
-
-    client.print(",boot_mode:");
-    client.print(ESP.getBootMode());
-
-    client.print(",cpu_freq_mhz:");
-    client.print(ESP.getCpuFreqMHz());
-
-    client.print(",flash_chip_id:");
-    client.print(ESP.getFlashChipId());
-
-    //gets the actual chip size based on the flash id
-    client.print(",flash_chip_real_size:");
-    client.print(ESP.getFlashChipRealSize());
-
-    //gets the size of the flash as set by the compiler
-    client.print(",flash_chip_size:");
-    client.print(ESP.getFlashChipSize());
-
-    client.print(",flash_chip_speed:");
-    client.print(ESP.getFlashChipSpeed());
-
-    client.print(",flash_chip_mode:");
-    client.print(ESP.getFlashChipMode());
-
-    //TODO support this in controller/GUI
-    client.print(",free_sketch_space:");
-    client.print(ESP.getFreeSketchSpace());
-
-    client.print(",end_sys_commands");
-    Serial.println("finished sending systems params to host.");
-    DB_printDebug("Finished retrieving, you may now load data.");
-
-  }
-
-  ////////////////////////////////////////////////////////////////////////////
-  else if (cmd == COMMAND_MAP_2_int["GEN_reset_device"])
-  {
-    Serial.println("Resetting Device");
-    client.print("Resetting Device");
-    ESP.reset(); // difference between reset and restart?
-  }
-
-  ////////////////////////////////////////////////////////////////////////////
-  else if (cmd == COMMAND_MAP_2_int["GEN_web_update"])
-  {
-    client.print("Entering web_update mode");
-    WiFi_WebUpdate();
-  }
-
-  ////////////////////////////////////////////////////////////////////////////
-  else if(cmd == COMMAND_MAP_2_int["ADC_send_hex_cmd"])
-  {
-    Serial.println("Getting hex command from rx buf string");
-    int adc_cmd = (rx_buf_string.substring(rx_buf_string.indexOf("_b_")+3,rx_buf_string.indexOf("_e_"))).toInt();
-
-    Serial.print("Processing ADS command: ");Serial.println(adc_cmd,HEX);
-
-    if (adc_cmd == 189) {
-      Serial.println("Retrieving data frame");
-
-      //digitalWrite(15,LOW);
-
-      for (i=0;i<27;i++) {
-        Serial.println(SPI.transfer(0x00),BIN);
-        //delay(1);
-      }
-
-      //digitalWrite(15,HIGH);
-    }
-    else if (adc_cmd == 187) {
-      Serial.println("Setting up SPI");
-      ADC_SetupSPI();
-    }
-    else if (adc_cmd == 188) {
-      Serial.println("Closing SPI");
-      ADC_CloseSPI();
-    }
-    else if (adc_cmd == 190) {
-      Serial.println("Configuring for square wave test");
-      ADC_SquareTest();
-    }
-    else {
-      Serial.print("Sending hex command to ADC: ");Serial.println(adc_cmd, HEX);
-      //uint8_t rx = ADC_sendHexCommand((uint8_t) rx_buf[1
-      //digitalWrite(15,LOW);
-      Serial.print("Received: ");Serial.println(SPI.transfer((uint8_t)adc_cmd),BIN);
-      //digitalWrite(15,HIGH);
+        return;
     }
 
-  }
+    rx_buf_string = String("");
+    for (i=0; i<avail; i++) {
+        rx_buf_string += rx_buf[i];
+    }
 
-  ////////////////////////////////////////////////////////////////////////////
-  else
-  {
-    Serial.print("Unknown Command");
-  }
+    // Extract command byte
+    uint8_t cmd = (uint8_t) rx_buf[0];
+    Serial.print("Executing command: "); Serial.println(COMMAND_MAP_2_str[cmd]);
+
+    ////////////////////////////////////////////////////////////////////////////
+    if (cmd ==  0x00) // Update command map -- this is always command 0x00
+    {
+
+        Serial.println("updating command map...");
+        client.print("updating map_command");
+        delay(10);
+        if (GEN_ParseCommandMap()) {
+            FS_SaveCommandMap();
+        }
+        else {
+            Serial.println("map map parse failed");
+        }
+    }
+
+    ////////////////////////////////////////////////////////////////////////////
+    else if (cmd ==  0x01) //OTA update
+    {
+        client.print("Entering OTA Mode"); // NOTE might need more wait that this... since we then shutfown current WiFi setup
+        DB_printDebug("Device is entering OTA Mode. You must use OTA or reset device manually.");
+        delay(10);
+        OTA_Handle();
+
+    }
+
+    ////////////////////////////////////////////////////////////////////////////
+    else if (cmd == 0x02) // Alive query
+    {
+        client.print("_ALIVE_ACK_");
+    }
+
+    ////////////////////////////////////////////////////////////////////////////
+    else if (cmd ==  COMMAND_MAP_2_int["ADC_start_stream"]) //start streaming adc data
+    {
+        client.print("Initializing ADC stream");
+        DB_printDebug("Initializeing ADC stream");
+        delay(1);
+        ADC_StartDataStream();
+
+    }
+
+    ////////////////////////////////////////////////////////////////////////////
+    else if (cmd ==  COMMAND_MAP_2_int["ADC_get_register"]) // get ADS1299 registers
+    {
+        ADC_GetRegisterContents();
+
+        // simply return fake register map for now
+        char map_buf[30];
+        map_buf[0] = 'b';
+        map_buf[1] = 'b';
+        map_buf[2] = 'b';
+        int i;
+        for (i=3; i<27; i++) {
+            map_buf[i] = 0xf0;
+        }
+        map_buf[27] = 'e';
+        map_buf[28] = 'e';
+        map_buf[29] = 'e';
+        client.print(map_buf);
+    }
+
+    ////////////////////////////////////////////////////////////////////////////
+    else if (cmd ==  COMMAND_MAP_2_int["ADC_stop_stream"]) //stop streaming adc data
+    {
+        // this command does nothing in this context
+
+    }
+
+    ////////////////////////////////////////////////////////////////////////////
+    else if (cmd ==  COMMAND_MAP_2_int["ACC_get_status"]) //read accelerometer data
+    {
+        client.print("Here is your accelerometer data");
+
+    }
+
+    ////////////////////////////////////////////////////////////////////////////
+    else if (cmd ==  COMMAND_MAP_2_int["PWR_get_status"]) //read pwr data
+    {
+        client.print("Here is your power data");
+
+    }
+
+    ////////////////////////////////////////////////////////////////////////////
+    else if (cmd ==  COMMAND_MAP_2_int["GEN_get_status"]) //information request
+    {
+        client.print("Dear host, here is your information");
+
+    }
+
+    ////////////////////////////////////////////////////////////////////////////
+    else if (cmd ==  COMMAND_MAP_2_int["ADC_update_register"]) //update register contents
+    {
+        Serial.println("Received request to update ADC registers");
+
+    }
+
+    ////////////////////////////////////////////////////////////////////////////
+    else if (cmd ==  COMMAND_MAP_2_int["GEN_start_ap"]) //AP mode
+    {
+        client.print("Entering ap_mode");
+        delay(500);
+        client.stop();
+        delay(1);
+        Serial.println("Forcing AP Mode");
+        SYSTEM_STATE = AP_MODE;
+        network_set = host_ip_set = ssid_set = password_set = false;
+
+    }
+
+    ////////////////////////////////////////////////////////////////////////////
+    else if(cmd == COMMAND_MAP_2_int["GEN_get_dev_ip"])
+    {
+        // send currently allocated device IP
+        Serial.print("sending back local ip: "); Serial.println(localIpString);
+        client.print(localIpString);
+        DB_printDebug("Device Ip is: ");
+        DB_printDebug(localIpString);
+    }
+
+    ////////////////////////////////////////////////////////////////////////////
+    else if (cmd == COMMAND_MAP_2_int["GEN_listen_beacon"])
+    {
+        WiFi_ListenUdpBeacon();
+    }
+
+    ////////////////////////////////////////////////////////////////////////////
+    else if (cmd == COMMAND_MAP_2_int["ADC_set_udp_delay"])
+    {
+        Serial.println("setting udp stream delay");
+        ADC_SetUdpDelay();
+    }
+
+    ////////////////////////////////////////////////////////////////////////////
+    else if (cmd == COMMAND_MAP_2_int["FS_format_fs"])
+    {
+        FS_Format();
+    }
+
+    ////////////////////////////////////////////////////////////////////////////
+    else if (cmd == COMMAND_MAP_2_int["FS_get_net_params"])
+    {
+        FS_SendNetParams();
+    }
+
+    ////////////////////////////////////////////////////////////////////////////
+    else if (cmd == COMMAND_MAP_2_int["FS_get_fs_info"])
+    {
+        FS_GetFsInfo();
+    }
+
+    ////////////////////////////////////////////////////////////////////////////
+    else if (cmd == COMMAND_MAP_2_int["FS_get_command_map"])
+    {
+        FS_SendCommandMap();
+    }
+
+    ////////////////////////////////////////////////////////////////////////////
+    else if (cmd == COMMAND_MAP_2_int["GEN_get_sys_params"])
+    {
+        client.print("Retrieving parameters, please wait about 10 seconds...");
+        Serial.println("retrieving system parameters");
+        DB_printDebug("retrieving system parameters, please wait...");
+
+        //retrieve system parameters
+        client.print("begin_sys_commands");
+        client.print(",vcc:");
+        client.print(ESP.getVcc());
+
+        client.print(",free_heap:");
+        client.print(ESP.getFreeHeap());
+
+        client.print(",mcu_chip_id:");
+        client.print(ESP.getChipId());
+
+        client.print(",sdk_ver:");
+        client.print(ESP.getSdkVersion()); //NOTE this string length should be enough...
+
+        client.print(",boot_ver:");
+        client.print(ESP.getBootVersion());
+
+        client.print(",boot_mode:");
+        client.print(ESP.getBootMode());
+
+        client.print(",cpu_freq_mhz:");
+        client.print(ESP.getCpuFreqMHz());
+
+        client.print(",flash_chip_id:");
+        client.print(ESP.getFlashChipId());
+
+        //gets the actual chip size based on the flash id
+        client.print(",flash_chip_real_size:");
+        client.print(ESP.getFlashChipRealSize());
+
+        //gets the size of the flash as set by the compiler
+        client.print(",flash_chip_size:");
+        client.print(ESP.getFlashChipSize());
+
+        client.print(",flash_chip_speed:");
+        client.print(ESP.getFlashChipSpeed());
+
+        client.print(",flash_chip_mode:");
+        client.print(ESP.getFlashChipMode());
+
+        //TODO support this in controller/GUI
+        client.print(",free_sketch_space:");
+        client.print(ESP.getFreeSketchSpace());
+
+        client.print(",end_sys_commands");
+        Serial.println("finished sending systems params to host.");
+        DB_printDebug("Finished retrieving, you may now load data.");
+
+    }
+
+    ////////////////////////////////////////////////////////////////////////////
+    else if (cmd == COMMAND_MAP_2_int["GEN_reset_device"])
+    {
+        Serial.println("Resetting Device");
+        client.print("Resetting Device");
+        ESP.reset(); // difference between reset and restart?
+    }
+
+    ////////////////////////////////////////////////////////////////////////////
+    else if (cmd == COMMAND_MAP_2_int["GEN_web_update"])
+    {
+        client.print("Entering web_update mode");
+        WiFi_WebUpdate();
+    }
+
+    ////////////////////////////////////////////////////////////////////////////
+    else if(cmd == COMMAND_MAP_2_int["ADC_send_hex_cmd"])
+    {
+        Serial.println("Getting hex command from rx buf string");
+        int adc_cmd = (rx_buf_string.substring(rx_buf_string.indexOf("_b_")+3,rx_buf_string.indexOf("_e_"))).toInt();
+
+        Serial.print("Processing ADS command: ");Serial.println(adc_cmd,HEX);
+
+        if (adc_cmd == 189) {
+            Serial.println("Retrieving data frame");
+
+            //digitalWrite(15,LOW);
+
+            for (i=0;i<27;i++) {
+                Serial.println(SPI.transfer(0x00),BIN);
+                //delay(1);
+            }
+
+            //digitalWrite(15,HIGH);
+        }
+        else if (adc_cmd == 187) {
+            Serial.println("Setting up SPI");
+            ADC_SetupSPI();
+        }
+        else if (adc_cmd == 188) {
+            Serial.println("Closing SPI");
+            ADC_CloseSPI();
+        }
+        else if (adc_cmd == 190) {
+            Serial.println("Configuring for square wave test");
+            ADC_SquareTest();
+        }
+        else {
+            Serial.print("Sending hex command to ADC: ");Serial.println(adc_cmd, HEX);
+            //uint8_t rx = ADC_sendHexCommand((uint8_t) rx_buf[1
+            //digitalWrite(15,LOW);
+            Serial.print("Received: ");Serial.println(SPI.transfer((uint8_t)adc_cmd),BIN);
+            //digitalWrite(15,HIGH);
+        }
+
+    }
+
+    ////////////////////////////////////////////////////////////////////////////
+    else
+    {
+        Serial.print("Unknown Command");
+    }
 
 }
 
 void WiFi_ListenUdpBeacon() {
 
-  volatile uint64_t cnt = 0;
-  int noBytes = 0;
-  char inbuf[50];
-  IPAddress broadcastIp = ~WiFi.subnetMask() | WiFi.gatewayIP();
-  Serial.print("broadcast IP: ");Serial.println(broadcastIp);
-  Serial.println("Listening for broadcast beacon.");
+    volatile uint64_t cnt = 0;
+    int noBytes = 0;
+    char inbuf[50];
+    IPAddress broadcastIp = ~WiFi.subnetMask() | WiFi.gatewayIP();
+    Serial.print("broadcast IP: ");Serial.println(broadcastIp);
+    Serial.println("Listening for broadcast beacon.");
 
-  while(1)
-  {
-    cnt++;
-    noBytes = Udp.parsePacket();
+    while(1)
+    {
+        cnt++;
+        noBytes = Udp.parsePacket();
 
-    if ( noBytes ) {
-      Udp.read(inbuf,noBytes);
-      Serial.print("RX: ");
-      Serial.println(inbuf);
-      Serial.println("... finished.");
-      String valCheck = String(inbuf);
-      // check if this is host beacon
-      if (valCheck.indexOf("alpha_scan_beacon") > -1) {
-        Serial.println("found alpha scan host");
+        if ( noBytes ) {
+            Udp.read(inbuf,noBytes);
+            Serial.print("RX: ");
+            Serial.println(inbuf);
+            Serial.println("... finished.");
+            String valCheck = String(inbuf);
+            // check if this is host beacon
+            if (valCheck.indexOf("alpha_scan_beacon") > -1) {
+                Serial.println("found alpha scan host");
 
-        host_ip = Udp.remoteIP();
-        UDP_port = Udp.localPort(); // host will listen on same port that it sent to
+                host_ip = Udp.remoteIP();
+                UDP_port = Udp.localPort(); // host will listen on same port that it sent to
 
-        Serial.println(host_ip);
-        Serial.println(UDP_port);
+                Serial.println(host_ip);
+                Serial.println(UDP_port);
 
-        // extract tcp port to connect to from beacon message
-        TCP_port = (valCheck.substring(valCheck.indexOf("xbx_")+4, valCheck.indexOf("_xex"))).toInt();
-        Serial.print("tcp_port: "); Serial.println(TCP_port);
+                // extract tcp port to connect to from beacon message
+                TCP_port = (valCheck.substring(valCheck.indexOf("xbx_")+4, valCheck.indexOf("_xex"))).toInt();
+                Serial.print("tcp_port: "); Serial.println(TCP_port);
 
-        DB_printDebug("TCP connection established.");
+                DB_printDebug("TCP connection established.");
 
-      }
-      break;
+            }
+            break;
+        }
+
+        else if ( (cnt % 10000) == 0 ) { // TODO don't flood network indefinitely...
+            // Broadcast alive beacon so that control app knows to auto connect
+            Udp.beginPacket(broadcastIp, 2390);
+            Udp.write("_I_AM_ALPHA_SCAN_");
+            Udp.endPacket();
+            delay(1);
+            if ( (cnt % 100000 ) == 0 ) {
+                Serial.print(".");
+                if ( (cnt % 1000000 ) == 0 ) {
+                    Serial.println("");
+                }
+            }
+        }
     }
-
-    else if ( (cnt % 10000) == 0 ) { // TODO don't flood network indefinitely...
-    // Broadcast alive beacon so that control app knows to auto connect
-    Udp.beginPacket(broadcastIp, 2390);
-    Udp.write("_I_AM_ALPHA_SCAN_");
-    Udp.endPacket();
-    delay(1);
-    if ( (cnt % 100000 ) == 0 ) {
-      Serial.print(".");
-      if ( (cnt % 1000000 ) == 0 ) {
-        Serial.println("");
-      }
-    }
-    }
-  }
 }
 
 void WiFi_EstTcpHostConn() {
 
-  if (!client.status()) {
+    if (!client.status()) {
 
-    Serial.print("host_ip: ");Serial.println(host_ip);
-    Serial.print("port: ");Serial.println(TCP_port);
-    Serial.println("Attempting to connect to host.");
+        Serial.print("host_ip: ");Serial.println(host_ip);
+        Serial.print("port: ");Serial.println(TCP_port);
+        Serial.println("Attempting to connect to host.");
 
-    // Connet to host
-    while (!client.connect(host_ip,TCP_port)); // Note: this call block indefinitely - so incorrect host_ip here is fatal
-    {
-      Serial.println("Still attempting to connect...");
-      Serial.println("wait 1 sec...");
-      delay(1000);
+        // Connet to host
+        while (!client.connect(host_ip,TCP_port)); // Note: this call block indefinitely - so incorrect host_ip here is fatal
+        {
+            Serial.println("Still attempting to connect...");
+            Serial.println("wait 1 sec...");
+            delay(1000);
 
+        }
+        client.print("Connected");
+        Serial.println("Connected to host");
+        DB_printDebug("Connected to host");
     }
-    client.print("Connected");
-    Serial.println("Connected to host");
-    DB_printDebug("Connected to host");
-  }
 }
 
 void WiFi_WebUpdate() {
 
-  // Close down existing wifi
-  Serial.println("Closing Current WiFi connection");
-  client.stop();
-  WiFi.disconnect();
-  delay(1000);
+    // Close down existing wifi
+    Serial.println("Closing Current WiFi connection");
+    client.stop();
+    WiFi.disconnect();
+    delay(1000);
 
-  ESP8266WebServer server(80);
-  const char* serverIndex = "<form method='POST' action='/update' enctype='multipart/form-data'><input type='file' name='update'><input type='submit' value='Update'></form>";
-  const char* host = "esp8266-webupdate";
+    ESP8266WebServer server(80);
+    const char* serverIndex = "<form method='POST' action='/update' enctype='multipart/form-data'><input type='file' name='update'><input type='submit' value='Update'></form>";
+    const char* host = "esp8266-webupdate";
 
-  //
-  Serial.println("Booting update server");
+    //
+    Serial.println("Booting update server");
 
-  WiFi.mode(WIFI_AP_STA);
-  WiFi.begin(ssid, password);
-  if(WiFi.waitForConnectResult() == WL_CONNECTED){
+    WiFi.mode(WIFI_AP_STA);
+    WiFi.begin(ssid, password);
+    if(WiFi.waitForConnectResult() == WL_CONNECTED){
 
-    Serial.print("IP address: ");
-    Serial.println(WiFi.localIP());
+        Serial.print("IP address: ");
+        Serial.println(WiFi.localIP());
 
-    MDNS.begin(host);
+        MDNS.begin(host);
 
-    server.on("/", HTTP_GET, [&server, &serverIndex](){
-      server.sendHeader("Connection", "close");
-      server.sendHeader("Access-Control-Allow-Origin", "*");
-      server.send(200, "text/html", serverIndex);
-    });
-
-
-    server.on("/update", HTTP_POST, [&server](){
-      server.sendHeader("Connection", "close");
-      server.sendHeader("Access-Control-Allow-Origin", "*");
-      server.send(200, "text/plain", (Update.hasError())?"FAIL":"OK");
-      ESP.restart();
-    },[&server](){
-      HTTPUpload& upload = server.upload();
-      if(upload.status == UPLOAD_FILE_START){
-        Serial.setDebugOutput(true);
-        WiFiUDP::stopAll();
-        Serial.printf("Update: %s\n", upload.filename.c_str());
-        uint32_t maxSketchSpace = (ESP.getFreeSketchSpace() - 0x1000) & 0xFFFFF000;
-        if(!Update.begin(maxSketchSpace)){//start with max available size
-          Update.printError(Serial);
-        }
-      } else if(upload.status == UPLOAD_FILE_WRITE){
-        if(Update.write(upload.buf, upload.currentSize) != upload.currentSize){
-          Update.printError(Serial);
-        }
-      } else if(upload.status == UPLOAD_FILE_END){
-        if(Update.end(true)){ //true to set the size to the current progress
-          Serial.printf("Update Success: %u\nRebooting...\n", upload.totalSize);
-        } else {
-          Update.printError(Serial);
-        }
-        Serial.setDebugOutput(false);
-      }
-      yield();
-    });
+        server.on("/", HTTP_GET, [&server, &serverIndex](){
+                server.sendHeader("Connection", "close");
+                server.sendHeader("Access-Control-Allow-Origin", "*");
+                server.send(200, "text/html", serverIndex);
+                });
 
 
-    server.begin();
-    MDNS.addService("http", "tcp", 80);
+        server.on("/update", HTTP_POST, [&server](){
+                server.sendHeader("Connection", "close");
+                server.sendHeader("Access-Control-Allow-Origin", "*");
+                server.send(200, "text/plain", (Update.hasError())?"FAIL":"OK");
+                ESP.restart();
+                },[&server](){
+                HTTPUpload& upload = server.upload();
+                if(upload.status == UPLOAD_FILE_START){
+                Serial.setDebugOutput(true);
+                WiFiUDP::stopAll();
+                Serial.printf("Update: %s\n", upload.filename.c_str());
+                uint32_t maxSketchSpace = (ESP.getFreeSketchSpace() - 0x1000) & 0xFFFFF000;
+                if(!Update.begin(maxSketchSpace)){//start with max available size
+                Update.printError(Serial);
+                }
+                } else if(upload.status == UPLOAD_FILE_WRITE){
+                if(Update.write(upload.buf, upload.currentSize) != upload.currentSize){
+                Update.printError(Serial);
+                }
+                } else if(upload.status == UPLOAD_FILE_END){
+                if(Update.end(true)){ //true to set the size to the current progress
+                    Serial.printf("Update Success: %u\nRebooting...\n", upload.totalSize);
+                } else {
+                    Update.printError(Serial);
+                }
+                Serial.setDebugOutput(false);
+                }
+                yield();
+                });
 
-    Serial.printf("Ready! Navigate to the device IP in your bowser\n");
-  } else {
-    Serial.println("WiFi Failed");
-  }
 
-  while(1) {
-    server.handleClient();
-    delay(1);
-  }
+        server.begin();
+        MDNS.addService("http", "tcp", 80);
+
+        Serial.printf("Ready! Navigate to the device IP in your bowser\n");
+    } else {
+        Serial.println("WiFi Failed");
+    }
+
+    while(1) {
+        server.handleClient();
+        delay(1);
+    }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 // SPIFFS
 ////////////////////////////////////////////////////////////////////////////////
 void FS_ReadFsNetParams() {
-  /////////////////////////////////////////////////////////////////////////////////////////////////////
-  // Check SPIFFS for network parameters
-  /////////////////////////////////////////////////////////////////////////////////////////////////////
+    /////////////////////////////////////////////////////////////////////////////////////////////////////
+    // Check SPIFFS for network parameters
+    /////////////////////////////////////////////////////////////////////////////////////////////////////
 
-  // Check to see if net_params file exists
-  Serial.print("checking if exists: ");Serial.println(network_parameters_path);
-  if(SPIFFS.exists(network_parameters_path)) {
-    Serial.println("network_parameters_path exists");
-    open_a = true;
-  }
-  else {
-    Serial.println("network_parameters_path does not exist");
-    open_a = false;
-  }
-
-  // If network_parameters_path exists, try to open file
-  if (open_a) {
-    f = SPIFFS.open(network_parameters_path,"r");
-
-    // Check if file open succeeded
-    if (!f) {
-      Serial.println("file open failed");
-      SYSTEM_STATE = AP_MODE;
-      return;
+    // Check to see if net_params file exists
+    Serial.print("checking if exists: ");Serial.println(network_parameters_path);
+    if(SPIFFS.exists(network_parameters_path)) {
+        Serial.println("network_parameters_path exists");
+        open_a = true;
     }
     else {
-      Serial.println("file open SUCCESS");
+        Serial.println("network_parameters_path does not exist");
+        open_a = false;
     }
 
-    // Read parameters from file
-    f.seek(0,SeekSet);
-    // Read SSID
-    if(f.available()) {
-      //Lets read line by line from the file
-      ssid_str = f.readStringUntil('\n');
-      ssid_str = GEN_ExtractNetParams(ssid_str,"ssid");
-      strcpy(ssid,&(ssid_str[0]));
-      ssid_set = true;
+    // If network_parameters_path exists, try to open file
+    if (open_a) {
+        f = SPIFFS.open(network_parameters_path,"r");
 
-      Serial.print("RS_SSID: ");Serial.println(ssid);
+        // Check if file open succeeded
+        if (!f) {
+            Serial.println("file open failed");
+            SYSTEM_STATE = AP_MODE;
+            return;
+        }
+        else {
+            Serial.println("file open SUCCESS");
+        }
+
+        // Read parameters from file
+        f.seek(0,SeekSet);
+        // Read SSID
+        if(f.available()) {
+            //Lets read line by line from the file
+            ssid_str = f.readStringUntil('\n');
+            ssid_str = GEN_ExtractNetParams(ssid_str,"ssid");
+            strcpy(ssid,&(ssid_str[0]));
+            ssid_set = true;
+
+            Serial.print("RS_SSID: ");Serial.println(ssid);
+        }
+
+        // Read password
+        if(f.available()) {
+            //Lets read line by line from the file
+            password_str = f.readStringUntil('\n');
+            password_str = GEN_ExtractNetParams(password_str,"pass");
+            strcpy(password,&(password_str[0]));
+            password_set = true;
+
+            Serial.print("RS_PASS: ");Serial.println(password);
+        }
+
+        // Read host_ip
+        if(f.available()) { // NOTE: modift host ip parsing for for IPAddress type
+            //Lets read line by line from the file
+            host_ip_str = f.readStringUntil('\n');
+            host_ip_str = GEN_ExtractNetParams(host_ip_str,"host_ip");
+            //strcpy(host_ip,&(host_ip_str[0]));
+            host_ip_set = true;
+
+            Serial.print("RS_host_ip: ");Serial.println(host_ip);
+        }
+
+        f.close();
+
+        if (ssid_set && host_ip_set && password_set)
+            network_set = true;
+
     }
-
-    // Read password
-    if(f.available()) {
-      //Lets read line by line from the file
-      password_str = f.readStringUntil('\n');
-      password_str = GEN_ExtractNetParams(password_str,"pass");
-      strcpy(password,&(password_str[0]));
-      password_set = true;
-
-      Serial.print("RS_PASS: ");Serial.println(password);
+    // else procees to SoftAP Mode
+    else {
+        network_set = false;
     }
-
-    // Read host_ip
-    if(f.available()) { // NOTE: modift host ip parsing for for IPAddress type
-      //Lets read line by line from the file
-      host_ip_str = f.readStringUntil('\n');
-      host_ip_str = GEN_ExtractNetParams(host_ip_str,"host_ip");
-      //strcpy(host_ip,&(host_ip_str[0]));
-      host_ip_set = true;
-
-      Serial.print("RS_host_ip: ");Serial.println(host_ip);
-    }
-
-    f.close();
-
-    if (ssid_set && host_ip_set && password_set)
-    network_set = true;
-
-  }
-  // else procees to SoftAP Mode
-  else {
-    network_set = false;
-  }
 }
 
 void FS_LoadCommandMap() {
 
-  // Initiate SPIFFS
-  Serial.println("inititating file SPIFFS class");
-  if(SPIFFS.begin())Serial.println("Spiffs mount success");else {Serial.println("Spiffs mount FAIL");return;}
+    // Initiate SPIFFS
+    Serial.println("inititating file SPIFFS class");
+    if(SPIFFS.begin())Serial.println("Spiffs mount success");else {Serial.println("Spiffs mount FAIL");return;}
 
-  // check if cmd file exists
-  if (SPIFFS.exists(command_map_path)) {
+    // check if cmd file exists
+    if (SPIFFS.exists(command_map_path)) {
 
-    Serial.println("command map path exists");
-  }
-  else {
+        Serial.println("command map path exists");
+    }
+    else {
 
-    // if cmd file does not exist, load default map
-    Serial.println("command map path does not exist, loading default map...");
-    GEN_LoadDefaultCommandMap();
-    return;
-  }
-
-  // open SPIFFS file
-  f = SPIFFS.open(command_map_path, "r");
-  if (!f) {
-    Serial.println("command file open failed");
-    // load default instead
-    GEN_LoadDefaultCommandMap();
-    return;
-  }
-  else {
-    Serial.println("command file open SUCCESS");
-  }
-
-  // Read parameters from file
-  f.seek(0,SeekSet);
-
-  if(f.available()) {
-
-    //Lets read line by line from the file
-    rx_buf_string = f.readStringUntil('\n');
-
-    if (!GEN_ParseCommandMap()) {
-      GEN_LoadDefaultCommandMap();
+        // if cmd file does not exist, load default map
+        Serial.println("command map path does not exist, loading default map...");
+        GEN_LoadDefaultCommandMap();
+        return;
     }
 
-  }
-  else {
-    Serial.println("failed to read command map string");
-  }
+    // open SPIFFS file
+    f = SPIFFS.open(command_map_path, "r");
+    if (!f) {
+        Serial.println("command file open failed");
+        // load default instead
+        GEN_LoadDefaultCommandMap();
+        return;
+    }
+    else {
+        Serial.println("command file open SUCCESS");
+    }
+
+    // Read parameters from file
+    f.seek(0,SeekSet);
+
+    if(f.available()) {
+
+        //Lets read line by line from the file
+        rx_buf_string = f.readStringUntil('\n');
+
+        if (!GEN_ParseCommandMap()) {
+            GEN_LoadDefaultCommandMap();
+        }
+
+    }
+    else {
+        Serial.println("failed to read command map string");
+    }
 }
 
 void FS_Format() {
-  Serial.println("beginning format");
-  client.print("formatting SPIFFS");
-  DB_printDebug("Beginning SPIFFS format");
-  if (SPIFFS.format()) {
-    Serial.println("format successful");
-    client.print("format successful");
-    DB_printDebug("Format Successful");
-  }
-  else {
-    Serial.println("format failure");
-    client.print("format failure");
-    DB_printDebug("Format Failed");
-  }
+    Serial.println("beginning format");
+    client.print("formatting SPIFFS");
+    DB_printDebug("Beginning SPIFFS format");
+    if (SPIFFS.format()) {
+        Serial.println("format successful");
+        client.print("format successful");
+        DB_printDebug("Format Successful");
+    }
+    else {
+        Serial.println("format failure");
+        client.print("format failure");
+        DB_printDebug("Format Failed");
+    }
 }
 
 void FS_SendNetParams() {
-  FS_ReadFsNetParams();
-  client.print("ssid:" + ssid_str + "," + "password: " + password_str);
-  Serial.println("finished getting net params");
-  // NOTE may need a control method with longer block time to return this data
+    FS_ReadFsNetParams();
+    client.print("ssid:" + ssid_str + "," + "password: " + password_str);
+    Serial.println("finished getting net params");
+    // NOTE may need a control method with longer block time to return this data
 }
 
 void FS_SaveCommandMap() {
 
-  // open file
-  f = SPIFFS.open(command_map_path,"w");
-  if (!f) {
-    Serial.println("file open failed");
-    return;
-  }
-  else {
-    Serial.println("file open SUCCESS");
-  }
+    // open file
+    f = SPIFFS.open(command_map_path,"w");
+    if (!f) {
+        Serial.println("file open failed");
+        return;
+    }
+    else {
+        Serial.println("file open SUCCESS");
+    }
 
-  // write lines
-  f.seek(0,SeekSet);
-  f.println(rx_buf_string);
-  f.close();
-  Serial.println("command map saved");
+    // write lines
+    f.seek(0,SeekSet);
+    f.println(rx_buf_string);
+    f.close();
+    Serial.println("command map saved");
 }
 
 void FS_SendCommandMap() {
-  FS_LoadCommandMap();
-  client.print(rx_buf_string);
-  Serial.println("finished getting command map");
+    FS_LoadCommandMap();
+    client.print(rx_buf_string);
+    Serial.println("finished getting command map");
 }
 
 void FS_GetFsInfo() {
-  FSInfo fs_info;
-  SPIFFS.info(fs_info);
-  char info_str[100];
-  sprintf(info_str, "totalBytes: %d, usedByted: %d, blockSize: %d, pageSize: %d, \
-  maxOpenFiles: %d, maxPathLen: %d",
-  fs_info.totalBytes, fs_info.usedBytes, fs_info.blockSize,
-  fs_info.pageSize, fs_info.maxOpenFiles, fs_info.maxPathLength);
-  Serial.println(info_str);
-  client.print(info_str);
+    FSInfo fs_info;
+    SPIFFS.info(fs_info);
+    char info_str[100];
+    sprintf(info_str, "totalBytes: %d, usedByted: %d, blockSize: %d, pageSize: %d, \
+            maxOpenFiles: %d, maxPathLen: %d",
+            fs_info.totalBytes, fs_info.usedBytes, fs_info.blockSize,
+            fs_info.pageSize, fs_info.maxOpenFiles, fs_info.maxPathLength);
+    Serial.println(info_str);
+    client.print(info_str);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -940,163 +953,163 @@ void FS_GetFsInfo() {
 ////////////////////////////////////////////////////////////////////////////////
 void AP_ReadNetParams() {
 
-  // acquire SSID and password via SoftAP
-  Serial.println("acquire SSID and other network params now...");
-  while(!network_set) {
+    // acquire SSID and password via SoftAP
+    Serial.println("acquire SSID and other network params now...");
+    while(!network_set) {
 
-    AP_SupportRoutine();
+        AP_SupportRoutine();
 
-    if (network_set) {
+        if (network_set) {
 
-      WiFiServer server(80);
-      client = server.available();
-      client.flush();
+            WiFiServer server(80);
+            client = server.available();
+            client.flush();
 
-      String s = "HTTP/1.1 200 OK\r\n";
-      client.print(s);
+            String s = "HTTP/1.1 200 OK\r\n";
+            client.print(s);
 
-      delay(1);
+            delay(1);
 
-      client.stop();
+            client.stop();
 
-      // Write network params to SPIFFS
-      // open file
-      f = SPIFFS.open(network_parameters_path,"w");
-      if (!f) {
-        Serial.println("file open failed");
-        return;
-      }
-      else {
-        Serial.println("file open SUCCESS");
-      }
+            // Write network params to SPIFFS
+            // open file
+            f = SPIFFS.open(network_parameters_path,"w");
+            if (!f) {
+                Serial.println("file open failed");
+                return;
+            }
+            else {
+                Serial.println("file open SUCCESS");
+            }
 
-      // write lines
-      f.seek(0,SeekSet);
-      f.println("ssid_" + ssid_str + "_endssid");
-      f.println("pass_" + password_str + "_endpass");
-      f.println("host_ip_" + host_ip_str + "_endhost_ip");
-      f.close();
+            // write lines
+            f.seek(0,SeekSet);
+            f.println("ssid_" + ssid_str + "_endssid");
+            f.println("pass_" + password_str + "_endpass");
+            f.println("host_ip_" + host_ip_str + "_endhost_ip");
+            f.close();
 
-      break;
+            break;
+        }
     }
-  }
 
-  Serial.println("Network parameters acquired, now attempting to join LAN with: ");
-  Serial.println("ssid: " + ssid_str + ", pass: " + password_str );
+    Serial.println("Network parameters acquired, now attempting to join LAN with: ");
+    Serial.println("ssid: " + ssid_str + ", pass: " + password_str );
 
-  WiFi.mode(WIFI_STA);
-  WiFi.disconnect();
-  delay(1000);
+    WiFi.mode(WIFI_STA);
+    WiFi.disconnect();
+    delay(1000);
 }
 
 void AP_SupportRoutine() {
 
-  // Define local AP variables
-  const char AP_NAME_STR[] = "AlphaScanAP";
-  const char WiFiAPPSK[] = "martianwearables";
-  String custom_response;
-  long int c = 0;
-  int i;
-  WiFiServer server(80);
+    // Define local AP variables
+    const char AP_NAME_STR[] = "AlphaScanAP";
+    const char WiFiAPPSK[] = "martianwearables";
+    String custom_response;
+    long int c = 0;
+    int i;
+    WiFiServer server(80);
 
-  // Setup software access point (SoftAP)
-  WiFi.mode(WIFI_AP); // MAIN CALL TO SET WiFi MODE
-  WiFi.softAP(AP_NAME_STR, WiFiAPPSK); // THIS IS THE MAIN CALL TO SETUP AP
-  server.begin();
+    // Setup software access point (SoftAP)
+    WiFi.mode(WIFI_AP); // MAIN CALL TO SET WiFi MODE
+    WiFi.softAP(AP_NAME_STR, WiFiAPPSK); // THIS IS THE MAIN CALL TO SETUP AP
+    server.begin();
 
-  // Loop and listen for client data
-  // Check if a client has connected
+    // Loop and listen for client data
+    // Check if a client has connected
 
-  client = server.available();
-  while (!client) {
     client = server.available();
-    if(c++ % 1000000 == 0)Serial.print(".");if(c % 10000000 ==0)Serial.println("");
-  }
-
-  if (network_set) {
-    Serial.println("Network is set");
-    delay(1);
-    client.print("HTTP/1.1 200 OK\r");
-    delay(1);
-    client.stop();
-    delay(1);
-    return;
-  }
-
-  // Read the first line of the request
-  String req = client.readStringUntil('\r'); //NOTE \r is not included in query text yet this terminates anyways...
-  Serial.print("Request received: ");Serial.print(req);Serial.println("");
-
-  client.flush();
-
-  // Parse request
-
-  // Alive request
-  if (req.indexOf("alive") >= 0) {
-    custom_response = "___IAMALPHASCAN___";
-  }
-
-  // Rx SSID
-  else if (req.indexOf("ssid") >= 0) {
-    // collect SSID into local variables
-    ssid_str = GEN_ExtractNetParams(req,"ssid");
-    strcpy(ssid,&(ssid_str[0]));
-    custom_response = "SSID";
-    ssid_set = true;
-
-    Serial.print("received ssid: ");Serial.println(ssid);
-  }
-
-  // Rx passkey
-  else if (req.indexOf("pass") >= 0) {
-    password_str = GEN_ExtractNetParams(req,"pass");
-    strcpy(password,&(password_str[0]));
-    custom_response = "passkey";
-    password_set = true;
-
-    Serial.print("received pass: ");Serial.println(password);
-  }
-
-  // Rx passkey
-  else if (req.indexOf("host_ip") >= 0) {
-    host_ip_str = GEN_ExtractNetParams(req,"host_ip");
-    //strcpy(host_ip,&(host_ip_str[0])); //NOTE use cpy method compatible with IPAddress
-    custom_response = "host_ip";
-    host_ip_set = true;
-
-    Serial.print("received host_ip: ");Serial.println(host_ip);
-  }
-
-  // Finalize Params
-  else if (req.indexOf("finalize_params") >= 0) {
-    if (ssid_set && password_set) {
-      network_set = true;
-      custom_response = "finalized";
+    while (!client) {
+        client = server.available();
+        if(c++ % 1000000 == 0)Serial.print(".");if(c % 10000000 ==0)Serial.println("");
     }
+
+    if (network_set) {
+        Serial.println("Network is set");
+        delay(1);
+        client.print("HTTP/1.1 200 OK\r");
+        delay(1);
+        client.stop();
+        delay(1);
+        return;
+    }
+
+    // Read the first line of the request
+    String req = client.readStringUntil('\r'); //NOTE \r is not included in query text yet this terminates anyways...
+    Serial.print("Request received: ");Serial.print(req);Serial.println("");
+
+    client.flush();
+
+    // Parse request
+
+    // Alive request
+    if (req.indexOf("alive") >= 0) {
+        custom_response = "___IAMALPHASCAN___";
+    }
+
+    // Rx SSID
+    else if (req.indexOf("ssid") >= 0) {
+        // collect SSID into local variables
+        ssid_str = GEN_ExtractNetParams(req,"ssid");
+        strcpy(ssid,&(ssid_str[0]));
+        custom_response = "SSID";
+        ssid_set = true;
+
+        Serial.print("received ssid: ");Serial.println(ssid);
+    }
+
+    // Rx passkey
+    else if (req.indexOf("pass") >= 0) {
+        password_str = GEN_ExtractNetParams(req,"pass");
+        strcpy(password,&(password_str[0]));
+        custom_response = "passkey";
+        password_set = true;
+
+        Serial.print("received pass: ");Serial.println(password);
+    }
+
+    // Rx passkey
+    else if (req.indexOf("host_ip") >= 0) {
+        host_ip_str = GEN_ExtractNetParams(req,"host_ip");
+        //strcpy(host_ip,&(host_ip_str[0])); //NOTE use cpy method compatible with IPAddress
+        custom_response = "host_ip";
+        host_ip_set = true;
+
+        Serial.print("received host_ip: ");Serial.println(host_ip);
+    }
+
+    // Finalize Params
+    else if (req.indexOf("finalize_params") >= 0) {
+        if (ssid_set && password_set) {
+            network_set = true;
+            custom_response = "finalized";
+        }
+        else {
+            network_set = false;
+            custom_response = "Failure"; //TODO add more details to response
+        }
+    }
+
+    // Echo network params
+    else if (req.indexOf("echo_params") >= 0) {
+        custom_response = "ssid: " + ssid_str + ", pass: " + password_str;
+    }
+
     else {
-      network_set = false;
-      custom_response = "Failure"; //TODO add more details to response
+        custom_response = "unknown_request";
     }
-  }
 
-  // Echo network params
-  else if (req.indexOf("echo_params") >= 0) {
-    custom_response = "ssid: " + ssid_str + ", pass: " + password_str;
-  }
-
-  else {
-    custom_response = "unknown_request";
-  }
-
-  // Send the response to the client
-  String s = "HTTP/1.1 200 OK\r\n";
-  s += "Content-Type: text/html\r\n\r\n";
-  s += "<!DOCTYPE HTML>\r\n<html>\r\n";
-  s += custom_response;
-  s += "</html>\n";
-  client.print(s);
-  delay(1);
-  Serial.println("Client disonnected");
+    // Send the response to the client
+    String s = "HTTP/1.1 200 OK\r\n";
+    s += "Content-Type: text/html\r\n\r\n";
+    s += "<!DOCTYPE HTML>\r\n<html>\r\n";
+    s += custom_response;
+    s += "</html>\n";
+    client.print(s);
+    delay(1);
+    Serial.println("Client disonnected");
 
 }
 
@@ -1104,38 +1117,38 @@ void AP_SupportRoutine() {
 // Over The Air (OTA) Firmware Update Support
 ////////////////////////////////////////////////////////////////////////////////
 void OTA_Setup() {
-  ArduinoOTA.onStart([]() {
-    Serial.println("Start");
-  });
-  ArduinoOTA.onEnd([]() {
-    Serial.println("End");
-  });
-  ArduinoOTA.onProgress([](unsigned int progress, unsigned int total) {
-    Serial.printf("Progress: %u%%\n", (progress / (total / 100)));
-  });
-  ArduinoOTA.onError([](ota_error_t error) {
-    Serial.printf("Error[%u]: ", error);
-    if (error == OTA_AUTH_ERROR) Serial.println("Auth Failed");
-    else if (error == OTA_BEGIN_ERROR) Serial.println("Begin Failed");
-    else if (error == OTA_CONNECT_ERROR) Serial.println("Connect Failed");
-    else if (error == OTA_RECEIVE_ERROR) Serial.println("Receive Failed");
-    else if (error == OTA_END_ERROR) Serial.println("End Failed");
-  });
-  ArduinoOTA.begin();
+    ArduinoOTA.onStart([]() {
+            Serial.println("Start");
+            });
+    ArduinoOTA.onEnd([]() {
+            Serial.println("End");
+            });
+    ArduinoOTA.onProgress([](unsigned int progress, unsigned int total) {
+            Serial.printf("Progress: %u%%\n", (progress / (total / 100)));
+            });
+    ArduinoOTA.onError([](ota_error_t error) {
+            Serial.printf("Error[%u]: ", error);
+            if (error == OTA_AUTH_ERROR) Serial.println("Auth Failed");
+            else if (error == OTA_BEGIN_ERROR) Serial.println("Begin Failed");
+            else if (error == OTA_CONNECT_ERROR) Serial.println("Connect Failed");
+            else if (error == OTA_RECEIVE_ERROR) Serial.println("Receive Failed");
+            else if (error == OTA_END_ERROR) Serial.println("End Failed");
+            });
+    ArduinoOTA.begin();
 }
 
 void OTA_Handle() {
-  // handle ota
-  Serial.println("handing OTA - must either update or reset device");
-  // shutdown previous tcp connections
-  client.stop();
-  delay(100);
-  //
-  OTA_Setup();
-  while(1) {
-    ArduinoOTA.handle();
-    delay(1);
-  }
+    // handle ota
+    Serial.println("handing OTA - must either update or reset device");
+    // shutdown previous tcp connections
+    client.stop();
+    delay(100);
+    //
+    OTA_Setup();
+    while(1) {
+        ArduinoOTA.handle();
+        delay(1);
+    }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1145,178 +1158,179 @@ void ADC_SetupDefaultConfig() {}
 
 void ADC_StartDataStream() {
 
-  Serial.println("Initiating stream");
-  int i;
-  int noBytes = 0;
-  uint32_t c  = 0;
+    Serial.println("Initiating stream");
+    int i;
+    int noBytes = 0;
+    uint32_t c  = 0;
 
-  // Clear out input buffer
-  noBytes = Udp.parsePacket();
-  if (noBytes) noBytes = Udp.parsePacket();
-
-  //////////////////////////////////////////
-  // Setup SPI
-  //////////////////////////////////////////
-  uint8_t sample_buffer[27];
-  ADC_SetupSPI();
-  // Send start opcode OR set START pin high
-  SPI.transfer(ADS_START);
-  ////////////////////////////////////////
-  // End SPI Setup
-  ////////////////////////////////////////
-
-  // This block parses incoming UDP packets for terminate command
-  while(1)
-  {
+    // Clear out input buffer
     noBytes = Udp.parsePacket();
-
-    if ( noBytes ) {
-      Udp.read(packetBuffer,noBytes);
-      if (packetBuffer[0] == 't' || packetBuffer[1] == 't' || packetBuffer[2] == 't')
-      {
-        Serial.print("Packet Buffer: "); for (i=0; i < noBytes; i++) Serial.print(packetBuffer[i]);
-        // TERMINATE STREAM
-        Serial.println(" terminating stream");
-        // Close SPI
-        ADC_CloseSPI();
-
-        return;
-      }
-    }
+    if (noBytes) noBytes = Udp.parsePacket();
 
     //////////////////////////////////////////
-    // Wait for DRDY LOW then Transfer data
+    // Setup SPI
     //////////////////////////////////////////
+    uint8_t sample_buffer[27];
+    ADC_SetupSPI();
+    // Send start opcode OR set START pin high
+    SPI.transfer(ADS_START);
+    ////////////////////////////////////////
+    // End SPI Setup
+    ////////////////////////////////////////
 
-    int drdy_count = 0;
-    pinMode(15,INPUT);
-    while(digitalRead(DRDY_PIN) == HIGH) {
-      drdy_count++;
-      if (drdy_count > 10000) {
-        Serial.println("DRDY timed out");
-        ADC_CloseSPI();
-        return;
-      }
+    // This block parses incoming UDP packets for terminate command
+    while(1)
+    {
+        noBytes = Udp.parsePacket();
+
+        if ( noBytes ) {
+            Udp.read(packetBuffer,noBytes);
+            if (packetBuffer[0] == 't' || packetBuffer[1] == 't' || packetBuffer[2] == 't')
+            {
+                Serial.print("Packet Buffer: "); for (i=0; i < noBytes; i++) Serial.print(packetBuffer[i]);
+                // TERMINATE STREAM
+                Serial.println(" terminating stream");
+                // Close SPI
+                ADC_CloseSPI();
+
+                return;
+            }
+        }
+
+        //////////////////////////////////////////
+        // Wait for DRDY LOW then Transfer data
+        //////////////////////////////////////////
+
+        int drdy_count = 0;
+        pinMode(15,INPUT);
+        while(digitalRead(DRDY_PIN) == HIGH) {
+            drdy_count++;
+            if (drdy_count > 10000) {
+                Serial.println("DRDY timed out");
+                ADC_CloseSPI();
+                return;
+            }
+        }
+
+        // Read 8 channels of data + status register
+        for (i=0; i<27; i++) { // (3 byte sample * 8 channels) + 3 status reg
+            sample_buffer[i] = SPI.transfer(0x00); // Could fold this straignt into Udp.write...
+        }
+
+        //////////////////////////////////////////
+        // Send new samples over WiFi
+        //////////////////////////////////////////
+
+        // Stream ADS1299 Data
+        Udp.beginPacket(host_ip,UDP_port);
+        Udp.write(sample_buffer,27);Udp.write(c);
+        Udp.endPacket();
+
+        // Log loop progress and delay
+        if( (c%100) == 0 )Serial.print(".");
+        if( (c%1000) == 0){Serial.print(c);Serial.println("");}
+        c++;
+        long int k = 0;
+        for (k=0;k<UDP_Stream_Delay;k++) {
+            if (k == 1000 && (c % 1000 == 0)) Serial.print("-");
+        }
+        // Note: tune less than value for tx throughput cap.
+        //       k<1,000 yields about 6,000 sps
     }
-
-    // Read 8 channels of data + status register
-    for (i=0; i<27; i++) { // (3 byte sample * 8 channels) + 3 status reg
-      sample_buffer[i] = SPI.transfer(0x00); // Could fold this straignt into Udp.write...
-    }
-
-    //////////////////////////////////////////
-    // Send new samples over WiFi
-    //////////////////////////////////////////
-
-    // Stream ADS1299 Data
-    Udp.beginPacket(host_ip,UDP_port);
-    Udp.write(sample_buffer,27);Udp.write(c);
-    Udp.endPacket();
-
-    // Log loop progress and delay
-    if( (c%100) == 0 )Serial.print(".");
-    if( (c%1000) == 0){Serial.print(c);Serial.println("");}
-    c++;
-    long int k = 0;
-    for (k=0;k<UDP_Stream_Delay;k++) {
-      if (k == 1000 && (c % 1000 == 0)) Serial.print("-");
-    }
-    // Note: tune less than value for tx throughput cap.
-    //       k<1,000 yields about 6,000 sps
-  }
 }
 
 void ADC_GetRegisterContents() {
-  client.print("Here is your register contents.");
-  // TODO fill in SPI controls for getting register contents
-
+    client.print("Here is your register contents.");
+    // TODO fill in SPI controls for getting register contents
+    
+    
 }
 
 void ADC_SetUdpDelay() {
-  UDP_Stream_Delay = (rx_buf_string.substring(rx_buf_string.indexOf("_b_")+3, rx_buf_string.indexOf("_e_"))).toInt();
-  client.print("updating UDP delay");
-  Serial.print("setting delay to: "); Serial.println(UDP_Stream_Delay);
+    UDP_Stream_Delay = (rx_buf_string.substring(rx_buf_string.indexOf("_b_")+3, rx_buf_string.indexOf("_e_"))).toInt();
+    client.print("updating UDP delay");
+    Serial.print("setting delay to: "); Serial.println(UDP_Stream_Delay);
 }
 
 void ADC_SetupSPI() {
-  // Setup SPI
-  SPI.begin();
-  SPI.setDataMode(0);
-  SPI.setFrequency(2000000);
+    // Setup SPI
+    SPI.begin();
+    SPI.setDataMode(0);
+    SPI.setFrequency(2000000);
 
-  // NOTE eliminate pin manual pin usage for now
-  // pinMode(15,OUTPUT); // Bit bang CS
-  // digitalWrite(15,LOW); // Set CS Low for duration of serial comm
-  //pinMode(15, OUTPUT);
-  //digitalWrite(15,HIGH);
-  // TODO may want to reset ADS (reset) or just SPI interface (CS)
+    // NOTE eliminate pin manual pin usage for now
+    // pinMode(15,OUTPUT); // Bit bang CS
+    // digitalWrite(15,LOW); // Set CS Low for duration of serial comm
+    //pinMode(15, OUTPUT);
+    //digitalWrite(15,HIGH);
+    // TODO may want to reset ADS (reset) or just SPI interface (CS)
 }
 
 void ADC_CloseSPI() {
-  // Close ADS SPI Interface
-  // TODO uncomment this: digitalWrite(CS_PIN,HIGH);
-  SPI.transfer(ADS_SDATAC);
-  delay(1);
-  SPI.transfer(ADS_STOP);
-  SPI.end();
+    // Close ADS SPI Interface
+    // TODO uncomment this: digitalWrite(CS_PIN,HIGH);
+    SPI.transfer(ADS_SDATAC);
+    delay(1);
+    SPI.transfer(ADS_STOP);
+    SPI.end();
 }
 
 void ADC_ReadRegisters() {
 
-  // Setup SPI
-  ADC_SetupSPI();
+    // Setup SPI
+    ADC_SetupSPI();
 
-  // Stop read data continuous
-  SPI.transfer(ADS_SDATAC);
+    // Stop read data continuous
+    SPI.transfer(ADS_SDATAC);
 
-  // Send RREG OpCodes
-  SPI.transfer(ADS_RREG_1);
-  SPI.transfer(ADS_RREG_2);
+    // Send RREG OpCodes
+    SPI.transfer(ADS_RREG_1);
+    SPI.transfer(ADS_RREG_2);
 
-  // Populate AdsMap with responses
-  int i;
-  for(i=0; i<24; i++) {
-    AdsMap[i] = SPI.transfer(0x00);
-  }
+    // Populate AdsMap with responses
+    int i;
+    for(i=0; i<24; i++) {
+        AdsMap[i] = SPI.transfer(0x00);
+    }
 
-  // Close SPI
-  ADC_CloseSPI();
+    // Close SPI
+    ADC_CloseSPI();
 
 }
 
 void ADC_SquareTest() {
 
-  // SDATAC
-  SPI.transfer(ADS_SDATAC);
-  delay(1);
-
-  SPI.transfer(ADS_WREG_1 | 0x1); // write starting at 1 (config1)
-  delay(1);
-  SPI.transfer(0x1); //write 2 registers( config 1 and 2 )
-  delay(1);
-
-  // WREG CONFIG 1 96h
-  SPI.transfer(0x96);
-  delay(1);
-  // WREG CONFIG 2 D0h
-  SPI.transfer(0xD0);
-  delay(1);
-
-  // WREG CHnSET   05h (for all channels)
-  SPI.transfer(ADS_WREG_1 | 0x5);// write starting at 5 (CH1Set)
-  delay(1);
-  SPI.transfer(0x7); //write 8 registers (all CHnSets)
-  delay(1);
-  int i = 0;
-  for (i = 0; i<8; i++) {
-    SPI.transfer(0x05);
+    // SDATAC
+    SPI.transfer(ADS_SDATAC);
     delay(1);
-  }
+
+    SPI.transfer(ADS_WREG_1 | 0x1); // write starting at 1 (config1)
+    delay(1);
+    SPI.transfer(0x1); //write 2 registers( config 1 and 2 )
+    delay(1);
+
+    // WREG CONFIG 1 96h
+    SPI.transfer(0x96);
+    delay(1);
+    // WREG CONFIG 2 D0h
+    SPI.transfer(0xD0);
+    delay(1);
+
+    // WREG CHnSET   05h (for all channels)
+    SPI.transfer(ADS_WREG_1 | 0x5);// write starting at 5 (CH1Set)
+    delay(1);
+    SPI.transfer(0x7); //write 8 registers (all CHnSets)
+    delay(1);
+    int i = 0;
+    for (i = 0; i<8; i++) {
+        SPI.transfer(0x05);
+        delay(1);
+    }
 }
 
 uint8_t ADC_sendHexCommand(uint8_t cmd) {
-  uint8_t rx = SPI.transfer(cmd);
-  return rx;
+    uint8_t rx = SPI.transfer(cmd);
+    return rx;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1324,83 +1338,83 @@ uint8_t ADC_sendHexCommand(uint8_t cmd) {
 ////////////////////////////////////////////////////////////////////////////////
 void BQ_Setup() {
 
-  // Initialize WIRE object
-  Wire.begin();
+    // Initialize WIRE object
+    Wire.begin();
 
-  ////////////////////////////////////////////////////////////
-  // IO15 == BQ_CD (i.e. chip enable/disable)
-  pinMode(15,OUTPUT); // TODO shated with CS
+    ////////////////////////////////////////////////////////////
+    // IO15 == BQ_CD (i.e. chip enable/disable)
+    pinMode(15,OUTPUT); // TODO shated with CS
 
-  // If Vin is valid:
-  //  HIGH = Disable charging
-  //  LOW  = Enable charging
+    // If Vin is valid:
+    //  HIGH = Disable charging
+    //  LOW  = Enable charging
 
-  // If Battery Only
-  //  HIGH = Active battery management
-  //  LOW  = High Z state
+    // If Battery Only
+    //  HIGH = Active battery management
+    //  LOW  = High Z state
 
-  // TODO track Vin in order to appropriately control BQ_CD
+    // TODO track Vin in order to appropriately control BQ_CD
 
-  ////////////////////////////////////////////////////////////
-  // IO3 == BQ_INT (i.e. status/interrupt fault)
-  pinMode(3,INPUT); // TODO shared with UART RX0
+    ////////////////////////////////////////////////////////////
+    // IO3 == BQ_INT (i.e. status/interrupt fault)
+    pinMode(3,INPUT); // TODO shared with UART RX0
 
-  // LOW == charging
+    // LOW == charging
 
-  // High Z == charge complete or device disabled or Hi-Z mode
+    // High Z == charge complete or device disabled or Hi-Z mode
 
-  // 128 uS interrupt pulse == fault occured
+    // 128 uS interrupt pulse == fault occured
 
-  attachInterrupt(3, BQ_handleFaultISR, RISING); //TODO ensure that interrupt can be attached to IO3!
-  // Note: above interrupt can only be active when not using IO3 for UART mode
+    attachInterrupt(3, BQ_handleFaultISR, RISING); //TODO ensure that interrupt can be attached to IO3!
+    // Note: above interrupt can only be active when not using IO3 for UART mode
 
 }
 
 void BQ_handleFaultISR() {
-  // TODO Read BQ over i2c for fault data - should not interrupt stream?
+    // TODO Read BQ over i2c for fault data - should not interrupt stream?
 }
 
 void BQ_readRegister(uint8_t reg_addr, int num_reg, uint8_t* BQ_Reg_Map) {
-  ///////////////////////////////////////////////////////////////////////
-  // Generic I2C read/write methods
+    ///////////////////////////////////////////////////////////////////////
+    // Generic I2C read/write methods
 
-  // Valid Register Addresses are 0x00 - 0x0B
-  // Any attempt to read at another address will return 0xFF
+    // Valid Register Addresses are 0x00 - 0x0B
+    // Any attempt to read at another address will return 0xFF
 
-  // Register contents can be found on page 35 of bq25120 datasheet
+    // Register contents can be found on page 35 of bq25120 datasheet
 
-  // Generic BQ_I2C READ Method
+    // Generic BQ_I2C READ Method
 
-  // Send BQ the address to begin reading from
-  Wire.beginTransmission(BQ_8_ADDR);
-  Wire.write(reg_addr);
-  // Send repeated start command with slave addr but read bit set
-  Wire.requestFrom(BQ_8_ADDR, num_reg);// could request more bits here...
-  while (Wire.available()) {
-    BQ_Reg_Map[num_reg++] = Wire.read();
-  }
+    // Send BQ the address to begin reading from
+    Wire.beginTransmission(BQ_8_ADDR);
+    Wire.write(reg_addr);
+    // Send repeated start command with slave addr but read bit set
+    Wire.requestFrom(BQ_8_ADDR, num_reg);// could request more bits here...
+    while (Wire.available()) {
+        BQ_Reg_Map[num_reg++] = Wire.read();
+    }
 }
 
 void BQ_writeRegister(uint8_t reg_addr, int num_reg, uint8_t* BQ_Set_Reg) {
-  // Generic BQ_I2C WRITE Method
+    // Generic BQ_I2C WRITE Method
 
-  // Send BQ the register begin writing at
-  Wire.beginTransmission(BQ_8_ADDR);
-  Wire.write(reg_addr);
-  // Send num_reg reg values from BQ_Set_Req array
-  int i;
-  for (i = 0; i < num_reg; i++) Wire.write(BQ_Set_Reg[reg_addr + i]);
-  Wire.endTransmission();
-  // Note: clock stretching up to 100 uS is built into twi library
+    // Send BQ the register begin writing at
+    Wire.beginTransmission(BQ_8_ADDR);
+    Wire.write(reg_addr);
+    // Send num_reg reg values from BQ_Set_Req array
+    int i;
+    for (i = 0; i < num_reg; i++) Wire.write(BQ_Set_Reg[reg_addr + i]);
+    Wire.endTransmission();
+    // Note: clock stretching up to 100 uS is built into twi library
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 // Debug Methods
 ////////////////////////////////////////////////////////////////////////////////
 void DB_printDebug(const char* msg) {
-  // NOTE could check if connected for good measure
-  DebugUdp.beginPacket( host_ip, DEBUG_port);
-  DebugUdp.write(msg);
-  DebugUdp.endPacket();
-  delay(1);
+    // NOTE could check if connected for good measure
+    DebugUdp.beginPacket( host_ip, DEBUG_port);
+    DebugUdp.write(msg);
+    DebugUdp.endPacket();
+    delay(1);
 }
