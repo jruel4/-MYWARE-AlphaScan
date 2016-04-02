@@ -359,13 +359,33 @@ void WiFi_ProcessTcpClientRequest() {
     }
 
     ////////////////////////////////////////////////////////////////////////////
-    else if (cmd ==  COMMAND_MAP_2_int["ADC_start_stream"]) //start streaming adc data
+    else if (cmd ==  COMMAND_MAP_2_int["ADC_start_stream"]) // start streaming adc data
     {
         client.print("Initializing ADC stream");
         DB_printDebug("Initializeing ADC stream");
         delay(1);
         ADC_StartDataStream();
 
+    }
+
+    ////////////////////////////////////////////////////////////////////////////
+    else if (cmd ==  COMMAND_MAP_2_int["ADC_set_register"]) // set ADS1299 registers
+    {
+        int begin = rx_buf_string.indexOf("bbb");
+        int end = rx_buf_string.indexOf("eee");
+        if (begin != -1 && end != -1) {
+
+            String reg_map_string = rx_buf_string.substring(begin + 3, end);
+
+            Serial.print("Reg map string: ");Serial.println(reg_map_string);
+
+            client.print("Success");
+        }
+        else {
+            //TODO throw error
+            Serial.println("reg map not found");
+            client.print("Error");
+        }
     }
 
     ////////////////////////////////////////////////////////////////////////////
@@ -1242,8 +1262,8 @@ void ADC_StartDataStream() {
 void ADC_GetRegisterContents() {
     client.print("Here is your register contents.");
     // TODO fill in SPI controls for getting register contents
-    
-    
+
+
 }
 
 void ADC_SetUdpDelay() {

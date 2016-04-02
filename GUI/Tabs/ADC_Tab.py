@@ -94,13 +94,13 @@ class ADC_REG_TAB( QWidget):
 #==============================================================================
         
         # Add Button_UpdateRegister
-        self.Button_UpdateRegister = QPushButton("Pull Registers")
-        mainLayout.addWidget(self.Button_UpdateRegister)
-        self.Button_UpdateRegister.clicked.connect(self.pull_registers_from_ads)
+        self.Button_PullRegisters = QPushButton("Pull Registers")
+        mainLayout.addWidget(self.Button_PullRegisters)
+        self.Button_PullRegisters.clicked.connect(self.pull_registers_from_ads)
         
-        self.Button_PullRegister = QPushButton("Push Registers")
-        mainLayout.addWidget(self.Button_PullRegister)
-        self.Button_PullRegister.clicked.connect(self.push_registers_to_ads)
+        self.Button_PushRegister = QPushButton("Push Registers")
+        mainLayout.addWidget(self.Button_PushRegister)
+        self.Button_PushRegister.clicked.connect(self.push_registers_to_ads)
         
         nextRow = mainLayout.rowCount() + 1
         
@@ -132,8 +132,11 @@ class ADC_REG_TAB( QWidget):
     @Slot()
     def push_registers_to_ads(self):
         self.sync_reg_map_to_check()
-        self._Device.push_adc_registers(self.ADC_RegMap)
-
+        r = self._Device.push_adc_registers(self.ADC_RegMap)
+        
+        msg = QMessageBox()
+        msg.setText(r)
+        msg.exec_()
         #TODO process return value
         
     @Slot()

@@ -359,7 +359,7 @@ void WiFi_ProcessTcpClientRequest() {
     }
 
     ////////////////////////////////////////////////////////////////////////////
-    else if (cmd ==  COMMAND_MAP_2_int["ADC_start_stream"]) //start streaming adc data
+    else if (cmd ==  COMMAND_MAP_2_int["ADC_start_stream"]) // start streaming adc data
     {
         client.print("Initializing ADC stream");
         DB_printDebug("Initializeing ADC stream");
@@ -369,22 +369,42 @@ void WiFi_ProcessTcpClientRequest() {
     }
 
     ////////////////////////////////////////////////////////////////////////////
+    else if (cmd ==  COMMAND_MAP_2_int["ADC_set_register"]) // set ADS1299 registers
+    {
+        int begin = rx_buf_string.indexOf("bbb");
+        int end = rx_buf_string.indexOf("eee");
+        if (begin != -1 && end != -1) {
+
+            String reg_map_string = rx_buf_string.substring(begin + 3, end);
+
+            Serial.print("Reg map string: ");Serial.println(reg_map_string);
+
+            client.print("Success");
+        }
+        else {
+            //TODO throw error
+            Serial.println("reg map not found");
+            client.print("Error");
+        }
+    }
+
+    ////////////////////////////////////////////////////////////////////////////
     else if (cmd ==  COMMAND_MAP_2_int["ADC_get_register"]) // get ADS1299 registers
     {
         ADC_GetRegisterContents();
 
         // simply return fake register map for now
         char map_buf[30];
-        map[0] = "b";
-        map[1] = "b";
-        map[2] = "b";
+        map_buf[0] = 'b';
+        map_buf[1] = 'b';
+        map_buf[2] = 'b';
         int i;
         for (i=3; i<27; i++) {
             map_buf[i] = 0xf0;
         }
-        map[27] = "e";
-        map[28] = "e";
-        map[29] = "e";
+        map_buf[27] = 'e';
+        map_buf[28] = 'e';
+        map_buf[29] = 'e';
         client.print(map_buf);
     }
 
@@ -1242,8 +1262,8 @@ void ADC_StartDataStream() {
 void ADC_GetRegisterContents() {
     client.print("Here is your register contents.");
     // TODO fill in SPI controls for getting register contents
-    
-    
+
+
 }
 
 void ADC_SetUdpDelay() {

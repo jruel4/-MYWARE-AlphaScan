@@ -261,7 +261,21 @@ class AlphaScanDevice:
         
     def push_adc_registers(self, RegMap):
         #TODO push real register map to device
-        pass
+        
+        #Build byte characters from reg map
+        byte_list = [0 for i in range(24)]
+        for i in range(24):
+            for j in range(8):
+                if RegMap[i][j]:
+                    byte_list[i] |= (0x1 << j)
+        
+        self.chr_map = ','.join([str(n) for n in byte_list])
+        
+        r = self.generic_tcp_command_BYTE('ADC_set_register','bbb'+self.chr_map+'eee')
+        #r = self.generic_tcp_command_BYTE('ADC_set_register', 'bbbhi_there my name is stream shady and i like to cream ladies eee')
+        
+        return r
+        
             
 
     def initiate_UDP_stream(self):
