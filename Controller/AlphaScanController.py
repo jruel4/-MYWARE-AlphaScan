@@ -69,6 +69,9 @@ class AlphaScanDevice:
         self.debug_port_no = 2391
         #self.open_debug_port()
         
+        self.raw_map = ""
+        self.reg_map = [[False for i in range(8)] for j in range(24)]
+        
         
     def open_debug_port(self):
         try:
@@ -231,21 +234,34 @@ class AlphaScanDevice:
         ###############################################################################
         # Get all registers and return as list of lists
         ###############################################################################
-        
         # send generic command to retrieve adc registers
         self.generic_tcp_command_BYTE("ADC_get_register")
         # wait for response, loop a few times to account for possible delay then timeout
         for i in range(4):
             time.sleep(0.05)
             r = self.read_tcp(num_bytes=2048) # ensure this is enough to get whole map
-            if (len(r) > 24) and ("_b_adc_map_" in r) and ("_e_adc_map_" in r):
-                # TODO parse r for map reg format
-                pass
+            if (len(r) > 24) and ("bbb" in r) and ("eee" in r):
+
+                self.raw_map = r[r.find("bbb")+len("bbb"):r.find("eee")]
+                assert(len(self.raw_map) == 24)               
+                for i in range(len(self.raw_map)):
+                    for j in range(8):
+                        if (ord(self.raw_map[i]) & (0x1 << j) ):
+                            self.reg_map[i][j] = True
+                        else:
+                            self.reg_map[i][j] = False
+                
+                return self.reg_map              
+                
                 # return map
             else:
                 continue
         
         return False # Create better error message here, or use proper exception handling...
+        
+    def push_adc_registers(self, RegMap):
+        #TODO push real register map to device
+        pass
             
 
     def initiate_UDP_stream(self):
@@ -253,7 +269,7 @@ class AlphaScanDevice:
         # Begin UDP adc stream
         ###############################################################################
 
-        # Start UDP rcv thread
+        # Start UDP rcv threyad
         self.LSL_Thread = Thread(target=self.DEV_printStream)
         self.LSL_Thread.start()
         self.DEV_streamActive.set()  
@@ -346,7 +362,7 @@ class AlphaScanDevice:
         # send broadcast beacon for device to discover this host
         s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         s.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
-        s.sendto('alpha_scan_beacon_xbx_'+str(self.TCP_PORT)+'_xex',('255.255.255.255',self.UDP_PORT)) #TODO this subnet might not work on all LAN's (see firmware method)
+        s.sendto('alpha_scan_beacon_xbx_'+str(self.TCP_PORT)+'_xex',('192.168.1.255',self.UDP_PORT)) #TODO this subnet might not work on all LAN's (see firmware method)
         # send desired TCP port in this beacon 
         s.close();
         
