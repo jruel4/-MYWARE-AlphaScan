@@ -12,6 +12,9 @@
 #include <ArduinoOTA.h>
 #include "FS.h"
 #include <map>
+#include <string.h>
+#include <algorithm>
+#include <cstring>
 
 ////////////////////////////////////////////////////////////////////////////////
 // Global variables
@@ -56,6 +59,8 @@ enum T_SYSTEM_STATE {
 
 std::map<uint8_t, String> COMMAND_MAP_2_str;
 std::map<String, uint8_t> COMMAND_MAP_2_int;
+
+char map_buf[30]; // adc register map buffer
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -305,14 +310,13 @@ void WiFi_ConnectToWan() {
 
 void WiFi_ProcessTcpClientRequest() {
     int i;
+    std::fill_n(rx_buf, 1024, '\0');
     // Check for command from host
     int avail = client.available();
-
     if (avail) {
         for (i=0; i < avail; i++) {
             rx_buf[i] = client.read();
         }
-        rx_buf[avail] = '\0';
     }
     else {
         return;
@@ -371,20 +375,49 @@ void WiFi_ProcessTcpClientRequest() {
     ////////////////////////////////////////////////////////////////////////////
     else if (cmd ==  COMMAND_MAP_2_int["ADC_set_register"]) // set ADS1299 registers
     {
-        int begin = rx_buf_string.indexOf("bbb");
-        int end = rx_buf_string.indexOf("eee");
-        if (begin != -1 && end != -1) {
+//        int begin = rx_buf_string.indexOf("bbb");
+//        int end = rx_buf_string.indexOf("eee");
+//        if (begin != -1 && end != -1) {
+//            String reg_map_string = rx_buf_string.substring(begin + 3, end);
+//            Serial.print("Reg map string: ");Serial.println(reg_map_string);
+//            client.print("Success");
+//        }
+//        else {
+//            //TODO throw error
+//            Serial.println("reg map not found");
+//            
+//        }
+//
+        // Perform extraction on rx_buf using no dynamic memory allocation
 
-            String reg_map_string = rx_buf_string.substring(begin + 3, end);
+        // first check if 'bbb' and 'eee' are present
+        char* begin  = strstr(rx_buf, "bbb");
+        char* end = strstr(rx_buf, "eee");
+        if (begin != NULL && end != NULL) {
+            Serial.println("C string found successful"); 
 
-            Serial.print("Reg map string: ");Serial.println(reg_map_string);
+            // Parse out register map 
+            char map_buf_raw[150] = {0};
+            std::advance(begin, 3);
+            std::strncpy(map_buf_raw, begin, end-begin);
 
-            client.print("Success");
+            Serial.print("parsed reg map: "); Serial.println(map_buf_raw);
+
+            // parse map_buf_raw into condensed global map_buf
+            int idx = 0;
+            char* reg = std::strtok(map_buf_raw, ",");
+            while(reg != NULL) {
+                map_buf[3+idx++] = (char)std::atoi(reg); 
+                reg = std::strtok(0, ",");
+            }
+            Serial.println("Dumptin map_buf...");
+            int i;
+            for (i=0; i<24; i++) {
+                Serial.printf("%d,",(int)map_buf[i+3]);
+            }
         }
         else {
-            //TODO throw error
-            Serial.println("reg map not found");
-            client.print("Error");
+            Serial.println("C string not found = failure");
         }
     }
 
@@ -392,20 +425,21 @@ void WiFi_ProcessTcpClientRequest() {
     else if (cmd ==  COMMAND_MAP_2_int["ADC_get_register"]) // get ADS1299 registers
     {
         ADC_GetRegisterContents();
+        
 
         // simply return fake register map for now
-        char map_buf[30];
+        //map_buf[30];
         map_buf[0] = 'b';
         map_buf[1] = 'b';
         map_buf[2] = 'b';
-        int i;
-        for (i=3; i<27; i++) {
-            map_buf[i] = 0xf0;
-        }
+        //int i;
+        //for (i=3; i<27; i++) {
+        //    map_buf[i] = 0xf0;
+        //}
         map_buf[27] = 'e';
         map_buf[28] = 'e';
         map_buf[29] = 'e';
-        client.print(map_buf);
+        client.write(map_buf, 30);
     }
 
     ////////////////////////////////////////////////////////////////////////////
@@ -1261,7 +1295,13 @@ void ADC_StartDataStream() {
 
 void ADC_GetRegisterContents() {
     client.print("Here is your register contents.");
+
     // TODO fill in SPI controls for getting register contents
+    int i;
+    for (i=0; i<24; i++) {
+        Serial.printf("%d,",(int)map_buf[i+3]);
+
+    }
 
 
 }

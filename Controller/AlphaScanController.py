@@ -240,6 +240,7 @@ class AlphaScanDevice:
         for i in range(4):
             time.sleep(0.05)
             r = self.read_tcp(num_bytes=2048) # ensure this is enough to get whole map
+            print(r)
             if (len(r) > 24) and ("bbb" in r) and ("eee" in r):
 
                 self.raw_map = r[r.find("bbb")+len("bbb"):r.find("eee")]

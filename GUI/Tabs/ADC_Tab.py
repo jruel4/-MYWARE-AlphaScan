@@ -143,8 +143,14 @@ class ADC_REG_TAB( QWidget):
     def pull_registers_from_ads(self):
         
         # TODO check to ensure that (not streaming) and (connected)
-        self.ADC_RegMap = self._Device.pull_adc_registers()
-        
+        r = self._Device.pull_adc_registers()
+        if r:
+            self.ADC_RegMap = r
+        else:
+            msg = QMessageBox()
+            msg.setText("failure")
+            msg.exec_()
+            return
 #==============================================================================
 #         msg = QMessageBox()
 #         if r:
@@ -179,7 +185,8 @@ class ADC_REG_TAB( QWidget):
                 if self.rowDict[i]['BIT_'+str(j)].isChecked() != self.ADC_RegMap[i][j]:
                     reg_to_update += [(i,j)] #i=reg,j=bit
         if len(reg_to_update) > 0:
-            self._Device.generic_tcp_command_BYTE("ADC_update_register")
+            #self._Device.generic_tcp_command_BYTE("ADC_update_register")
+            pass
             
     @Slot()
     def save_reg_map(self):
