@@ -1212,6 +1212,31 @@ void ADC_SetupDefaultConfig() {}
 
 void ADC_StartDataStream() {
 
+    // Create sample square buffers
+    bool buf_switch = true;
+    uint8_t sample_buffer_square_1[27] = {0x00,0x40,0x00,
+                                          0x00,0x40,0x00, 
+                                          0x00,0x40,0x00,
+                                          0x00,0x40,0x00,
+                                          0x00,0x40,0x00,
+                                          0x00,0x40,0x00,
+                                          0x00,0x40,0x00,
+                                          0x00,0x40,0x00,
+                                          0x00,0x40,0x00,
+                                         };
+
+    uint8_t sample_buffer_square_2[27] = {0x00,0x00,0x00,
+                                          0x00,0x00,0x00,
+                                          0x00,0x00,0x00,
+                                          0x00,0x00,0x00,
+                                          0x00,0x00,0x00,
+                                          0x00,0x00,0x00,
+                                          0x00,0x00,0x00,
+                                          0x00,0x00,0x00,
+                                          0x00,0x00,0x00
+                                         };
+
+
     Serial.println("Initiating stream");
     int i;
     int noBytes = 0;
@@ -1277,17 +1302,26 @@ void ADC_StartDataStream() {
 
         // Stream ADS1299 Data
         Udp.beginPacket(host_ip,UDP_port);
-        Udp.write(sample_buffer,27);Udp.write(c);
+        //Udp.write(sample_buffer,27);
+        if (buf_switch) {
+            Udp.write(sample_buffer_square_1,27);
+        }
+        else {
+            Udp.write(sample_buffer_square_2,27);
+        }
+
+        Udp.write(c);
         Udp.endPacket();
 
         // Log loop progress and delay
         if( (c%100) == 0 )Serial.print(".");
-        if( (c%1000) == 0){Serial.print(c);Serial.println("");}
+        if( (c%1000) == 0){Serial.print(c);Serial.println("");buf_switch = !buf_switch;}
         c++;
-        long int k = 0;
-        for (k=0;k<UDP_Stream_Delay;k++) {
-            if (k == 1000 && (c % 1000 == 0)) Serial.print("-");
-        }
+        //long int k = 0;
+        //for (k=0;k<UDP_Stream_Delay;k++) {
+        //    if (k == 1000 && (c % 1000 == 0)) Serial.print("-");
+        //}
+        delay(1);
         // Note: tune less than value for tx throughput cap.
         //       k<1,000 yields about 6,000 sps
     }

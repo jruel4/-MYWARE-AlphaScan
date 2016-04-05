@@ -41,11 +41,12 @@ class AlphaScanDevice:
         self.time_beta = 0
         self.time_intervals = list()
         self.time_interval_count = 0
+        self.new_sample = None
         
         self.sqwave = list()
         
         
-        self.info = StreamInfo('AlphaScan', 'EEG', 8, 100, 'float32', 'myuid34234')
+        self.info = StreamInfo('AlphaScan', 'EEG', 8, 500, 'float32', str(time.time()))
         self.outlet = StreamOutlet(self.info)
         self.mysample = [random.random(), random.random(), random.random(),
             random.random(), random.random(), random.random(),
@@ -143,7 +144,6 @@ class AlphaScanDevice:
             pass
     
     def DEV_printStream(self):
-        global sqwave
         ###############################################################################
         # UDP Stream thread target
         ###############################################################################
@@ -162,8 +162,9 @@ class AlphaScanDevice:
             try:
                 self.data = self.sock.recv(128)
                 self.inbuf += [ord(self.data[27:])]
-                self.sqwave += [self.data]
-                self.outlet.push_sample(self.mysample)
+                self.new_sample = self.parse_data_packet(self.data)
+                self.outlet.push_sample(self.new_sample)
+                self.sqwave += [self.new_sample]
                 self.reads += 1
                 
                 #TODO count interval
@@ -178,7 +179,26 @@ class AlphaScanDevice:
                     self.sock.settimeout(0)
             except:
                 self.unknown_stream_errors += 1
-                
+    
+    def twos_comp(self, val, bits=24):
+        """compute the 2's compliment of int value val"""
+        if (val & (1 << (bits - 1))) != 0: # if sign bit is set e.g., 8bit: 128-255
+            val = val - (1 << bits)        # compute negative value
+        return val
+        
+    def parse_data_packet(self, data):
+        chanData = data[3:27]
+          
+        deviceData = list()
+        for j in xrange(8):
+            deviceData += [chanData[j*3:j*3+3]]
+            val = 0
+            for s,n in list(enumerate(reversed(deviceData[j]))):
+                val ^= ord(n) << (s*8)
+            deviceData[j] = float(self.twos_comp(val))
+        return deviceData
+    
+    
         
     def generic_tcp_command_BYTE(self, cmd, extra = ''):
         ###############################################################################
