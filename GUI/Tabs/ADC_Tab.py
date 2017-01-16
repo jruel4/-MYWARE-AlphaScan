@@ -94,18 +94,24 @@ class ADC_REG_TAB( QWidget):
 #==============================================================================
         
         # Add Button_UpdateRegister
-        self.Button_UpdateRegister = QPushButton("Update Registers")
-        mainLayout.addWidget(self.Button_UpdateRegister)
-        self.Button_UpdateRegister.clicked.connect(self.sync_registers_to_ads)
+        self.Button_PullRegisters = QPushButton("Pull Registers")
+        mainLayout.addWidget(self.Button_PullRegisters)
+        self.Button_PullRegisters.clicked.connect(self.pull_registers_from_ads)
+        
+        self.Button_PushRegister = QPushButton("Push Registers")
+        mainLayout.addWidget(self.Button_PushRegister)
+        self.Button_PushRegister.clicked.connect(self.push_registers_to_ads)
+        
+        nextRow = mainLayout.rowCount() + 1
         
         # Save reg_map button
         self.Button_SaveRegMap = QPushButton("Save Reg Map")
-        mainLayout.addWidget(self.Button_SaveRegMap)
+        mainLayout.addWidget(self.Button_SaveRegMap, nextRow, 0)
         self.Button_SaveRegMap.clicked.connect(self.save_reg_map)
         
         # Load reg_map button
         self.Button_LoadRegMap = QPushButton("Load Reg Map")
-        mainLayout.addWidget(self.Button_LoadRegMap)
+        mainLayout.addWidget(self.Button_LoadRegMap, nextRow, 1)
         self.Button_LoadRegMap.clicked.connect(self.load_reg_map)
         
         # Send Hex command button
@@ -124,11 +130,39 @@ class ADC_REG_TAB( QWidget):
         self._Device.generic_tcp_command_BYTE("ADC_send_hex_cmd", "_b_"+str(cmd)+"_e_")
         
     @Slot()
-    def sync_registers_to_ads(self):
+    def push_registers_to_ads(self):
+        self.sync_reg_map_to_check()
+        r = self._Device.push_adc_registers(self.ADC_RegMap)
+        
+        msg = QMessageBox()
+        msg.setText(r)
+        msg.exec_()
+        #TODO process return value
+        
+    @Slot()
+    def pull_registers_from_ads(self):
         
         # TODO check to ensure that (not streaming) and (connected)
-        self.ADC_RegMap = self._Device.sync_adc_registers()
+        r = self._Device.pull_adc_registers()
+        if r:
+            self.ADC_RegMap = r
+        else:
+            msg = QMessageBox()
+            msg.setText("failure")
+            msg.exec_()
+            return
+#==============================================================================
+#         msg = QMessageBox()
+#         if r:
+#             msg.setText(r)            
+#         else:
+#             msg.setText("failure")
+#         
+#         msg.exec_()
+#         return
+#==============================================================================
         
+        #TODO fill in local reg map
         # set all check boxes to match RegMap
         for i in range(len(self.rowDict)):
             for j in range(8):
@@ -136,9 +170,14 @@ class ADC_REG_TAB( QWidget):
                     self.rowDict[i]['BIT_'+str(j)].setCheckState(Qt.CheckState.Checked)
                 else:
                     self.rowDict[i]['BIT_'+str(j)].setCheckState(Qt.CheckState.Unchecked)
+        
+        msg = QMessageBox()
+        msg.setText("complete")
+        msg.exec_()
     
     @Slot()
     def update_registers(self):
+        ''' '''
         #TODO abort if not connected or is streaming
         reg_to_update = list()
         for i in range(len(self.rowDict)):
@@ -146,7 +185,8 @@ class ADC_REG_TAB( QWidget):
                 if self.rowDict[i]['BIT_'+str(j)].isChecked() != self.ADC_RegMap[i][j]:
                     reg_to_update += [(i,j)] #i=reg,j=bit
         if len(reg_to_update) > 0:
-            self._Device.generic_tcp_command_BYTE("ADC_update_register")
+            #self._Device.generic_tcp_command_BYTE("ADC_update_register")
+            pass
             
     @Slot()
     def save_reg_map(self):

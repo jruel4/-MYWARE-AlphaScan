@@ -1,3 +1,4 @@
+
 # -*- coding: utf-8 -*-
 """
 Created on Mon Jan 25 16:42:21 2016
@@ -128,11 +129,3 @@ dev = AlphaScanDevice()
 app = AlphaScanGui(dev, fileName)
 time.sleep(0.01)
 app.run()
-            
-            
-       
-       
-       
-       
-       
-       

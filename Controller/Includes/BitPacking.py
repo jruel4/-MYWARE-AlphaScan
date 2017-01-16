@@ -1,3 +1,4 @@
+
 # -*- coding: utf-8 -*-
 """
 Created on Sat Mar 05 22:06:37 2016
@@ -25,7 +26,4 @@ for n in chan1tc: # where chan1tc is a list of length 3 strings of tc data
     chan1tcord += [twos_comp(val)]
 '''    
     
-    
-    
-    
-    
+
