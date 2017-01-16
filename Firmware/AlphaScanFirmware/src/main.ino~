@@ -292,6 +292,7 @@ void WiFi_ConnectToWan() {
         if (attempts > 40) { // may want to tune this number up for poor connections
             Serial.println("WiFi parameters appear to be invalid, switching to AP Mode...");
             SYSTEM_STATE = AP_MODE;
+            network_set = false;
             return;
         }
     }
@@ -660,6 +661,10 @@ void WiFi_ProcessTcpClientRequest() {
 }
 
 void WiFi_ListenUdpBeacon() {
+
+    if (SYSTEM_STATE == AP_MODE) {
+        return;
+    }
 
     volatile uint64_t cnt = 0;
     int noBytes = 0;
@@ -1080,90 +1085,92 @@ void AP_SupportRoutine() {
         if(c++ % 1000000 == 0)Serial.print(".");if(c % 10000000 ==0)Serial.println("");
     }
 
-    if (network_set) {
-        Serial.println("Network is set");
-        delay(1);
-        client.print("HTTP/1.1 200 OK\r");
-        delay(1);
-        client.stop();
-        delay(1);
-        return;
-    }
-
-    // Read the first line of the request
-    String req = client.readStringUntil('\r'); //NOTE \r is not included in query text yet this terminates anyways...
-    Serial.print("Request received: ");Serial.print(req);Serial.println("");
-
-    client.flush();
-
-    // Parse request
-
-    // Alive request
-    if (req.indexOf("alive") >= 0) {
-        custom_response = "___IAMALPHASCAN___";
-    }
-
-    // Rx SSID
-    else if (req.indexOf("ssid") >= 0) {
-        // collect SSID into local variables
-        ssid_str = GEN_ExtractNetParams(req,"ssid");
-        strcpy(ssid,&(ssid_str[0]));
-        custom_response = "SSID";
-        ssid_set = true;
-
-        Serial.print("received ssid: ");Serial.println(ssid);
-    }
-
-    // Rx passkey
-    else if (req.indexOf("pass") >= 0) {
-        password_str = GEN_ExtractNetParams(req,"pass");
-        strcpy(password,&(password_str[0]));
-        custom_response = "passkey";
-        password_set = true;
-
-        Serial.print("received pass: ");Serial.println(password);
-    }
-
-    // Rx passkey
-    else if (req.indexOf("host_ip") >= 0) {
-        host_ip_str = GEN_ExtractNetParams(req,"host_ip");
-        //strcpy(host_ip,&(host_ip_str[0])); //NOTE use cpy method compatible with IPAddress
-        custom_response = "host_ip";
-        host_ip_set = true;
-
-        Serial.print("received host_ip: ");Serial.println(host_ip);
-    }
-
-    // Finalize Params
-    else if (req.indexOf("finalize_params") >= 0) {
-        if (ssid_set && password_set) {
-            network_set = true;
-            custom_response = "finalized";
+    while(1) {
+        if (network_set) {
+            Serial.println("Network is set");
+            delay(1);
+            client.print("HTTP/1.1 200 OK\r");
+            delay(1);
+            client.stop();
+            delay(1);
+            return;
         }
+
+        // Read the first line of the request
+        String req = client.readStringUntil('\r'); //NOTE \r is not included in query text yet this terminates anyways...
+        Serial.print("Request received: ");Serial.print(req);Serial.println("");
+
+        client.flush();
+
+        // Parse request
+
+        // Alive request
+        if (req.indexOf("alive") >= 0) {
+            custom_response = "___IAMALPHASCAN___";
+        }
+
+        // Rx SSID
+        else if (req.indexOf("ssid") >= 0) {
+            // collect SSID into local variables
+            ssid_str = GEN_ExtractNetParams(req,"ssid");
+            strcpy(ssid,&(ssid_str[0]));
+            custom_response = "SSID";
+            ssid_set = true;
+
+            Serial.print("received ssid: ");Serial.println(ssid);
+        }
+
+        // Rx passkey
+        else if (req.indexOf("pass") >= 0) {
+            password_str = GEN_ExtractNetParams(req,"pass");
+            strcpy(password,&(password_str[0]));
+            custom_response = "passkey";
+            password_set = true;
+
+            Serial.print("received pass: ");Serial.println(password);
+        }
+
+        // Rx passkey
+        else if (req.indexOf("host_ip") >= 0) {
+            host_ip_str = GEN_ExtractNetParams(req,"host_ip");
+            //strcpy(host_ip,&(host_ip_str[0])); //NOTE use cpy method compatible with IPAddress
+            custom_response = "host_ip";
+            host_ip_set = true;
+
+            Serial.print("received host_ip: ");Serial.println(host_ip);
+        }
+
+        // Finalize Params
+        else if (req.indexOf("finalize_params") >= 0) {
+            if (ssid_set && password_set) {
+                network_set = true;
+                custom_response = "finalized";
+            }
+            else {
+                network_set = false;
+                custom_response = "Failure"; //TODO add more details to response
+            }
+        }
+
+        // Echo network params
+        else if (req.indexOf("echo_params") >= 0) {
+            custom_response = "ssid: " + ssid_str + ", pass: " + password_str;
+        }
+
         else {
-            network_set = false;
-            custom_response = "Failure"; //TODO add more details to response
+            custom_response = "unknown_request";
         }
-    }
 
-    // Echo network params
-    else if (req.indexOf("echo_params") >= 0) {
-        custom_response = "ssid: " + ssid_str + ", pass: " + password_str;
+        // Send the response to the client
+        String s = "HTTP/1.1 200 OK\r\n";
+        s += "Content-Type: text/html\r\n\r\n";
+        s += "<!DOCTYPE HTML>\r\n<html>\r\n";
+        s += custom_response;
+        s += "</html>\n";
+        client.print(s);
+        delay(1);
+        Serial.println("Client disonnected");
     }
-
-    else {
-        custom_response = "unknown_request";
-    }
-
-    // Send the response to the client
-    String s = "HTTP/1.1 200 OK\r\n";
-    s += "Content-Type: text/html\r\n\r\n";
-    s += "<!DOCTYPE HTML>\r\n<html>\r\n";
-    s += custom_response;
-    s += "</html>\n";
-    client.print(s);
-    delay(1);
-    Serial.println("Client disonnected");
 
 }
 
@@ -1215,26 +1222,26 @@ void ADC_StartDataStream() {
     // Create sample square buffers
     bool buf_switch = true;
     uint8_t sample_buffer_square_1[27] = {0x00,0x40,0x00,
-                                          0x00,0x40,0x00, 
-                                          0x00,0x40,0x00,
-                                          0x00,0x40,0x00,
-                                          0x00,0x40,0x00,
-                                          0x00,0x40,0x00,
-                                          0x00,0x40,0x00,
-                                          0x00,0x40,0x00,
-                                          0x00,0x40,0x00,
-                                         };
+        0x00,0x40,0x00, 
+        0x00,0x40,0x00,
+        0x00,0x40,0x00,
+        0x00,0x40,0x00,
+        0x00,0x40,0x00,
+        0x00,0x40,0x00,
+        0x00,0x40,0x00,
+        0x00,0x40,0x00,
+    };
 
     uint8_t sample_buffer_square_2[27] = {0x00,0x00,0x00,
-                                          0x00,0x00,0x00,
-                                          0x00,0x00,0x00,
-                                          0x00,0x00,0x00,
-                                          0x00,0x00,0x00,
-                                          0x00,0x00,0x00,
-                                          0x00,0x00,0x00,
-                                          0x00,0x00,0x00,
-                                          0x00,0x00,0x00
-                                         };
+        0x00,0x00,0x00,
+        0x00,0x00,0x00,
+        0x00,0x00,0x00,
+        0x00,0x00,0x00,
+        0x00,0x00,0x00,
+        0x00,0x00,0x00,
+        0x00,0x00,0x00,
+        0x00,0x00,0x00
+    };
 
 
     Serial.println("Initiating stream");
