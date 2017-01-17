@@ -1,4 +1,3 @@
-
 #include "task.hpp"
 #include "espressif/esp_common.h"
 #include "esp/uart.h"
