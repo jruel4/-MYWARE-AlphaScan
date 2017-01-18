@@ -89,7 +89,7 @@ build/program//main.o: \
  /media/marzipan/Expansion_1/Development/Projects/superhouse_spi_test_build/esp-open-rtos/core/include/flashchip.h \
  /media/marzipan/Expansion_1/Development/Projects/superhouse_spi_test_build/esp-open-rtos/core/include/esp/uart.h \
  /media/marzipan/Expansion_1/Development/Projects/superhouse_spi_test_build/esp-open-rtos/core/include/esp/clocks.h \
- /media/marzipan/Expansion_1/Development/Projects/AlphaScan/Firmware/AlphaScanRTOS/SoftAP.cpp \
+ /media/marzipan/Expansion_1/Development/Projects/AlphaScan/Firmware/AlphaScanRTOS/Modules/SoftApManager.cpp \
  /media/marzipan/Expansion_1/Development/Projects/superhouse_spi_test_build/esp-open-rtos/libc/xtensa-lx106-elf/include/string.h \
  /media/marzipan/Expansion_1/Development/Projects/superhouse_spi_test_build/esp-open-rtos/libc/xtensa-lx106-elf/include/sys/string.h \
  /media/marzipan/Expansion_1/Development/Projects/superhouse_spi_test_build/esp-open-rtos/FreeRTOS/Source/include/queue.h \
@@ -101,4 +101,23 @@ build/program//main.o: \
  /media/marzipan/Expansion_1/Development/Projects/superhouse_spi_test_build/esp-open-rtos/lwip/lwip/src/include/lwip/sys.h \
  /media/marzipan/Expansion_1/Development/Projects/superhouse_spi_test_build/esp-open-rtos/lwip/include/arch/sys_arch.h \
  /media/marzipan/Expansion_1/Development/Projects/superhouse_spi_test_build/esp-open-rtos/FreeRTOS/Source/include/semphr.h \
- /media/marzipan/Expansion_1/Development/Projects/superhouse_spi_test_build/esp-open-rtos/FreeRTOS/Source/include/queue.h
+ /media/marzipan/Expansion_1/Development/Projects/superhouse_spi_test_build/esp-open-rtos/FreeRTOS/Source/include/queue.h \
+ /media/marzipan/Expansion_1/Development/Projects/AlphaScan/Firmware/AlphaScanRTOS/Modules/OtaManager.cpp \
+ /media/marzipan/Expansion_1/Development/Projects/superhouse_spi_test_build/esp-open-rtos/lwip/lwip/src/include/lwip/sockets.h \
+ /media/marzipan/Expansion_1/Development/Projects/superhouse_spi_test_build/esp-open-rtos/lwip/lwip/src/include/ipv4/lwip/inet.h \
+ /media/marzipan/Expansion_1/Development/Projects/superhouse_spi_test_build/esp-open-rtos/lwip/lwip/src/include/lwip/netdb.h \
+ /media/marzipan/Expansion_1/Development/Projects/superhouse_spi_test_build/esp-open-rtos/lwip/lwip/src/include/lwip/dns.h \
+ /media/marzipan/Expansion_1/Development/Projects/superhouse_spi_test_build/esp-open-rtos/lwip/lwip/src/include/ipv4/lwip/ip_addr.h \
+ /media/marzipan/Expansion_1/Development/Projects/superhouse_spi_test_build/esp-open-rtos/include/ssid_config.h \
+ /media/marzipan/Expansion_1/Development/Projects/superhouse_spi_test_build/esp-open-rtos/extras/mbedtls/mbedtls/include/mbedtls/sha256.h \
+ /media/marzipan/Expansion_1/Development/Projects/superhouse_spi_test_build/esp-open-rtos/extras/mbedtls/mbedtls/include/mbedtls/config.h \
+ /media/marzipan/Expansion_1/Development/Projects/superhouse_spi_test_build/esp-open-rtos/extras/mbedtls/mbedtls/include/mbedtls/check_config.h \
+ /media/marzipan/Expansion_1/Development/Projects/superhouse_spi_test_build/esp-open-rtos/libc/xtensa-lx106-elf/include/limits.h \
+ /media/marzipan/Expansion_1/Development/Projects/superhouse_spi_test_build/esp-open-rtos/extras/rboot-ota/ota-tftp.h \
+ /media/marzipan/Expansion_1/Development/Projects/superhouse_spi_test_build/esp-open-rtos/extras/rboot-ota/rboot-api.h \
+ /media/marzipan/Expansion_1/Development/Projects/superhouse_spi_test_build/esp-open-rtos/extras/rboot-ota/rboot-integration.h \
+ /media/marzipan/Expansion_1/Development/Projects/superhouse_spi_test_build/esp-open-rtos/include/espressif/spi_flash.h \
+ /media/marzipan/Expansion_1/Development/Projects/superhouse_spi_test_build/esp-open-rtos/include/espressif/esp_system.h \
+ /media/marzipan/Expansion_1/Development/Projects/superhouse_spi_test_build/esp-open-rtos/bootloader/rboot.h \
+ /media/marzipan/Expansion_1/Development/Projects/superhouse_spi_test_build/esp-open-rtos/bootloader/rboot/rboot.h \
+ /media/marzipan/Expansion_1/Development/Projects/AlphaScan/Firmware/AlphaScanRTOS/Modules/HostCommManager.cpp
