@@ -120,4 +120,7 @@ build/program//main.o: \
  /media/marzipan/Expansion_1/Development/Projects/superhouse_spi_test_build/esp-open-rtos/include/espressif/esp_system.h \
  /media/marzipan/Expansion_1/Development/Projects/superhouse_spi_test_build/esp-open-rtos/bootloader/rboot.h \
  /media/marzipan/Expansion_1/Development/Projects/superhouse_spi_test_build/esp-open-rtos/bootloader/rboot/rboot.h \
- /media/marzipan/Expansion_1/Development/Projects/AlphaScan/Firmware/AlphaScanRTOS/Modules/HostCommManager.cpp
+ /media/marzipan/Expansion_1/Development/Projects/AlphaScan/Firmware/AlphaScanRTOS/Modules/HostCommManager.cpp \
+ /media/marzipan/Expansion_1/Development/Projects/AlphaScan/Firmware/AlphaScanRTOS/Modules/ads_ctrl.cpp \
+ /media/marzipan/Expansion_1/Development/Projects/superhouse_spi_test_build/esp-open-rtos/core/include/esp/spi.h \
+ /media/marzipan/Expansion_1/Development/Projects/AlphaScan/Firmware/AlphaScanRTOS/Modules/ads_ctrl.cpp

@@ -4,8 +4,9 @@
 #include "Modules/SoftApManager.cpp"
 #include "Modules/OtaManager.cpp"
 #include "Modules/HostCommManager.cpp"
+#include "Modules/ads_ctrl.cpp"
 
-#define FIRMARE_VERSION "0.0.1"
+#define FIRMARE_VERSION "0.0.3"
 
 class AlphaScanManager : public esp_open_rtos::thread::task_t
 {
@@ -24,6 +25,7 @@ class AlphaScanManager : public esp_open_rtos::thread::task_t
         SoftAP c_SoftAp;        
         HostCommManager c_HostComm;
         OtaManager c_Ota; 
+        ADS c_Ads;
         
         // Variables
         bool mDebugSerial;
@@ -46,20 +48,20 @@ class AlphaScanManager : public esp_open_rtos::thread::task_t
                         {
                             //
                             if (mDebugSerial && (mMainLoopCounter++ % 1000 == 0)) {
-                                printf("mSystemState == AP_MODE");
+                                printf("mSystemState == AP_MODE\n");
                             }
                             break;
                         }
                     case RUN_MODE:
                         {
                             if (mDebugSerial && (mMainLoopCounter++ % 1000 == 0)) {
-                                printf("mSystemState == RUN_MODE");
+                                printf("mSystemState == RUN_MODE\n");
                             }
 
                             int rcode = c_HostComm.update();
                             if (rcode > 0){
                                 if (mDebugSerial){
-                                    printf("Triggering task: %d",rcode);
+                                    printf("Triggering task: %d\n",rcode);
                                 }
                                 // Trigger corresponding task
                                 _trigger_task(rcode);
@@ -70,7 +72,7 @@ class AlphaScanManager : public esp_open_rtos::thread::task_t
                     default:
                         {
                             if (mDebugSerial && (mMainLoopCounter++ % 1000 == 0)) {
-                                printf("mSystemState == Invalid State");
+                                printf("mSystemState == Invalid State\n");
                             }
                             break;
                         }
@@ -81,8 +83,8 @@ class AlphaScanManager : public esp_open_rtos::thread::task_t
         void _initialize(){
             if (mDebugSerial){
                 uart_set_baud(0, 74880);
-                printf("Initializing Alpha Scan with Debug Mode = true");
-                printf("Fimare Version %s", FIRMARE_VERSION);
+                printf("Initializing Alpha Scan with Debug Mode = true\n");
+                printf("Fimare Version %s\n", FIRMARE_VERSION);
             }
 
             //c_SoftAp.initialize();
@@ -98,7 +100,22 @@ class AlphaScanManager : public esp_open_rtos::thread::task_t
                c_Ota.run();
             }
             else if (rcode == 0x02){
+                printf("running ads code\n");
+                // Print Reg Map Serial
+                c_Ads.setupADS();
+                c_Ads.printSerialRegistersFromADS();
+                printf("completed ads code\n");
+            }
+            else if (rcode == 0x03){
+                printf("running test signal stream code\n");
 
+                //TODO Setup ADS
+                
+                // Receive new data from ADS - send to host
+                // Check TCP read for terminate command
+                c_HostComm.stream_ads(&c_Ads);
+
+                printf("test signal stream completed\n");
             }
             // ... complete command responses
         }
