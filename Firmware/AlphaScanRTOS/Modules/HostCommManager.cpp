@@ -73,8 +73,9 @@ class HostCommManager {
             int ctlr = -2;
             while(1) {
 
-
                 mSocket = socket(res.ai_family, res.ai_socktype, 0);
+                printf("mSocket = %d\n",mSocket);
+
                 if(mSocket < 0) {
                     printf("... Failed to allocate socket.\r\n");
                     //freeaddrinfo(res);
@@ -89,6 +90,7 @@ class HostCommManager {
                 printf("set blocking: %d\n", ctlr);
 
                 if(connect(mSocket, res.ai_addr, res.ai_addrlen) != 0) {
+                    printf("Closing socket: %d\n",mSocket);
                     close(mSocket);
                     //freeaddrinfo(res);
                     printf("... socket connect failed.\r\n");
@@ -112,32 +114,17 @@ class HostCommManager {
         // Process tcp command
         int _process_tcp_command(){
 
-            // Periodically check connection
-            if (mKeepAliveCounter++ > 10E3){
-                mKeepAliveCounter = 0;
-                if (write(mSocket, "ACK", 3) < 0){
-                    printf("failed to receive ACK");
-                    return -1;
-                }
+            int rready = _read_ready();
+            if (rready < 0){
+                printf("closing socket: %d",mSocket);
+                close(mSocket);
+                return rready;
             }
-
-            if (mSocket < 0){
-                printf("mSocket < 0 - ERR\n");
-                return -1;
+            else if ( rready == 0){
+                return rready;
             }
-
-            fd_set fds;
-            FD_ZERO(&fds);
-            FD_SET(mSocket, &fds);
-
-            //set both timval struct to zero
-            struct timeval tv;
-            tv.tv_sec = 0;
-            tv.tv_usec = 0;
-
-            int rsel = select( mSocket + 1, &fds , NULL, NULL, &tv );
-            if (rsel < 1) {
-                return 0;
+            else {
+                //proceed with read
             }
 
             int r = read(mSocket, mInbuf, pkt_size);
@@ -150,6 +137,8 @@ class HostCommManager {
                 if (mInbuf[0] == 0x1){
                     printf("Received OTA Command");
                     if (write(mSocket, "OTA", 3) < 0){
+                        printf("Closing socket: %d\n",mSocket);
+                        close(mSocket);
                         printf("failed to send ACK");
                     }
                     else {
@@ -204,12 +193,14 @@ class HostCommManager {
             }
             else {
                 // TODO Handle Error
-                printf("rsel = %d\n",rsel);
                 printf("_tcp_handle_command r=%d\n",r);
-                printf("mSocket=%d\n", mSocket);
-                for (int i = 0 ; i < sizeof((long int)fds.fds_bits); i++){
-                    printf("fd_bits[%d] = %d\n", i, fds.fds_bits[i]);
-                }
+                printf("Closing socket: %d\n",mSocket);
+                close(mSocket);
+                //printf("rsel = %d\n",rsel);
+                //printf("mSocket=%d\n", mSocket);
+                //for (int i = 0 ; i < sizeof((long int)fds.fds_bits); i++){
+                //    printf("fd_bits[%d] = %d\n", i, fds.fds_bits[i]);
+                //}
                 return -1;
             }
         }
@@ -234,6 +225,21 @@ class HostCommManager {
 
             while (1){
 
+                int rready = _read_ready();
+                if (rready < 0){
+                    printf("Connection died\n");
+                    printf("Closing socket: %d\n",mSocket);
+                    close(mSocket);
+                    break;
+                }
+                else if (rready == 0){
+                    // no new commands
+                    continue;
+                }
+                else{
+                    // proceed with read operation
+                }
+
                 // Read TCP in for stop op code
                 int r = read(mSocket, mInbuf, pkt_size);
                 //r = lwip_recv(mSocket, mInbuf, pkt_size, 0);
@@ -241,15 +247,59 @@ class HostCommManager {
                 printf("return from lwip_recv with r=%d\n",r);
                 if (r > 0){
                     printf("received: %s", mInbuf);
-                    if (mInbuf[0] == 0xff){
+                    if (mInbuf[0] == 0xf){
                         // terminate stream
                         printf("received terminate command\n");
+                        break;
+                    }
+                }
+                else if (r < 0){
+                    // Check if connection is alive
+                    if (write(mSocket, "ACK", 3) < 0){
+                        printf("failed to receive ACK");
+                        printf("Closing socket: %d\n",mSocket);
+                        close(mSocket);
                         break;
                     }
                 }
 
                 //TODO Perform ADS update and shipp output back to host
 
+            }
+        }
+
+        int _read_ready(){
+
+            // Periodically check connection
+            if (mKeepAliveCounter++ > 10E3){
+                mKeepAliveCounter = 0;
+                if (write(mSocket, "ACK", 3) < 0){
+                    printf("failed to receive ACK");
+                    return -1;
+                }
+            }
+
+            if (mSocket < 0){
+                printf("mSocket < 0 - ERR\n");
+                return -1;
+            }
+
+            fd_set fds;
+            FD_ZERO(&fds);
+            FD_SET(mSocket, &fds);
+
+            //set both timval struct to zero
+            struct timeval tv;
+            tv.tv_sec = 0;
+            tv.tv_usec = 0;
+
+            int rsel = select( mSocket + 1, &fds , NULL, NULL, &tv );
+            if (rsel < 1) {
+                return 0;
+            }
+            else {
+                // this is the only situation (i.e. socket is valid and ready to read) that should allow calling read()
+                return 1;
             }
         }
 };

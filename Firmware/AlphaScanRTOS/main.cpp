@@ -6,7 +6,7 @@
 #include "Modules/HostCommManager.cpp"
 #include "Modules/ads_ctrl.cpp"
 
-#define FIRMARE_VERSION "0.0.3"
+#define FIRMARE_VERSION "0.0.4"
 
 class AlphaScanManager : public esp_open_rtos::thread::task_t
 {
