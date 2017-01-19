@@ -45,6 +45,7 @@ class HostCommManager {
         int mSocket = -1;
         char mOutbuf[pkt_size] = {0};
         char mInbuf[pkt_size] = {0};
+        int mKeepAliveCounter = 0;
 
         // Connect to host
         void _establish_host_connection(){
@@ -72,6 +73,7 @@ class HostCommManager {
             int ctlr = -2;
             while(1) {
 
+
                 mSocket = socket(res.ai_family, res.ai_socktype, 0);
                 if(mSocket < 0) {
                     printf("... Failed to allocate socket.\r\n");
@@ -82,6 +84,9 @@ class HostCommManager {
 
                 printf("... allocated socket\r\n");
 
+                nbset = 0;
+                ctlr = lwip_ioctl(mSocket, FIONBIO, &nbset);
+                printf("set blocking: %d\n", ctlr);
 
                 if(connect(mSocket, res.ai_addr, res.ai_addrlen) != 0) {
                     close(mSocket);
@@ -91,8 +96,13 @@ class HostCommManager {
                     continue;
                 }
 
+                nbset = 1;
                 ctlr = lwip_ioctl(mSocket, FIONBIO, &nbset);
                 printf("set non blocking: %d\n", ctlr);
+
+                //int optval = 1;
+                //setsockopt(mSocket, SOL_SOCKET, SO_KEEPALIVE, &optval, sizeof(optval));
+                //printf("set keep alive tcp option");
 
                 printf("... connected\r\n");
                 break;
@@ -102,23 +112,34 @@ class HostCommManager {
         // Process tcp command
         int _process_tcp_command(){
 
+            // Periodically check connection
+            if (mKeepAliveCounter++ > 10E3){
+                mKeepAliveCounter = 0;
+                if (write(mSocket, "ACK", 3) < 0){
+                    printf("failed to receive ACK");
+                    return -1;
+                }
+            }
+
             if (mSocket < 0){
                 printf("mSocket < 0 - ERR\n");
                 return -1;
             }
 
             fd_set fds;
+            FD_ZERO(&fds);
             FD_SET(mSocket, &fds);
-            
+
             //set both timval struct to zero
             struct timeval tv;
             tv.tv_sec = 0;
             tv.tv_usec = 0;
 
-            if (select( mSocket + 1, &fds , NULL, NULL, &tv ) < 1) {
+            int rsel = select( mSocket + 1, &fds , NULL, NULL, &tv );
+            if (rsel < 1) {
                 return 0;
             }
-            
+
             int r = read(mSocket, mInbuf, pkt_size);
             if (r > 0){
                 printf("received: %s", mInbuf);
@@ -183,7 +204,12 @@ class HostCommManager {
             }
             else {
                 // TODO Handle Error
-                printf("r=%d\n",r);
+                printf("rsel = %d\n",rsel);
+                printf("_tcp_handle_command r=%d\n",r);
+                printf("mSocket=%d\n", mSocket);
+                for (int i = 0 ; i < sizeof((long int)fds.fds_bits); i++){
+                    printf("fd_bits[%d] = %d\n", i, fds.fds_bits[i]);
+                }
                 return -1;
             }
         }
@@ -223,7 +249,7 @@ class HostCommManager {
                 }
 
                 //TODO Perform ADS update and shipp output back to host
-                
+
             }
         }
 };

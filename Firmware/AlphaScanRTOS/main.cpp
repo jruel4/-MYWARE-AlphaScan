@@ -47,14 +47,14 @@ class AlphaScanManager : public esp_open_rtos::thread::task_t
                     case AP_MODE:
                         {
                             //
-                            if (mDebugSerial && (mMainLoopCounter++ % 1000 == 0)) {
+                            if (mDebugSerial && (mMainLoopCounter++ % 10000 == 0)) {
                                 printf("mSystemState == AP_MODE\n");
                             }
                             break;
                         }
                     case RUN_MODE:
                         {
-                            if (mDebugSerial && (mMainLoopCounter++ % 1000 == 0)) {
+                            if (mDebugSerial && (mMainLoopCounter++ % (int)10E7 == 0)) {
                                 printf("mSystemState == RUN_MODE\n");
                             }
 
