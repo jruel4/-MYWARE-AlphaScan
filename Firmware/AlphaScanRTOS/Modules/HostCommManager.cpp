@@ -21,7 +21,7 @@ class HostCommManager {
 
 
     public:
-        
+
         int initialize(){
             _initialize();
             return 0;
@@ -114,7 +114,7 @@ class HostCommManager {
         // Process tcp command
         int _process_tcp_command(){
 
-            int rready = _read_ready();
+            int rready = _read_ready(true);
             if (rready < 0){
                 printf("closing socket: %d",mSocket);
                 close(mSocket);
@@ -222,10 +222,18 @@ class HostCommManager {
 
             printf("Initializing internal ADS stream call\n");
             int r;
+            //TODO setup ads streaming, interrupt, etc.
+            //ads->
+
+            //TODO Generate fake square wave buffer
+            char outbuf[24] = {0};
+            for (int i  = 0; i < 12; i++){
+                outbuf[i] = 0xff;
+            }
 
             while (1){
 
-                int rready = _read_ready();
+                int rready = _read_ready(false);
                 if (rready < 0){
                     printf("Connection died\n");
                     printf("Closing socket: %d\n",mSocket);
@@ -234,44 +242,62 @@ class HostCommManager {
                 }
                 else if (rready == 0){
                     // no new commands
-                    continue;
+                    //continue;
                 }
                 else{
                     // proceed with read operation
-                }
 
-                // Read TCP in for stop op code
-                int r = read(mSocket, mInbuf, pkt_size);
-                //r = lwip_recv(mSocket, mInbuf, pkt_size, 0);
-                //r = lwip_recv(mSocket, mInbuf, pkt_size, MSG_DONTWAIT);
-                printf("return from lwip_recv with r=%d\n",r);
-                if (r > 0){
-                    printf("received: %s", mInbuf);
-                    if (mInbuf[0] == 0xf){
-                        // terminate stream
-                        printf("received terminate command\n");
-                        break;
+
+                    // Read TCP in for stop op code
+                    int r = read(mSocket, mInbuf, pkt_size);
+                    //r = lwip_recv(mSocket, mInbuf, pkt_size, 0);
+                    //r = lwip_recv(mSocket, mInbuf, pkt_size, MSG_DONTWAIT);
+                    printf("return from lwip_recv with r=%d\n",r);
+                    if (r > 0){
+                        printf("received: %s", mInbuf);
+                        if (mInbuf[0] == 0xf){
+                            // terminate stream
+                            printf("received terminate command\n");
+                            break;
+                        }
+                    }
+                    else if (r < 0){
+                        printf("r < 0");
+                        // Check if connection is alive
+                        if (write(mSocket, "ACK", 3) < 0){
+                            printf("failed to receive ACK");
+                            printf("Closing socket: %d\n",mSocket);
+                            close(mSocket);
+                            break;
+                        }
                     }
                 }
-                else if (r < 0){
-                    // Check if connection is alive
-                    if (write(mSocket, "ACK", 3) < 0){
-                        printf("failed to receive ACK");
-                        printf("Closing socket: %d\n",mSocket);
-                        close(mSocket);
-                        break;
-                    }
+
+                //TODO Perform ADS update and ship output back to host
+                // if new data is ready, send it over wifi to host
+
+                // Add fake square wave code here
+
+                //add delay
+                vTaskDelay( 10 / portTICK_PERIOD_MS); // should send at 100 Hz
+
+                //if (write(mSocket, "FART", 4) < 0){
+                if (write(mSocket, outbuf, 24) < 0){
+                    printf("failed to write outbuf, no ack");
+                    printf("Closing socket: %d\n",mSocket);
+                    close(mSocket);
+                    break;
                 }
-
-                //TODO Perform ADS update and shipp output back to host
-
+                else {
+                    printf("Sent outbuf");
+                }
             }
         }
 
-        int _read_ready(){
+        int _read_ready(bool check_alive){
 
             // Periodically check connection
-            if (mKeepAliveCounter++ > 10E3){
+            if (check_alive && (mKeepAliveCounter++ > 10E3)){
                 mKeepAliveCounter = 0;
                 if (write(mSocket, "ACK", 3) < 0){
                     printf("failed to receive ACK");

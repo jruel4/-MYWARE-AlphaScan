@@ -98,6 +98,7 @@ class AlphaScanManager : public esp_open_rtos::thread::task_t
             if (rcode == 0x01){ 
                // OTA Mode 
                c_Ota.run();
+               printf("Exited from OTA\n");
             }
             else if (rcode == 0x02){
                 printf("running ads code\n");
