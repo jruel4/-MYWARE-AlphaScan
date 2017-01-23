@@ -5,6 +5,7 @@ from threading import Thread, Event
 from pylsl import StreamInfo, StreamOutlet
 import random
 from CommandDefinitions import *
+from BitPacking import twos_comp
 
 class AlphaScanDevice:
     
@@ -102,21 +103,22 @@ class AlphaScanDevice:
         # Initialize TCP Port
         ###############################################################################
         self.s = socket.socket(socket.AF_INET,socket.SOCK_STREAM) 
-        
+        self.s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         self.s.bind((self.TCP_IP,self.TCP_PORT)) 
         # error: [Errno 10048] Only one usage of each socket address (protocol/network address/port) is normally permitted
         
-        self.s.settimeout(2)
+        self.s.settimeout(10)
         self.s.listen(1)        
         try:
             self.conn,addr = self.s.accept()
-            self.conn.settimeout(.05)
+            self.conn.settimeout(.05) # TODO maybe want to make this smaller
             time.sleep(0.01) # time for device to respond
-            self.UDP_IP = addr[0]
+            self.UDP_IP = addr[0] # TODO this should say TCP_IP
             self.IS_CONNECTED = True
             return True
         except:
             self.IS_CONNECTED = False
+            self.close_TCP(); # cleanup socket
             return False
             
     def close_TCP(self):
@@ -158,7 +160,7 @@ class AlphaScanDevice:
         while self.DEV_streamActive.is_set():
             try:
                 self.data = self.sock.recv(128)
-                self.inbuf += [ord(self.data[27:])]
+                self.inbuf += [ord(self.data[27:])] 
                 self.sqwave += [self.data]
                 self.outlet.push_sample(self.mysample)
                 self.reads += 1
@@ -175,6 +177,68 @@ class AlphaScanDevice:
                     self.sock.settimeout(0)
             except:
                 self.unknown_stream_errors += 1
+                
+    def DEV_printTCPStream(self):
+        global sqwave
+        ###############################################################################
+        # UDP Stream thread target
+        ###############################################################################
+
+        self.reads = 0
+        self.unknown_stream_errors = 0
+        self.time_interval_count = 0
+        self.rx_count = 0
+        self.test_inbuf = list()
+        self.inbuf = list()
+        self.time_intervals = list()
+        self.DEV_streamActive.set()
+        self.error_array = list()
+        
+        deviceData = [0 for i in range(8)]
+        
+        # clear tcp inbuf
+        #self.conn.recv(2048) # this is not a proper flush, rx size should be set to match
+        self.flush_TCP()
+        
+        while self.DEV_streamActive.is_set():
+            try:
+                
+                # TODO Receive and unpack sample from TCP connection
+                self.data = self.conn.recv(24)
+
+                self.test_inbuf += [self.data]
+                self.rx_count += 1                
+                
+                #self.inbuf += [ord(self.data)] # #TODO this is suspect since ord should only take 1 character, and will fill quick
+                
+                # Populate fresh channel data into self.mysample
+                for j in xrange(8):
+                    deviceData[j] = [self.data[j*3:j*3+3]]
+                    val = 0
+                    for s,n in list(enumerate(reversed(deviceData[j][0]))):
+                        try:
+                            val ^= ord(n) << (s*8)
+                        except ValueError as e:
+                            print("value error",e)
+                        except TypeError as e:
+                            print("value error",e)
+                    val = twos_comp(val)
+                    self.mysample[j] = val
+                
+                self.sqwave += [self.data]
+                self.outlet.push_sample(self.mysample)
+                self.reads += 1
+                
+                #TODO count interval
+                self.count_time_interval()
+                
+            except socket.error as e:
+                self.error_array += [e]
+                
+#==============================================================================
+#             except:
+#                 self.unknown_stream_errors += 1
+#==============================================================================
                 
         
     def generic_tcp_command_BYTE(self, cmd, extra = ''):
@@ -201,7 +265,7 @@ class AlphaScanDevice:
         self.conn.send((chr(opcode) + extra + chr(127)).encode('utf-8'))
         time.sleep(0.05)
         try:
-            r_string = self.conn.recv(64)
+            r_string = self.conn.recv(72)
         except:
             r_string = 'no_response'
         return r_string
@@ -247,6 +311,19 @@ class AlphaScanDevice:
         self.begin = time.time()
         return self.generic_tcp_command_BYTE("ADC_start_stream")
         
+    def initiate_TCP_stream(self):
+        ###############################################################################
+        # Begin TCP adc stream
+        ###############################################################################
+
+        # Start TCP rcv thread
+        self.LSL_Thread = Thread(target=self.DEV_printTCPStream)
+        self.LSL_Thread.start()
+        self.DEV_streamActive.set()  
+        # Send command to being 
+        self.begin = time.time()
+        return self.generic_tcp_command_OPCODE(0x03) # begins streaming TCP
+        
     def terminate_UDP_stream(self):
         ###############################################################################
         # End UDP adc stream
@@ -267,6 +344,28 @@ class AlphaScanDevice:
         self.DEV_streamActive.clear()
         time.sleep(0.01)
         self.sock.close()
+        drops = self.get_drop_rate()
+        if not drops: avail = 0
+        else: avail = ((1.0 - ((drops * 1.0) / len(self.inbuf)))*100.0)
+        pckt_rate = len(self.inbuf)/(self.end-self.begin)
+        return "Not Streaming", str(pckt_rate),  str(avail), str(len(self.inbuf)), str(drops)
+        
+    def terminate_TCP_stream(self):
+        ###############################################################################
+        # End UDP adc stream
+        ###############################################################################
+        
+        #TODO NEED terminatino ACK, if NACK then resend termination command        
+        
+        try:
+            self.generic_tcp_command_OPCODE(0xf)
+            
+        except: #Make specific to error: [Errno 9] Bad file descriptor
+            print("Exception occured upon attempting stream termination")
+            
+        self.end = time.time()
+        self.DEV_streamActive.clear()
+        time.sleep(0.01)
         drops = self.get_drop_rate()
         if not drops: avail = 0
         else: avail = ((1.0 - ((drops * 1.0) / len(self.inbuf)))*100.0)

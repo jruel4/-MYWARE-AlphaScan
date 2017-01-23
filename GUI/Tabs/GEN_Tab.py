@@ -105,8 +105,8 @@ class GeneralTab(QWidget):
         # Connect ADC signal to slots
         self.Button_RefreshAdcStatus.clicked.connect(self.update_adc_status)
         
-        self.Button_AdcBeginStream.clicked.connect(self.begin_streaming)
-        self.Button_AdcStopStream.clicked.connect(self.stop_streaming)
+        self.Button_AdcBeginStream.clicked.connect(self.begin_streaming_tcp)
+        self.Button_AdcStopStream.clicked.connect(self.stop_streaming_tcp)
         
         #######################################################################
         # General Message Area ################################################
@@ -333,6 +333,15 @@ class GeneralTab(QWidget):
         begin_stream_string = self._Device.initiate_UDP_stream()
         self.Streaming = True # TODO validate
         self.Text_AdcStreamStatus.setText(begin_stream_string)
+        
+    @Slot()
+    def begin_streaming_tcp(self):
+        if self.Streaming or not self.Connected:
+            self.Text_GeneralMessage.setText("ILLEGAL")
+            return
+        begin_stream_string = self._Device.initiate_TCP_stream()
+        self.Streaming = True # TODO validate
+        self.Text_AdcStreamStatus.setText(begin_stream_string)
     
     @Slot()
     def stop_streaming(self):
@@ -346,6 +355,16 @@ class GeneralTab(QWidget):
         self.Text_PacketRateVAL.setText(time)
         self.Text_TotalDroppedVAL.setText(drop)
         self.Text_TotalReceivedVAL.setText(rx)
+        
+    @Slot()
+    def stop_streaming_tcp(self):
+        if not self.Streaming or not self.Connected:
+            self.Text_GeneralMessage.setText("ILLEGAL: Streaming must be true, Connected must be true")
+            return
+        self._Device.terminate_TCP_stream()
+        self.Streaming = False # TODO validate
+        self.Text_AdcStreamStatus.setText("Stopped streaming")
+  
         
     @Slot()
     def clear_gen_msg(self):
