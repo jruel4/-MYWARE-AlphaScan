@@ -222,14 +222,20 @@ class HostCommManager {
 
             printf("Initializing internal ADS stream call\n");
             int r;
+            int write_result;
             //TODO setup ads streaming, interrupt, etc.
             //ads->
 
             //TODO Generate fake square wave buffer
-            char outbuf[24] = {0};
-            for (int i  = 0; i < 12; i++){
-                outbuf[i] = 0xff;
+            uint16_t tCounter = 0;
+            bool tBool = false;
+
+            char outbuf_high[24] = {0};
+            for (int i  = 0; i < 8; i++){
+                outbuf_high[i*3] = 0x1;
             }
+
+            char outbuf_low[24] = {0};
 
             while (1){
 
@@ -281,15 +287,26 @@ class HostCommManager {
                 //add delay
                 vTaskDelay( 10 / portTICK_PERIOD_MS); // should send at 100 Hz
 
-                //if (write(mSocket, "FART", 4) < 0){
-                if (write(mSocket, outbuf, 24) < 0){
+                if (tCounter++ % 200 == 0){
+                    printf("toggling: %d\n", tBool);
+                    tBool = !tBool;    
+                }
+
+                if (tBool){
+                    write_result = write(mSocket, outbuf_high, 24); 
+                }
+                else {
+                    write_result = write(mSocket, outbuf_low, 24); 
+                }
+
+                if (write_result < 0){
                     printf("failed to write outbuf, no ack");
                     printf("Closing socket: %d\n",mSocket);
                     close(mSocket);
                     break;
                 }
                 else {
-                    printf("Sent outbuf");
+                    //printf("Sent outbuf");
                 }
             }
         }

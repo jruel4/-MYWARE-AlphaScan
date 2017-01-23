@@ -6,7 +6,7 @@
 #include "Modules/HostCommManager.cpp"
 #include "Modules/ads_ctrl.cpp"
 
-#define FIRMARE_VERSION "0.0.4"
+#define FIRMARE_VERSION "0.0.5"
 
 class AlphaScanManager : public esp_open_rtos::thread::task_t
 {
@@ -32,7 +32,8 @@ class AlphaScanManager : public esp_open_rtos::thread::task_t
         uint32_t mMainLoopCounter;        
         enum T_SYSTEM_STATE {
             AP_MODE,
-            RUN_MODE
+            RUN_MODE,
+            OTA_MODE
         } mSystemState;
 
         // Methods
@@ -69,6 +70,11 @@ class AlphaScanManager : public esp_open_rtos::thread::task_t
 
                             break;
                         }
+                    case OTA_MODE:
+                        {
+                            //do nothing
+                            break;
+                        }
                     default:
                         {
                             if (mDebugSerial && (mMainLoopCounter++ % 1000 == 0)) {
@@ -96,9 +102,10 @@ class AlphaScanManager : public esp_open_rtos::thread::task_t
 
         void _trigger_task(int rcode){
             if (rcode == 0x01){ 
-               // OTA Mode 
-               c_Ota.run();
-               printf("Exited from OTA\n");
+                // OTA Mode 
+                c_Ota.run();
+                mSystemState = OTA_MODE;
+                printf("Exited from OTA\n");
             }
             else if (rcode == 0x02){
                 printf("running ads code\n");
@@ -111,7 +118,7 @@ class AlphaScanManager : public esp_open_rtos::thread::task_t
                 printf("running test signal stream code\n");
 
                 //TODO Setup ADS
-                
+
                 // Receive new data from ADS - send to host
                 // Check TCP read for terminate command
                 c_HostComm.stream_ads(&c_Ads);

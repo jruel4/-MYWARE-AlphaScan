@@ -108,7 +108,7 @@ class OtaManager{
 
         void _initOTA(){
             ota_tftp_init_server(TFTP_PORT);
-            tftp_client_task(NULL);
-            //xTaskCreate(&tftp_client_task, (signed char *)"tftp_client", 2048, NULL, 2, NULL);
+            //tftp_client_task(NULL);
+            xTaskCreate((void(*)(void*))&OtaManager::tftp_client_task, "tftp_client", 2048, NULL, 2, NULL);
         }
 };
