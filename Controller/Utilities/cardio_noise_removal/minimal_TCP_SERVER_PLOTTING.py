@@ -177,3 +177,32 @@ conn.close()
 s.close()
 print("connection closed")
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+dev = AlphaScanDevice()
+dev.connect_to_device()
+dev.flush_TCP()
+timeouts = 0
+dev.generic_tcp_command_OPCODE(0x03)
+buf = []
+for i in range(10000):
+    try:
+        buf += [dev.conn.recv(27)]
+    except socket.timeout:
+        timeouts += 1
