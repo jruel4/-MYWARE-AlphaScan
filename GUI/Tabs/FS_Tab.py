@@ -11,6 +11,8 @@ from Spiffs import SPIFFS
 
 class FS_TAB(QWidget):
     
+    SIG_reserve_tcp_buffer = Signal()    
+    
     # Define Init Method
     def __init__(self, Device, Debug):
         super(FS_TAB, self).__init__(None)
@@ -104,6 +106,8 @@ class FS_TAB(QWidget):
         
     @Slot()
     def get_command_map(self):
+        #Disable auto_connect
+        self.SIG_reserve_tcp_buffer.emit()
         self.Text_CommandMap.setText("retrieving command map...")
         r = self._FS.getCommandMap()
         self.Text_CommandMap.setText(r)

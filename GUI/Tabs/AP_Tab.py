@@ -25,13 +25,12 @@ class AP_TAB(QWidget):
         
         # Set layout formatting
         self.layout.setAlignment(Qt.AlignTop)
-        #TODO self.layout.setColumnStretch(3,1)
         
-         #TODO create available
+         #create available
         self.Text_ApAvailable = QLabel("AP not available")   
         self.layout.addWidget(self.Text_ApAvailable, 0, 0)
         
-        # TODO create connected
+        # create connected
         self.Text_ApConnected = QLabel("AP not connected")
         self.layout.addWidget(self.Text_ApConnected, 1, 0)
         
@@ -40,7 +39,7 @@ class AP_TAB(QWidget):
         self.layout.addWidget(self.Button_CheckStatus, 0, 1, 2, 1)
         self.Button_CheckStatus.clicked.connect(self.check_ap_status)
         
-        #TODO create connection valid
+        #create connection valid
         self.Text_APValidity = QLabel("AP Invalid")
         self.Button_TestValidity = QPushButton("Test Validity")
         self.Button_TestValidity.clicked.connect(self.test_validity)
@@ -48,15 +47,15 @@ class AP_TAB(QWidget):
         self.layout.addWidget(self.Text_APValidity, 2, 0)
         self.layout.addWidget(self.Button_TestValidity, 2, 1)
         
-        #TODO TODO create host_ip
-        self.Line_HostIP = QLineEdit("192.168.1.8") #TODO get this dynamicaly
+        #create host_ip
+        self.Line_HostIP = QLineEdit("192.168.1.8") 
         self.Button_SendHostIP = QPushButton("Send host IP")
         self.Button_SendHostIP.clicked.connect(self.send_host_ip)
         
         self.layout.addWidget(self.Line_HostIP, 3, 0)
         self.layout.addWidget(self.Button_SendHostIP, 3, 1)
         
-        # TODO create SSID
+        # create SSID
         self.Line_SSID = QLineEdit("PHSL2")
         self.Button_SendSSID = QPushButton("Send SSID")
         self.Button_SendSSID.clicked.connect(self.send_ssid)
@@ -64,7 +63,7 @@ class AP_TAB(QWidget):
         self.layout.addWidget(self.Line_SSID, 4, 0)
         self.layout.addWidget(self.Button_SendSSID, 4, 1)
         
-        #TODO create password
+        #create password
         self.Line_PASSWORD = QLineEdit("BSJKMVQ6LF2XH6BJ")
         self.Button_SendPASSWORD = QPushButton("Send Password")
         self.Button_SendPASSWORD.clicked.connect(self.send_password)
@@ -73,10 +72,26 @@ class AP_TAB(QWidget):
         self.layout.addWidget(self.Button_SendPASSWORD, 5, 1)
         
         # TODO create GO button
+        self.Button_FinalizeParams = QPushButton("Finalize Configuration")
+        self.layout.addWidget(self.Button_FinalizeParams)
+        self.Button_FinalizeParams.clicked.connect(self.finalize_params)
         
+    @Slot()
+    def finalize_params(self):
+        if not self.check_availability(): return
+        r = self.conn.query_ap('finalize_params')
+        msgBox = QMessageBox()
+        if 'finalized' in r:
+            msgBox.setText("SUCCESS")
+        else:
+            msgBox.setText("failure")
+        msgBox.exec_()
         
     @Slot()
     def check_ap_status(self):
+
+        self._Debug.append("Reading network card, please wait...")        
+        
         self.conn.read_network_card()
         
         if self.conn.ApIsAvailable:
@@ -89,6 +104,8 @@ class AP_TAB(QWidget):
         else:
             self.Text_ApConnected.setText("NOT Connected")
             
+        self._Debug.append("Finished reading network card")
+            
     
     @Slot()
     def test_validity(self):
@@ -97,8 +114,19 @@ class AP_TAB(QWidget):
         else:
             self.Text_APValidity.setText("NOT Valid")
     
+    def check_availability(self):
+        self.check_ap_status()
+        if self.conn.ApConnected and self.conn.ApIsAvailable:
+            return True
+        else:
+            msg = QMessageBox()
+            msg.setText("Not connected to AP")
+            msg.exec_()
+            return False
+    
     @Slot()
     def send_host_ip(self):
+        if not self.check_availability(): return
         r = self.conn.query_ap('host_ip_'+self.Line_HostIP.text()+'_endhost_ip')
         msgBox = QMessageBox()
         if 'host_ip' in r:
@@ -110,6 +138,7 @@ class AP_TAB(QWidget):
     
     @Slot()
     def send_ssid(self):
+        if not self.check_availability(): return
         r = self.conn.query_ap('ssid_'+self.Line_SSID.text()+'_endssid')
         msgBox = QMessageBox()
         if 'SSID' in r:
@@ -120,6 +149,7 @@ class AP_TAB(QWidget):
     
     @Slot()
     def send_password(self):
+        if not self.check_availability(): return
         r = self.conn.query_ap('pass_'+self.Line_PASSWORD.text()+'_endpass')
         msgBox = QMessageBox()
         if 'pass' in r:

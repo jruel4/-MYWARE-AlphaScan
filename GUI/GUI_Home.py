@@ -1,3 +1,4 @@
+
 # -*- coding: utf-8 -*-
 """
 Created on Mon Jan 25 16:42:21 2016
@@ -33,11 +34,10 @@ except: # could fail for reasons other than already exists...
 qApp.setStyle(u'Cleanlooks')
 #qt_app.setStyleSheet(qdarkstyle.load_stylesheet())
 
-class AlphaScanGui(QWidget): #TODO probably want something other than dialog here
+class AlphaScanGui(QWidget):
     def __init__(self, Device, fileName, parent=None):
         super(AlphaScanGui, self).__init__(parent)
         self._Device = Device
-        
         
         # Creat main layout
         mainLayout =  QVBoxLayout()
@@ -80,6 +80,10 @@ class AlphaScanGui(QWidget): #TODO probably want something other than dialog her
         tabWidget.addTab(self.acclTab, "Accel") 
 
         self.setWindowTitle("AlphaScan Controller")
+        
+        # Connect signals
+        self.sysTab.SIG_reserve_tcp_buffer.connect(self.genTab.disable_auto_connect)
+        self.fsTab.SIG_reserve_tcp_buffer.connect(self.genTab.disable_auto_connect)
         
         # Create periodic timer for updating streaming and connection status
         self.timer = QTimer()
@@ -125,11 +129,3 @@ dev = AlphaScanDevice()
 app = AlphaScanGui(dev, fileName)
 time.sleep(0.01)
 app.run()
-            
-            
-       
-       
-       
-       
-       
-       

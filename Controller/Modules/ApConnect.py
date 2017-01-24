@@ -15,7 +15,7 @@ class ApConnection:
         self.interfaces = str()
         self.networks = str()
         self.ApIsAvailable = False
-        self.connected = False
+        self.ApConnected = False
         self.associated = False
     
     def read_network_card(self):

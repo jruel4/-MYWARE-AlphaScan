@@ -19,6 +19,7 @@ def addCommand(name):
 ###############################################################################
 addCommand("GEN_update_cmd_map") #NOTE: this must ALWAYS be first i.e. 0x00
 addCommand("GEN_start_ota")      #NOTE: this must ALWAYS be second i.e. 0x01
+addCommand("ACC_get_status")
 addCommand("GEN_alive_query")    #NOTE: this must ALWAYS be second i.e. 0x02
 addCommand("GEN_get_status")
 addCommand("GEN_start_ap")
@@ -34,8 +35,10 @@ addCommand("GEN_web_update")
 addCommand("ADC_start_stream")
 addCommand("ADC_stop_stream")
 addCommand("ADC_get_register")
+addCommand("ADC_set_register")
 addCommand("ADC_update_register")
 addCommand("ADC_set_udp_delay")
+addCommand("ADC_send_hex_cmd")
 
 ###############################################################################
 # POWER
@@ -45,7 +48,9 @@ addCommand("PWR_get_status")
 ###############################################################################
 # ACCEL
 ###############################################################################
-addCommand("ACC_get_status")
+#==============================================================================
+# addCommand("ACC_get_status")
+#==============================================================================
 
 ###############################################################################
 # SPIFFS

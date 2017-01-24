@@ -1,0 +1,22 @@
+build/mbedtls//mbedtls/library/pk.o: \
+ /media/marzipan/Expansion_1/Development/Projects/superhouse_spi_test_build/esp-open-rtos/extras/mbedtls/mbedtls/library/pk.c \
+ /media/marzipan/Expansion_1/Development/Projects/superhouse_spi_test_build/esp-open-rtos/extras/mbedtls/include/mbedtls/config.h \
+ /media/marzipan/Expansion_1/Development/Projects/superhouse_spi_test_build/esp-open-rtos/extras/mbedtls/mbedtls/include/mbedtls/check_config.h \
+ /media/marzipan/Expansion_1/Development/Projects/superhouse_spi_test_build/esp-open-rtos/libc/xtensa-lx106-elf/include/limits.h \
+ /media/marzipan/Expansion_1/Development/Projects/superhouse_spi_test_build/esp-open-rtos/libc/xtensa-lx106-elf/include/newlib.h \
+ /media/marzipan/Expansion_1/Development/Projects/superhouse_spi_test_build/esp-open-rtos/extras/mbedtls/mbedtls/include/mbedtls/pk.h \
+ /media/marzipan/Expansion_1/Development/Projects/superhouse_spi_test_build/esp-open-rtos/extras/mbedtls/mbedtls/include/mbedtls/config.h \
+ /media/marzipan/Expansion_1/Development/Projects/superhouse_spi_test_build/esp-open-rtos/extras/mbedtls/mbedtls/include/mbedtls/md.h \
+ /media/marzipan/Expansion_1/Development/Projects/superhouse_spi_test_build/esp-open-rtos/extras/mbedtls/mbedtls/include/mbedtls/rsa.h \
+ /media/marzipan/Expansion_1/Development/Projects/superhouse_spi_test_build/esp-open-rtos/extras/mbedtls/mbedtls/include/mbedtls/bignum.h \
+ /media/marzipan/Expansion_1/Development/Projects/superhouse_spi_test_build/esp-open-rtos/libc/xtensa-lx106-elf/include/stdint.h \
+ /media/marzipan/Expansion_1/Development/Projects/superhouse_spi_test_build/esp-open-rtos/libc/xtensa-lx106-elf/include/machine/_default_types.h \
+ /media/marzipan/Expansion_1/Development/Projects/superhouse_spi_test_build/esp-open-rtos/libc/xtensa-lx106-elf/include/sys/features.h \
+ /media/marzipan/Expansion_1/Development/Projects/superhouse_spi_test_build/esp-open-rtos/libc/xtensa-lx106-elf/include/sys/_intsup.h \
+ /media/marzipan/Expansion_1/Development/Projects/superhouse_spi_test_build/esp-open-rtos/extras/mbedtls/mbedtls/include/mbedtls/ecp.h \
+ /media/marzipan/Expansion_1/Development/Projects/superhouse_spi_test_build/esp-open-rtos/extras/mbedtls/mbedtls/include/mbedtls/ecdsa.h \
+ /media/marzipan/Expansion_1/Development/Projects/superhouse_spi_test_build/esp-open-rtos/extras/mbedtls/mbedtls/include/mbedtls/pk_internal.h \
+ /media/marzipan/Expansion_1/Development/Projects/superhouse_spi_test_build/esp-open-rtos/extras/mbedtls/mbedtls/include/mbedtls/pk.h \
+ /media/marzipan/Expansion_1/Development/Projects/superhouse_spi_test_build/esp-open-rtos/extras/mbedtls/mbedtls/include/mbedtls/rsa.h \
+ /media/marzipan/Expansion_1/Development/Projects/superhouse_spi_test_build/esp-open-rtos/extras/mbedtls/mbedtls/include/mbedtls/ecp.h \
+ /media/marzipan/Expansion_1/Development/Projects/superhouse_spi_test_build/esp-open-rtos/extras/mbedtls/mbedtls/include/mbedtls/ecdsa.h

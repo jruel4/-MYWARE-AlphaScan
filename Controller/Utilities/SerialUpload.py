@@ -36,3 +36,13 @@ def autoConnect(self):
         print("succesful connection")
     else:
         print("failure to connect")
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        

@@ -105,8 +105,8 @@ class GeneralTab(QWidget):
         # Connect ADC signal to slots
         self.Button_RefreshAdcStatus.clicked.connect(self.update_adc_status)
         
-        self.Button_AdcBeginStream.clicked.connect(self.begin_streaming)
-        self.Button_AdcStopStream.clicked.connect(self.stop_streaming)
+        self.Button_AdcBeginStream.clicked.connect(self.begin_streaming_tcp)
+        self.Button_AdcStopStream.clicked.connect(self.stop_streaming_tcp)
         
         #######################################################################
         # General Message Area ################################################
@@ -117,10 +117,12 @@ class GeneralTab(QWidget):
         self.layout.addWidget(self.Text_GeneralMessage, 5,0,1,2)
         
         # Add message formatting
-        self.Text_GeneralMessage.setAutoFillBackground(True)
-        p = self.Text_GeneralMessage.palette()
-        p.setColor(self.Text_GeneralMessage.backgroundRole(), 'cyan')
-        self.Text_GeneralMessage.setPalette(p)
+#==============================================================================
+#         self.Text_GeneralMessage.setAutoFillBackground(True)
+#         p = self.Text_GeneralMessage.palette()
+#         p.setColor(self.Text_GeneralMessage.backgroundRole(), 'cyan')
+#         self.Text_GeneralMessage.setPalette(p)
+#==============================================================================
         
         # Add clear general message button
         self.Button_ClearGeneralMessage = QPushButton("Clear Message")
@@ -203,7 +205,7 @@ class GeneralTab(QWidget):
         
         self.Text_AutoConnectEnable = QLabel("Auto Connect Enable")
         self.Check_AutoConnectEnable = QCheckBox()
-        self.Check_AutoConnectEnable.setCheckState(Qt.CheckState.Checked)
+        self.Check_AutoConnectEnable.setCheckState(Qt.CheckState.Unchecked)
         
         self.layout.addWidget(self.Text_AutoConnectEnable, 15, 0)
         self.layout.addWidget(self.Check_AutoConnectEnable, 15, 1)      
@@ -241,7 +243,7 @@ class GeneralTab(QWidget):
         
         self.Text_DebugLogEnable = QLabel("Debug Logging Enable")
         self.Check_DebugLogEnable = QCheckBox()
-        #self.Check_DebugLogEnable.setCheckState(Qt.CheckState.Checked)
+        self.Check_DebugLogEnable.setCheckState(Qt.CheckState.Unchecked)
         
         self.layout.addWidget(self.Text_DebugLogEnable, 17, 0)
         self.layout.addWidget(self.Check_DebugLogEnable, 17, 1) 
@@ -274,6 +276,7 @@ class GeneralTab(QWidget):
         
     @Slot()
     def connect_to_device(self):
+        # TODO find out where this blocks!
         if self.Connected: return
         self.Text_ConnectStatus.setText("Connecting to AlphaScan...")
         if self._Device.connect_to_device():
@@ -324,10 +327,19 @@ class GeneralTab(QWidget):
     
     @Slot()
     def begin_streaming(self):
-        if self.Streaming or not self.Connected:
-            self.Text_GeneralMessage.setText("ILLEGAL: Streaming must be false, Connected must be true")
+        if not self.Connected:
+            self.Text_GeneralMessage.setText("ILLEGAL: Connected must be true")
             return
         begin_stream_string = self._Device.initiate_UDP_stream()
+        self.Streaming = True # TODO validate
+        self.Text_AdcStreamStatus.setText(begin_stream_string)
+        
+    @Slot()
+    def begin_streaming_tcp(self):
+        if self.Streaming or not self.Connected:
+            self.Text_GeneralMessage.setText("ILLEGAL")
+            return
+        begin_stream_string = self._Device.initiate_TCP_stream()
         self.Streaming = True # TODO validate
         self.Text_AdcStreamStatus.setText(begin_stream_string)
     
@@ -345,6 +357,16 @@ class GeneralTab(QWidget):
         self.Text_TotalReceivedVAL.setText(rx)
         
     @Slot()
+    def stop_streaming_tcp(self):
+        if not self.Streaming or not self.Connected:
+            self.Text_GeneralMessage.setText("ILLEGAL: Streaming must be true, Connected must be true")
+            return
+        self._Device.terminate_TCP_stream()
+        self.Streaming = False # TODO validate
+        self.Text_AdcStreamStatus.setText("Stopped streaming")
+  
+        
+    @Slot()
     def clear_gen_msg(self):
         self.Text_GeneralMessage.setText("")
         
@@ -352,10 +374,10 @@ class GeneralTab(QWidget):
     def enter_ota_mode(self):
         r = self._Device.generic_tcp_command_BYTE('GEN_start_ota') 
         msgBox = QMessageBox()
-        if '' in r:#TODO add response into firmware
+        if 'OTA' in r:#TODO add response into firmware
             msgBox.setText("SUCCESS")
         else:
-            msgBox.setText("failure")
+            msgBox.setText(r)
         msgBox.exec_()
         self.disconnect_from_device()
         
@@ -363,10 +385,10 @@ class GeneralTab(QWidget):
     def enter_web_update_mode(self):
         r = self._Device.generic_tcp_command_BYTE('GEN_web_update') 
         msgBox = QMessageBox()
-        if '' in r:#TODO add response into firmware
+        if 'web_update' in r:#TODO add response into firmware
             msgBox.setText("SUCCESS")
         else:
-            msgBox.setText("failure")
+            msgBox.setText(r)
         msgBox.exec_()
         self.disconnect_from_device()
         
@@ -374,17 +396,21 @@ class GeneralTab(QWidget):
     def enter_ap_mode(self):
         r = self._Device.generic_tcp_command_BYTE('GEN_start_ap') 
         msgBox = QMessageBox()
-        if '' in r:#TODO add response into firmware
+        if 'ap_mode' in r:#TODO add response into firmware
             msgBox.setText("SUCCESS")
         else:
-            msgBox.setText("failure")
+            msgBox.setText(r)
         msgBox.exec_()
+        self.disconnect_from_device()
     
     @Slot()
     def update_command_map(self):
         r = self._Device.update_command_map()
         msgBox = QMessageBox()
-        msgBox.setText(r)
+        if 'map_command' in r:#TODO add response into firmware
+            msgBox.setText("SUCCESS")
+        else:
+            msgBox.setText(r)
         msgBox.exec_()
         
     @Slot()
@@ -402,6 +428,11 @@ class GeneralTab(QWidget):
         msgBox.exec_()
         self.disconnect_from_device()
         
+    @Slot()
+    def disable_auto_connect(self):
+        self._Debug.append("Disabling auto connect to save tcp buffer response")
+        self.Check_AutoConnectEnable.setCheckState(Qt.CheckState.Unchecked)
+    
     @Slot()
     def auto_connect(self):
         if self.Check_AutoConnectEnable.isChecked() and not self.Streaming:
