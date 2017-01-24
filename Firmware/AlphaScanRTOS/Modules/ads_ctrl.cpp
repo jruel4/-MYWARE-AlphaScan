@@ -671,7 +671,7 @@ void ADS::configureTestSignal()
     WREG(CONFIG2, 0, 0b11010001); //Test sig driven internally(4), decrease pulse frequency(1,0)
     WREG(CONFIG3, 0, 0b11101101); //Internal reference buffer enabled(7), bias ref signal generated internally(3), bias buffer enabled(2), bias sense diasbled(1), bias LOFF disconnected(0)
     WREG(BIAS_SENSN, 0, 0b00000000); //Turn off all connections to bias on N side (not used)
-    WREG(CH1SET, 7, ADSINPUT_ENABLED | ADSINPUT_GAIN01 | ADSINPUT_TESTSIG | ADSINPUT_SRB2_OPEN); //Write all eight channels - test signal
+    WREG(CH1SET, 7, ADSINPUT_ENABLED | ADSINPUT_GAIN04 | ADSINPUT_TESTSIG | ADSINPUT_SRB2_OPEN); //Write all eight channels - test signal
     STANDBY();
 }
 
