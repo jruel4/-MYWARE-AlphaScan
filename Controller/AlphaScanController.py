@@ -47,7 +47,7 @@ class AlphaScanDevice:
         self.sqwave = list()
         
         
-        self.info = StreamInfo('AlphaScan', 'EEG', 8, 100, 'float32', 'uid_16')
+        self.info = StreamInfo('AlphaScan', 'EEG', 8, 100, 'float32', 'uid_18')
         self.outlet = StreamOutlet(self.info)
         self.mysample = [random.random(), random.random(), random.random(),
             random.random(), random.random(), random.random(),
@@ -278,36 +278,36 @@ class AlphaScanDevice:
                 if (ready[0]):
                     self.data = self.conn.recv(24+diff)
                     self.rx_count += 1     
-                    if (ord(self.data[0]) == 0xf and ord(self.data[1]) == 0xf and ord(self.data[2]) == 0xf):
-        
-                        self.test_inbuf += [self.data]
-                                   
-                        
-                        #self.inbuf += [ord(self.data)] # #TODO this is suspect since ord should only take 1 character, and will fill quick
-                        
-                        # Populate fresh channel data into self.mysample
-                        for j in xrange(8):
-                            deviceData[j] = [self.data[diff+(j*3):diff+(j*3+3)]] 
-                            val = 0
-                            for s,n in list(enumerate(deviceData[j][0])):
-                                try:
-                                    val ^= ord(n) << ((2-s)*8)
-                                except ValueError as e:
-                                    print("value error",e)
-                                except TypeError as e:
-                                    print("value error",e)
-                            #TODO val = twos_comp(val)
-                            self.mysample[j] = val
-                        
-                        self.sqwave += [self.data]
-                        self.outlet.push_sample(self.mysample)
-                        self.reads += 1
-                        
-                        #TODO count interval
-                        self.count_time_interval()
-                        
-                    else:
-                        self.invalid_start += 1
+                    if (len(self.data) == 27):
+                        if (ord(self.data[0]) == 0xf and ord(self.data[1]) == 0xf and ord(self.data[2]) == 0xf):
+            
+                            self.test_inbuf += [self.data]
+                            
+                            #self.inbuf += [ord(self.data)] # #TODO this is suspect since ord should only take 1 character, and will fill quick
+                            
+                            # Populate fresh channel data into self.mysample
+                            for j in xrange(8):
+                                deviceData[j] = [self.data[diff+(j*3):diff+(j*3+3)]] 
+                                val = 0
+                                for s,n in list(enumerate(deviceData[j][0])):
+                                    try:
+                                        val ^= ord(n) << ((2-s)*8)
+                                    except ValueError as e:
+                                        print("value error",e)
+                                    except TypeError as e:
+                                        print("value error",e)
+                                val = twos_comp(val)
+                                self.mysample[j] = val
+                            
+                            self.sqwave += [self.data]
+                            self.outlet.push_sample(self.mysample)
+                            self.reads += 1
+                            
+                            #TODO count interval
+                            self.count_time_interval()
+                            
+                        else:
+                            self.invalid_start += 1
                 
             except socket.timeout:
                 self.timeout_count += 1
