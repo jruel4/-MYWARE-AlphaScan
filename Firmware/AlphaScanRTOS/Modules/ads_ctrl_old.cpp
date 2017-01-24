@@ -1,15 +1,23 @@
-#ifndef _ADS_CTRL_h	// add _8_
-#define _ADS_CTRL_h
+#ifndef ADS_CLASS_INCGUARD
+#define ADS_CLASS_INCGUARD
 
-#include "FreeRTOS.h"
-#include "task.h"
 #include "espressif/esp_common.h"
 #include "esp/uart.h"
 #include "esp/spi.h"
+#include "FreeRTOS.h"
+#include "task.h"
+#include "task.hpp"
+//#include "ads_ctrl.hpp"
+
+//#include "FreeRTOS.h"
+//#include "task.h"
+//#include "espressif/esp_common.h"
+//#include "esp/uart.h"
+//#include "esp/spi.h"
 //#include "esp8266.h"
 #include <string.h>
-#include "FreeRTOS.h"
-#include "task.hpp"
+//#include "FreeRTOS.h"
+//#include "task.hpp"
 #include "lwip/err.h"
 #include "lwip/sockets.h"
 #include "lwip/sys.h"
@@ -18,7 +26,6 @@
 #include "ipv4/lwip/ip_addr.h"
 #include "ssid_config.h"
 //#include "debug_dumps.h"
-
 
 
 #define DBG 1
@@ -146,7 +153,10 @@ typedef unsigned char byte;
 
 class ADS
 {
+
 public:
+	//FREQ_DIVIDER should be between SPI_FREQ_DIV_125K and SPI_FREQ_DIV_80M
+	//  with 125K being base and every next value being double the previous
     ADS();
     ADS(uint32_t FREQ_DIVIDER);
     virtual ~ADS();
@@ -171,8 +181,6 @@ public:
     void clearSPI();
     byte transfer(byte VALUE);
     void getSamples(byte dataInArray[27]);
-    bool getData(byte dataInArray[27]);
-    bool getDataFake(byte dataInArray[27], bool toggle);
 
     //DBG
     void printTaskHandle(TaskHandle_t currTask);
@@ -196,7 +204,6 @@ public:
     void writeCS(bool VAL);
     bool readCS(void);
     bool isDataReady(void);
-    bool isDataReady(TickType_t xTicksToWait);
     
 protected:
     
@@ -220,12 +227,14 @@ protected:
     byte _RDATA();
     
 private:
+    void DRDYWaitTask(void);
     void DRDYInterruptHandle(uint8_t gpio_num);
     bool dataReadyIsRunning = false;
+    bool dataIsReady = false;
 
     const int DRDY_PIN = 4;
 
-    TickType_t xMaxBlockTime;
+    TickType_t xMaxBlockTime = pdMS_TO_TICKS( 5 );
 
     void killStandby(void);
     void killStreaming(void);
@@ -262,31 +271,35 @@ const char *ADS_REG_NAMES[24] = {
 
 };
 
+// HACK
+    typedef void (*callback_func)(void);
+
+    class ADS_TASK1 : public esp_open_rtos::thread::task_t
+    {
+    public:
+        ADS_TASK1(callback_func fPointer) {
+            _fPointer = fPointer;
+        }
+    
+    private:
+        callback_func _fPointer;
+        void task()
+        {
+            printf("Creating task inside task now\n");
+            _fPointer();
+        }
+
+
+    };
 
 
 
 
-// TODO - NEW! Add to header
 
-/**
- * Predefinded SPI frequency dividers
-#define SPI_FREQ_DIV_125K SPI_GET_FREQ_DIV(64, 10) ///< 125kHz
-#define SPI_FREQ_DIV_250K SPI_GET_FREQ_DIV(32, 10) ///< 250kHz
-#define SPI_FREQ_DIV_500K SPI_GET_FREQ_DIV(16, 10) ///< 500kHz
-#define SPI_FREQ_DIV_1M   SPI_GET_FREQ_DIV(8, 10)  ///< 1MHz
-#define SPI_FREQ_DIV_2M   SPI_GET_FREQ_DIV(4, 10)  ///< 2MHz
-#define SPI_FREQ_DIV_4M   SPI_GET_FREQ_DIV(2, 10)  ///< 4MHz
-#define SPI_FREQ_DIV_8M   SPI_GET_FREQ_DIV(5,  2)  ///< 8MHz
-#define SPI_FREQ_DIV_10M  SPI_GET_FREQ_DIV(4,  2)  ///< 10MHz
-#define SPI_FREQ_DIV_20M  SPI_GET_FREQ_DIV(2,  2)  ///< 20MHz
-#define SPI_FREQ_DIV_40M  SPI_GET_FREQ_DIV(1,  2)  ///< 40MHz
-#define SPI_FREQ_DIV_80M  SPI_GET_FREQ_DIV(1,  1)  ///< 80MHz
-*/
-
+//TODO - This is changed in FreeRTOS, need to fix that
+#define INCLUDE_xTaskGetHandle 1
 
 // CLASS
-
-
 ADS::ADS()
 {
     ADS(SPI_FREQ_DIV_1M);
@@ -296,13 +309,7 @@ ADS::ADS()
 ADS::ADS(uint32_t FREQ_DIVIDER)
 {
     for(int i = 0; i < 24; ++i)
-	    regMap[i] = 0;
-//    streaming = false;
-//    standby = false;
-//    dataReadyIsRunning = false;
-//    dataIsReady = false;
-//    DRDYBackgroundTask = NULL;
-//    xMaxBlockTime = pdMS_TO_TICKS( 5 );
+	regMap[i] = 0;
     setupSPI(FREQ_DIVIDER);
     setupADS();
     STANDBY();
@@ -327,7 +334,7 @@ void ADS::killStandby()
 {
     if(standby)
     {
-        _WAKEUP(); //TODO - is this necessary?
+        _WAKEUP();
         vTaskDelay(1 / portTICK_PERIOD_MS); //Only need a delay of ~2uS
         standby = false;
     }
@@ -358,7 +365,7 @@ byte ADS::_RDATA() { return spi_transfer_8(1, 0x12); } // Read data by command; 
 
 // BASIC ADS COMMANDS - USER ACCESIBLE
 void ADS::WAKEUP()
-{// TODO - double check logic
+{
     if(!(streaming && !standby)) killStandby(); //Kill standby only if it is not streaming and on standby
     return;
 }
@@ -414,7 +421,6 @@ byte ADS::RDATA()
     return _RDATA();
 }
 
-//TODO - With WREG update registers in memory
 //RREG / WREG
 byte ADS::RREG(byte REG_NUMBER)
 {
@@ -435,6 +441,7 @@ void ADS::WREG(byte REG_NUMBER, byte VALUE)
     spi_transfer_8(1, 0b01000000 | REG_NUMBER);
     spi_transfer_8(1, 0);
     spi_transfer_8(1, VALUE);
+	regMap[REG_NUMBER] = VALUE;
     return;
 }
 
@@ -443,6 +450,7 @@ void ADS::WREG(byte REG_NUMBER, byte NUMBER_OF_REGS_MIN_ONE, byte VALUE)
     spi_transfer_8(1, 0b01000000 | REG_NUMBER);
     spi_transfer_8(1, NUMBER_OF_REGS_MIN_ONE);
     for(int i = 0; i <= NUMBER_OF_REGS_MIN_ONE; ++i) spi_transfer_8(1, VALUE);
+	for(int i = 0; i <= NUMBER_OF_REGS_MIN_ONE; ++i) regMap[REG_NUMBER + i] = VALUE;
     return;
 }
 
@@ -462,83 +470,103 @@ void ADS::getSamples(byte dataInArray[27])
 {
     for(int i = 0; i < 27; ++i)
         dataInArray[i] = spi_transfer_8(1,0x00);
-    return; 
+    dataIsReady = false;
+    return; //TODO integrate this into DRDY
 }
 
 //Use this to toggle/read CS - user accesible
 void ADS::writeCS(bool VAL) { VAL ? (GP16O |= 1) : (GP16O &= ~1); }
 bool ADS::readCS(void) { return (GP16O & 1); }
 
-
-// GLOBAL Semaphore and Task Handle
-TaskHandle_t DRDYBackgroundTask = NULL;
-
-bool ADS::getData(byte dataInArray[27])
-{
-    if(ADS::isDataReady())
-    {
-        ADS::getSamples(dataInArray);
-        return true;
-    }
-    else
-        return false;
-}
-
-bool ADS::getDataFake(byte dataInArray[27], bool toggle)
-{
-    for (int i = 3; i < 27; i++){
-        if ((i-3)%3 == 0 && toggle)
-            dataInArray[i] = 0xf;
-        else
-            dataInArray[i] = 0;
-    }
-    return true;
-}
-
 bool ADS::isDataReady(void)
 {
-    return ADS::isDataReady(pdMS_TO_TICKS( 5 ));
+    if(!dataReadyIsRunning) setupDRDY();    
+    return dataIsReady;
 }
 
-bool ADS::isDataReady(TickType_t xTicksToWait)
-{
-    if(!dataReadyIsRunning) setupDRDY();
 
-    uint32_t ulNotificationValue;
-    ulNotificationValue = ulTaskNotifyTake( pdTRUE, xTicksToWait);
-
-    bool isDataReady = false;
-    if(ulNotificationValue == 1)
-        isDataReady = true;
-
-    DRDYBackgroundTask = xTaskGetCurrentTaskHandle();
-    return isDataReady;
-}
+// GLOBAL Semaphore and Task Handle
+SemaphoreHandle_t xSemaphoreDRDY = NULL;
+TaskHandle_t DRDYBackgroundTask = NULL;
 
 void ADS::setupDRDY(void)
 {
     gpio_enable(DRDY_PIN, GPIO_INPUT);
+    //Allocate a semaphore to interface between DRDYWaitTask and the interrupt
+    xSemaphoreDRDY = xSemaphoreCreateBinary();
+    if(xSemaphoreDRDY == NULL)
+    {
+        printf("ERROR: Insufficient heap space to allocate semaphore\n");
+    }
+    xSemaphoreGive(xSemaphoreDRDY);
+
+    //TODO - setup up toggling on and off interrupts
+    dataIsReady = false;
     dataReadyIsRunning = true;
-    gpio_set_interrupt(DRDY_PIN, GPIO_INTTYPE_EDGE_NEG, (void(*)(uint8_t))&ADS::DRDYInterruptHandle);
+    if(DRDYBackgroundTask == NULL)
+    {
+        printf("Creating task\n");
+        //TODO - necessary to use "new" now?
+        ADS_TASK1 *test = new ADS_TASK1((void(*)(void))&ADS::DRDYWaitTask);
+        test->task_create("DRDYBackground");
+
+        // This should handle shouldn't be changed
+        DRDYBackgroundTask = xTaskGetHandle("DRDYBackground");
+
+        //Note - Working! Just need some heavy typecasting
+    }
+    else
+        vTaskResume(DRDYBackgroundTask);
+
+    printf("returning");
     return;
 }
 
-//TODO - Implement kill DRDY
-void ADS::killDRDY(void)
+void ADS::DRDYWaitTask(void)
 {
-    dataReadyIsRunning = false;
-    //TODO - disable DRDY interrupt here
-    return;
+    uint32_t ulNotificationValue;
+
+    gpio_set_interrupt(DRDY_PIN, GPIO_INTTYPE_EDGE_NEG, (void(*)(uint8_t))&ADS::DRDYInterruptHandle);
+
+    for( ; ; )
+    {
+        if(xSemaphoreTake(xSemaphoreDRDY, (TickType_t) 10) != pdTRUE)
+		{
+            printf("ERROR: Could not take semaphore inside DRDYWaitTask.\n");
+            continue;
+        }
+		//Give semaphore so that interrupt does something
+        xSemaphoreGive(xSemaphoreDRDY);
+        ulNotificationValue = ulTaskNotifyTake( pdTRUE, xMaxBlockTime ); //default is 5ms
+        if(ulNotificationValue == 1)
+        {
+            dataIsReady = true;
+            if(DBG) printf("Notified!\n");
+        }
+        DRDYBackgroundTask = xTaskGetCurrentTaskHandle(); // TODO - necessary to update every time?
+    }
 }
 
 void ADS::DRDYInterruptHandle(uint8_t gpio_num) {
-    if(DRDYBackgroundTask != NULL)
-    {
+    if(xSemaphoreDRDY != NULL && (xSemaphoreTakeFromISR(xSemaphoreDRDY, pdFALSE) == pdTRUE)) {
         BaseType_t xHigherPriorityTaskWoken = pdFALSE;
+		// Notify DRDYWait that data is ready
         vTaskNotifyGiveFromISR(DRDYBackgroundTask, &xHigherPriorityTaskWoken);
+		// Give back control of semaphore
+		xSemaphoreGiveFromISR(xSemaphoreDRDY, pdFALSE);
     }
-    //Set this to NULL so we don't constantly sent notif's
-    DRDYBackgroundTask = NULL;
+}
+
+void ADS::killDRDY(void)
+{
+    dataIsReady = false;
+    dataReadyIsRunning = false;
+	//TODO - where does ownership of semaphore go here?
+//	if(xSemaphoreTake(xSemaphoreDRDY, xMaxBlockTime*2) != pdTRUE)
+//		printf("Error trying to take semaphore from DRDYWait\n");
+    if(DRDYBackgroundTask != NULL)
+        vTaskSuspend(DRDYBackgroundTask);
+    return;
 }
 
 // REGISTER RELATED COMMANDS
@@ -553,7 +581,7 @@ void ADS::receiveRegisterMapFromADS(void)
     return;
 }
 
-void ADS::receiveRegisterMapFromArray(byte inputArray[24]) //TODO HEADER
+void ADS::receiveRegisterMapFromArray(byte inputArray[24])
 {
     killStandby();
     killStreaming();
@@ -624,25 +652,25 @@ void ADS::setupSPI(uint32_t FREQ_DIVIDER)
     if(DBG) printf("\nSetting up SPI");
     //Bus 1, Mode 1 (CPOL=0 CPHA=1), 1MHz, MSB, little endian, manually toggle CS
     spi_init(1, SPI_MODE1, SPI_FREQ_DIV_1M, true, SPI_BIG_ENDIAN, true);
-    
+
     //Setup CPHA - TODO may not be necessary with new RTOS version?
     SPI1U |= (SPIUSME);
-    
+
     //Configure as output, etc...
     setupIO16();
     writeCS(LOW);
-    
+
     return;
 }
 
 void ADS::setupADS()
 {
     if(DBG) printf("\nBeginning ADS setup.");
-    
+
     /*
-     I don't know why this is necessary - I believe it
-     synchronizes communication with the ADS. Appears to
-     not work without toggling CS high and low.
+       I don't know why this is necessary - I believe it
+       synchronizes communication with the ADS. Appears to
+       not work without toggling CS high and low.
      */
     writeCS(HIGH);
     vTaskDelay(1 / portTICK_PERIOD_MS);
@@ -659,7 +687,7 @@ void ADS::setupADS()
     SDATAC();
     clearSPI();
     if(DBG) printf("\nRREG response, \"ID\" is %X", RREG(ID));
-    
+
     STANDBY();
     return;
 }
@@ -678,7 +706,7 @@ void ADS::configureTestSignal()
 void ADS::startStreaming() {
     if(streaming) return;
     killStandby();
-    
+
     _SDATAC();
     clearSPI();
     _START();
@@ -694,8 +722,6 @@ void ADS::stopStreaming() {
     streaming = false;
     STANDBY();
 }
-
-
 
 
 

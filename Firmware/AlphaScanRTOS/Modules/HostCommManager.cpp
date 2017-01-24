@@ -220,13 +220,15 @@ class HostCommManager {
 
         void _stream_ads(ADS* ads){
 
+            bool FAKE_MODE = false;
+
             printf("Initializing internal ADS stream call\n");
             int r;
             int write_result;
-            //TODO setup ads streaming, interrupt, etc.
-            //ads->
-
-            //TODO Generate fake square wave buffer
+            // setup ads streaming, interrupt, etc.
+            ads->configureTestSignal();
+            ads->startStreaming();
+            // Generate fake square wave buffer
             uint16_t tCounter = 0;
             bool tBool = false;
 
@@ -236,6 +238,7 @@ class HostCommManager {
             }
 
             char outbuf_low[24] = {0};
+            unsigned char inbuf[27] = {0};
 
             while (1){
 
@@ -285,28 +288,74 @@ class HostCommManager {
                 // Add fake square wave code here
 
                 //add delay
-                vTaskDelay( 10 / portTICK_PERIOD_MS); // should send at 100 Hz
+                if (FAKE_MODE){
+                    vTaskDelay( 10 / portTICK_PERIOD_MS); // should send at 100 Hz
 
-                if (tCounter++ % 200 == 0){
-                    printf("toggling: %d\n", tBool);
-                    tBool = !tBool;    
+                    if (tCounter++ % 200 == 0){
+                        printf("toggling: %d\n", tBool);
+                        tBool = !tBool;    
+                    }
+
+                    if (tBool){
+                        write_result = write(mSocket, outbuf_high, 24); 
+                    }
+                    else {
+                        write_result = write(mSocket, outbuf_low, 24); 
+                    }
+
+                    if (write_result < 0){
+                        printf("failed to write outbuf, no ack");
+                        printf("Closing socket: %d\n",mSocket);
+                        close(mSocket);
+                        break;
+                    }
+                    else {
+                        //printf("Sent outbuf");
+                    }
                 }
 
-                if (tBool){
-                    write_result = write(mSocket, outbuf_high, 24); 
-                }
-                else {
-                    write_result = write(mSocket, outbuf_low, 24); 
-                }
+                else{
 
-                if (write_result < 0){
-                    printf("failed to write outbuf, no ack");
-                    printf("Closing socket: %d\n",mSocket);
-                    close(mSocket);
-                    break;
-                }
-                else {
-                    //printf("Sent outbuf");
+
+                    // Get sample from ADS
+                    vTaskDelay( 10 / portTICK_PERIOD_MS); // should send at 100 Hz
+
+                    if (tCounter++ % 200 == 0){
+                        printf("toggling: %d\n", tBool);
+                        tBool = !tBool;    
+                    }
+
+                    //if (ads->getDataFake(inbuf, tBool))
+                    if (ads->getData(inbuf))
+                    {
+                        {
+                            for (int j = 0; j < 8; j++){
+                                long valueCH8 = 0;
+                                for(int i = 0; i < 3; ++i) valueCH8 += (inbuf[3*j+i+3] << (2-i)*8);
+                                //printf(" %d", valueCH8);
+                            }
+                            //printf("\n");
+                        }
+                        inbuf[0] = 0xf;
+                        inbuf[1] = 0xf;
+                        inbuf[2] = 0xf;
+                        write_result = write(mSocket, inbuf, 27); 
+
+                        if (write_result < 0){
+                            printf("failed to write outbuf, no ack");
+                            printf("Closing socket: %d\n",mSocket);
+                            close(mSocket);
+                            break;
+                        }
+                        else {
+                            //for (int j = 0; j < 8; j++){
+                            //    long valueCH8 = 0;
+                            //    for(int i = 0; i < 3; ++i) valueCH8 += (inbuf[3*j+i+3] << (2-i)*8);
+                            //    printf(" %f", valueCH8);
+                            //}
+                            //printf("\n");
+                        }
+                    }
                 }
             }
         }
