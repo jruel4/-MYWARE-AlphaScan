@@ -223,7 +223,7 @@ class HostCommManager {
             //TODO remove blocking code...
             int nbset = 0;
             int ctlr = lwip_ioctl(mSocket, FIONBIO, &nbset);
-            printf("set blocking: %d\n", ctlr);
+            //printf("set blocking: %d\n", ctlr);
 
             bool FAKE_MODE = false;
 
@@ -244,61 +244,59 @@ class HostCommManager {
 
             char outbuf_low[24] = {0};
             unsigned char inbuf[27] = {0};
-            unsigned char inbufBig[256] = {0};
+            //unsigned char inbufBig[256] = {0};
 
             int c = 0;
             long total_tx = 0;
             while (1){
 
                 // Set non blocking
-                //nbset = 1;
-                //ctlr = lwip_ioctl(mSocket, FIONBIO, &nbset);
+                nbset = 1;
+                ctlr = lwip_ioctl(mSocket, FIONBIO, &nbset);
                 //printf("set non blocking: %d\n", ctlr);
 
-                ////TODO put this back in
-                //int rready = _read_ready(false);
-                //if (rready < 0){
-                //    printf("Connection died\n");
-                //    printf("Closing socket: %d\n",mSocket);
-                //    close(mSocket);
-                //    break;
-                //}
-                //else if (rready == 0){
-                //    // no new commands
-                //    //continue;
-                //}
-                //else{
-                //    // proceed with read operation
+                int rready = _read_ready(false);
+                if (rready < 0){
+                    printf("Connection died\n");
+                    printf("Closing socket: %d\n",mSocket);
+                    close(mSocket);
+                    break;
+                }
+                else if (rready == 0){
+                    // no new commands
+                    //continue;
+                }
+                else{
+                    // proceed with read operation
 
 
-                //    // Read TCP in for stop op code
-                //    int r = read(mSocket, mInbuf, pkt_size);
-                //    //r = lwip_recv(mSocket, mInbuf, pkt_size, 0);
-                //    //r = lwip_recv(mSocket, mInbuf, pkt_size, MSG_DONTWAIT);
-                //    printf("return from lwip_recv with r=%d\n",r);
-                //    if (r > 0){
-                //        printf("received: %s", mInbuf);
-                //        if (mInbuf[0] == 0xf){
-                //            // terminate stream
-                //            printf("received terminate command\n");
-                //            break;
-                //        }
-                //    }
-                //    else if (r < 0){
-                //        printf("r < 0");
-                //        // Check if connection is alive
-                //        if (write(mSocket, "ACK", 3) < 0){
-                //            printf("failed to receive ACK");
-                //            printf("Closing socket: %d\n",mSocket);
-                //            close(mSocket);
-                //            break;
-                //        }
-                //    }
-                //}
+                    // Read TCP in for stop op code
+                    int r = read(mSocket, mInbuf, pkt_size);
+                    //r = lwip_recv(mSocket, mInbuf, pkt_size, 0);
+                    //r = lwip_recv(mSocket, mInbuf, pkt_size, MSG_DONTWAIT);
+                    printf("return from lwip_recv with r=%d\n",r);
+                    if (r > 0){
+                        printf("received: %s", mInbuf);
+                        if (mInbuf[0] == 0xf){
+                            // terminate stream
+                            printf("received terminate command\n");
+                            break;
+                        }
+                    }
+                    else if (r < 0){
+                        printf("r < 0");
+                        // Check if connection is alive
+                        if (write(mSocket, "ACK", 3) < 0){
+                            printf("failed to receive ACK");
+                            printf("Closing socket: %d\n",mSocket);
+                            close(mSocket);
+                            break;
+                        }
+                    }
+                }
 
-                // Set blocking for write
-                //nbset = 0;
-                //ctlr = lwip_ioctl(mSocket, FIONBIO, &nbset);
+                nbset = 0;
+                ctlr = lwip_ioctl(mSocket, FIONBIO, &nbset);
                 //printf("set blocking: %d\n", ctlr);
 
 
@@ -346,8 +344,7 @@ class HostCommManager {
                     //}
 
                     //if (ads->getDataFake(inbuf, tBool))
-                        //if (ads->getData(inbuf))
-                    if(true)
+                    if (ads->getData(inbuf))
                     {
                         //{
                         //    for (int j = 0; j < 8; j++){
@@ -357,11 +354,11 @@ class HostCommManager {
                         //    }
                         //    //printf("\n");
                         //}
-                        //inbuf[0] = 0xf;
-                        //inbuf[1] = 0xf;
-                        //inbuf[2] = 0xf;
+                        inbuf[0] = 0xf;
+                        inbuf[1] = 0xf;
+                        inbuf[2] = 0xf;
 
-                        ////set both timval struct to zero
+                        //set both timval struct to zero
                         //struct timeval tv;
                         //tv.tv_sec = 0;
                         //tv.tv_usec = 0;
@@ -369,16 +366,16 @@ class HostCommManager {
                         //FD_ZERO(&fds);
                         //FD_SET(mSocket, &fds);
 
-                        ////while (select( mSocket + 1, NULL , &fds, NULL, &tv ) < 1) {
-                        ////    tv.tv_sec = 0;
-                        ////    tv.tv_usec = 0;
-                        ////    FD_ZERO(&fds);
-                        ////    FD_SET(mSocket, &fds);
-                        ////    c++;
-                        ////}
+                        //while (select( mSocket + 1, NULL , &fds, NULL, &tv ) < 1) {
+                        //    tv.tv_sec = 0;
+                        //    tv.tv_usec = 0;
+                        //    FD_ZERO(&fds);
+                        //    FD_SET(mSocket, &fds);
+                        //    c++;
+                        //}
 
                         //vTaskDelay( 1 / portTICK_PERIOD_MS); // should send at 100 Hz
-                        write_result = write(mSocket, inbufBig, 256); 
+                        write_result = write(mSocket, inbuf, 27); 
                         total_tx += write_result;
                         c++;
 
