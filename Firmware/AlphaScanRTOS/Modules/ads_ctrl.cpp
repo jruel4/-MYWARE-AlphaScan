@@ -170,8 +170,8 @@ public:
     void WREG(byte REG_NUMBER, byte NUMBER_OF_REGS_MIN_ONE, byte VALUE);
     void clearSPI();
     byte transfer(byte VALUE);
-    void getSamples(byte dataInArray[27]);
-    bool getData(byte dataInArray[27]);
+    void getSamples(byte dataInArray[29]);
+    bool getData(byte dataInArray[29]);
     bool getDataFake(byte dataInArray[27], bool toggle);
 
     //DBG
@@ -460,7 +460,7 @@ byte ADS::transfer(byte VALUE) { return spi_transfer_8(1,VALUE); }
 
 void ADS::getSamples(byte dataInArray[27])
 {
-    for(int i = 0; i < 27; ++i)
+    for(int i = 2; i < 29; ++i)
         dataInArray[i] = spi_transfer_8(1,0x00);
     return; 
 }
@@ -473,7 +473,7 @@ bool ADS::readCS(void) { return (GP16O & 1); }
 // GLOBAL Semaphore and Task Handle
 TaskHandle_t DRDYBackgroundTask = NULL;
 
-bool ADS::getData(byte dataInArray[27])
+bool ADS::getData(byte dataInArray[29])
 {
     if(ADS::isDataReady())
     {
@@ -484,13 +484,19 @@ bool ADS::getData(byte dataInArray[27])
         return false;
 }
 
-bool ADS::getDataFake(byte dataInArray[27], bool toggle)
+bool ADS::getDataFake(byte dataInArray[29], bool toggle)
 {
-    for (int i = 3; i < 27; i++){
-        if ((i-3)%3 == 0 && toggle)
-            dataInArray[i] = 0xf;
-        else
+    for (int i = 5; i < 29; i++){
+        if ((i-5)%3 == 0 && toggle){
+            dataInArray[i] = 0xff;
+            dataInArray[i+1] = 0xff;
+            dataInArray[i+2] = 0xff;
+        }
+        else if ((i-5)%3 == 0 && !toggle){
             dataInArray[i] = 0;
+            dataInArray[i+1] = 0;
+            dataInArray[i+2] = 1;
+        }
     }
     return true;
 }
@@ -506,7 +512,7 @@ bool ADS::isDataReady(TickType_t xTicksToWait)
 
     uint32_t ulNotificationValue;
     ulNotificationValue = ulTaskNotifyTake( pdTRUE, NULL);
-    taskYIELD();
+    //taskYIELD();
     //ulNotificationValue = ulTaskNotifyTake( pdTRUE, xTicksToWait);
 
     bool isDataReady = false;

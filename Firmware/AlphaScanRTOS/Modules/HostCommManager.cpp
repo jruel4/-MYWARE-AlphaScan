@@ -243,11 +243,12 @@ class HostCommManager {
             }
 
             char outbuf_low[24] = {0};
-            unsigned char inbuf[27] = {0};
+            unsigned char inbuf[29] = {0};
             //unsigned char inbufBig[256] = {0};
 
             int c = 0;
             long total_tx = 0;
+            uint8_t block_counter = 0;
             while (1){
 
                 // Set non blocking
@@ -335,16 +336,16 @@ class HostCommManager {
 
 
                     // Get sample from ADS
-                    //vTaskDelay( 1 / portTICK_PERIOD_MS); // should send at 100 Hz
+                    vTaskDelay( 1 / portTICK_PERIOD_MS); // should send at 100 Hz
                     //taskYIELD();
 
-                    //if (tCounter++ % 200 == 0){
-                    //    //printf("toggling: %d\n", tBool);
-                    //    tBool = !tBool;    
-                    //}
+                    if (tCounter++ % 2000 == 0){
+                        //printf("toggling: %d\n", tBool);
+                        tBool = !tBool;    
+                    }
 
-                    //if (ads->getDataFake(inbuf, tBool))
-                    if (ads->getData(inbuf))
+                    if (ads->getDataFake(inbuf, tBool))
+                    //if (ads->getData(inbuf))
                     {
                         //{
                         //    for (int j = 0; j < 8; j++){
@@ -354,9 +355,11 @@ class HostCommManager {
                         //    }
                         //    //printf("\n");
                         //}
-                        inbuf[0] = 0xf;
-                        inbuf[1] = 0xf;
-                        inbuf[2] = 0xf;
+                        inbuf[0] = 0x7f;
+                        inbuf[1] = 0x7f;
+                        inbuf[2] = 0x7f;
+                        inbuf[3] = 0x7f;
+                        inbuf[4] = block_counter++;
 
                         //set both timval struct to zero
                         //struct timeval tv;
@@ -375,7 +378,7 @@ class HostCommManager {
                         //}
 
                         //vTaskDelay( 1 / portTICK_PERIOD_MS); // should send at 100 Hz
-                        write_result = write(mSocket, inbuf, 27); 
+                        write_result = write(mSocket, inbuf, 29); 
                         total_tx += write_result;
                         c++;
 
@@ -391,7 +394,7 @@ class HostCommManager {
                             printf("total_tx: %d\n",total_tx);
                             printf("failed 1x to rx ACK");
                             vTaskDelay( 1 / portTICK_PERIOD_MS); // should send at 100 Hz
-                            write_result = write(mSocket, inbuf, 27); 
+                            write_result = write(mSocket, inbuf, 29); 
                             if (write_result < 0){
                                 printf("failed to write outbuf, no ack");
                                 printf("Closing socket: %d\n",mSocket);
