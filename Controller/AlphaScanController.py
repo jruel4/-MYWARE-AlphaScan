@@ -583,27 +583,128 @@ class AlphaScanDevice:
     
     
     
-def unpack_data(data):
-    deviceData = [list() for i in range(8)]
-    for j in xrange(8):
-        deviceData[j] = [data[3+(j*3):3+(j*3+3)]] 
+    def unpack_data(data):
+        deviceData = [list() for i in range(8)]
+        for j in xrange(8):
+            deviceData[j] = [data[3+(j*3):3+(j*3+3)]] 
+    
+            val = 0
+            for s,n in list(enumerate(deviceData[j][0])):
+                try:
+                    val ^= ord(n) << ((2-s)*8)
+                except ValueError as e:
+                    print("value error",e)
+                except TypeError as e:
+                    print("value error",e)
+                    
+            
+            val = twos_comp(val)
+            print(val)
+            #self.mysample[j] = val
+    
+    
+    def DEV_printTCPStream_TEST_0(self):
 
-        val = 0
-        for s,n in list(enumerate(deviceData[j][0])):
-            try:
-                val ^= ord(n) << ((2-s)*8)
-            except ValueError as e:
-                print("value error",e)
-            except TypeError as e:
-                print("value error",e)
-                
+        self.s = socket.socket(socket.AF_INET,socket.SOCK_STREAM) 
+        self.s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        self.s.bind((self.TCP_IP,self.TCP_PORT)) 
+        # error: [Errno 10048] Only one usage of each socket address (protocol/network address/port) is normally permitted
         
-        val = twos_comp(val)
-        print(val)
-        #self.mysample[j] = val
-    
-    
-    
+        self.s.settimeout(10)
+        self.s.listen(1)        
+        try:
+            self.conn,addr = self.s.accept()
+            self.conn.settimeout(.0001) # TODO maybe want to make this smaller
+
+            self.UDP_IP = addr[0] # TODO this should say TCP_IP
+            self.IS_CONNECTED = True
+            
+        except:
+            self.IS_CONNECTED = False
+            self.close_TCP(); # cleanup socket
+            return False        
+            
+        self.generic_tcp_command_OPCODE(0x3)
+        
+        global sqwave
+        ###############################################################################
+        # UDP Stream thread target
+        ###############################################################################
+
+        self.reads = 0
+        self.unknown_stream_errors = 0
+        self.time_interval_count = 0
+        self.rx_count = 0
+        self.pre_rx = 0
+        self.timeout_count = 0
+        self.invalid_start = 0
+        self.test_inbuf = list()
+        self.inbuf = list()
+        self.time_intervals = list()
+        self.DEV_streamActive.set()
+        self.error_array = list()
+        self.total_rx = 0
+        
+        deviceData = [0 for i in range(8)]
+        
+        # clear tcp inbuf
+        #self.conn.recv(2048) # this is not a proper flush, rx size should be set to match
+        self.flush_TCP()
+        
+        diff = 3
+        
+        self.begin = time.time()
+        
+        while self.DEV_streamActive.is_set():
+
+            if (self.rx_count % 50) == 0:
+                elapsed = (time.time() - self.begin)
+                if elapsed > 0:
+                    bytes_per_sec = self.total_rx / elapsed
+                    print("Bytes per second: ",(bytes_per_sec))
+                
+            try:
+                self.pre_rx += 1
+                # TODO Receive and unpack sample from TCP connection
+
+                self.data = self.conn.recv(1024)
+                self.rx_count += 1     
+                #if (len(self.data) == 27):
+                self.total_rx += len(self.data)
+#==============================================================================
+#                     if (ord(self.data[0]) == 0xf and ord(self.data[1]) == 0xf and ord(self.data[2]) == 0xf):
+#         
+#                         self.test_inbuf += [self.data]
+#                         
+#                         #self.inbuf += [ord(self.data)] # #TODO this is suspect since ord should only take 1 character, and will fill quick
+#                         
+#                         # Populate fresh channel data into self.mysample
+#                         for j in xrange(8):
+#                             deviceData[j] = [self.data[diff+(j*3):diff+(j*3+3)]] 
+#                             val = 0
+#                             for s,n in list(enumerate(deviceData[j][0])):
+#                                 try:
+#                                     val ^= ord(n) << ((2-s)*8)
+#                                 except ValueError as e:
+#                                     print("value error",e)
+#                                 except TypeError as e:
+#                                     print("value error",e)
+#                             val = twos_comp(val)
+#                             self.mysample[j] = val
+#                         
+#                         #self.sqwave += [self.data]
+#                         self.outlet.push_sample(self.mysample)
+#                         self.reads += 1
+#                         
+#                         #TODO count interval
+#                         self.count_time_interval()
+#                         
+#                     else:
+#                         self.invalid_start += 1
+#==============================================================================
+            
+            except socket.timeout:
+                self.timeout_count += 1    
     
     
     
