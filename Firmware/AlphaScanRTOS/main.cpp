@@ -1,3 +1,4 @@
+#define LWIP_DEBUG
 #include "task.hpp"
 #include "espressif/esp_common.h"
 #include "esp/uart.h"
@@ -137,5 +138,5 @@ AlphaScanManager t_Manager;
 extern "C" void user_init(void)
 {
     t_Manager.setDebugSerial(true);
-    t_Manager.task_create("main_loop");
+    t_Manager.task_create("main_loop", 2048);//TODO increase task stack depth to avoid overflow
 }

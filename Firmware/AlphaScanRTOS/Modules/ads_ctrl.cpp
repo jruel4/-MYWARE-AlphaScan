@@ -497,7 +497,7 @@ bool ADS::getDataFake(byte dataInArray[27], bool toggle)
 
 bool ADS::isDataReady(void)
 {
-    return ADS::isDataReady(pdMS_TO_TICKS( 5 ));
+    return ADS::isDataReady(pdMS_TO_TICKS( 1 ));
 }
 
 bool ADS::isDataReady(TickType_t xTicksToWait)
@@ -505,7 +505,9 @@ bool ADS::isDataReady(TickType_t xTicksToWait)
     if(!dataReadyIsRunning) setupDRDY();
 
     uint32_t ulNotificationValue;
-    ulNotificationValue = ulTaskNotifyTake( pdTRUE, xTicksToWait);
+    ulNotificationValue = ulTaskNotifyTake( pdTRUE, NULL);
+    taskYIELD();
+    //ulNotificationValue = ulTaskNotifyTake( pdTRUE, xTicksToWait);
 
     bool isDataReady = false;
     if(ulNotificationValue == 1)

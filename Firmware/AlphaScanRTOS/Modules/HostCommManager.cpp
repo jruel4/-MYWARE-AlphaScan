@@ -219,6 +219,11 @@ class HostCommManager {
         }
 
         void _stream_ads(ADS* ads){
+            
+            //TODO remove blocking code...
+            int nbset = 0;
+            int ctlr = lwip_ioctl(mSocket, FIONBIO, &nbset);
+            printf("set blocking: %d\n", ctlr);
 
             bool FAKE_MODE = false;
 
@@ -239,57 +244,71 @@ class HostCommManager {
 
             char outbuf_low[24] = {0};
             unsigned char inbuf[27] = {0};
+            unsigned char inbufBig[256] = {0};
 
+            int c = 0;
+            long total_tx = 0;
             while (1){
 
-                int rready = _read_ready(false);
-                if (rready < 0){
-                    printf("Connection died\n");
-                    printf("Closing socket: %d\n",mSocket);
-                    close(mSocket);
-                    break;
-                }
-                else if (rready == 0){
-                    // no new commands
-                    //continue;
-                }
-                else{
-                    // proceed with read operation
+                // Set non blocking
+                //nbset = 1;
+                //ctlr = lwip_ioctl(mSocket, FIONBIO, &nbset);
+                //printf("set non blocking: %d\n", ctlr);
+
+                ////TODO put this back in
+                //int rready = _read_ready(false);
+                //if (rready < 0){
+                //    printf("Connection died\n");
+                //    printf("Closing socket: %d\n",mSocket);
+                //    close(mSocket);
+                //    break;
+                //}
+                //else if (rready == 0){
+                //    // no new commands
+                //    //continue;
+                //}
+                //else{
+                //    // proceed with read operation
 
 
-                    // Read TCP in for stop op code
-                    int r = read(mSocket, mInbuf, pkt_size);
-                    //r = lwip_recv(mSocket, mInbuf, pkt_size, 0);
-                    //r = lwip_recv(mSocket, mInbuf, pkt_size, MSG_DONTWAIT);
-                    printf("return from lwip_recv with r=%d\n",r);
-                    if (r > 0){
-                        printf("received: %s", mInbuf);
-                        if (mInbuf[0] == 0xf){
-                            // terminate stream
-                            printf("received terminate command\n");
-                            break;
-                        }
-                    }
-                    else if (r < 0){
-                        printf("r < 0");
-                        // Check if connection is alive
-                        if (write(mSocket, "ACK", 3) < 0){
-                            printf("failed to receive ACK");
-                            printf("Closing socket: %d\n",mSocket);
-                            close(mSocket);
-                            break;
-                        }
-                    }
-                }
+                //    // Read TCP in for stop op code
+                //    int r = read(mSocket, mInbuf, pkt_size);
+                //    //r = lwip_recv(mSocket, mInbuf, pkt_size, 0);
+                //    //r = lwip_recv(mSocket, mInbuf, pkt_size, MSG_DONTWAIT);
+                //    printf("return from lwip_recv with r=%d\n",r);
+                //    if (r > 0){
+                //        printf("received: %s", mInbuf);
+                //        if (mInbuf[0] == 0xf){
+                //            // terminate stream
+                //            printf("received terminate command\n");
+                //            break;
+                //        }
+                //    }
+                //    else if (r < 0){
+                //        printf("r < 0");
+                //        // Check if connection is alive
+                //        if (write(mSocket, "ACK", 3) < 0){
+                //            printf("failed to receive ACK");
+                //            printf("Closing socket: %d\n",mSocket);
+                //            close(mSocket);
+                //            break;
+                //        }
+                //    }
+                //}
 
-                //TODO Perform ADS update and ship output back to host
+                // Set blocking for write
+                //nbset = 0;
+                //ctlr = lwip_ioctl(mSocket, FIONBIO, &nbset);
+                //printf("set blocking: %d\n", ctlr);
+
+
                 // if new data is ready, send it over wifi to host
 
                 // Add fake square wave code here
 
                 //add delay
                 if (FAKE_MODE){
-                    vTaskDelay( 10 / portTICK_PERIOD_MS); // should send at 100 Hz
+                    vTaskDelay( 30 / portTICK_PERIOD_MS); // should send at 100 Hz
 
                     if (tCounter++ % 200 == 0){
                         printf("toggling: %d\n", tBool);
@@ -318,34 +337,70 @@ class HostCommManager {
 
 
                     // Get sample from ADS
-                    vTaskDelay( 10 / portTICK_PERIOD_MS); // should send at 100 Hz
+                    //vTaskDelay( 1 / portTICK_PERIOD_MS); // should send at 100 Hz
+                    //taskYIELD();
 
-                    if (tCounter++ % 200 == 0){
-                        printf("toggling: %d\n", tBool);
-                        tBool = !tBool;    
-                    }
+                    //if (tCounter++ % 200 == 0){
+                    //    //printf("toggling: %d\n", tBool);
+                    //    tBool = !tBool;    
+                    //}
 
                     //if (ads->getDataFake(inbuf, tBool))
-                    if (ads->getData(inbuf))
+                        //if (ads->getData(inbuf))
+                    if(true)
                     {
-                        {
-                            for (int j = 0; j < 8; j++){
-                                long valueCH8 = 0;
-                                for(int i = 0; i < 3; ++i) valueCH8 += (inbuf[3*j+i+3] << (2-i)*8);
-                                //printf(" %d", valueCH8);
-                            }
-                            //printf("\n");
-                        }
-                        inbuf[0] = 0xf;
-                        inbuf[1] = 0xf;
-                        inbuf[2] = 0xf;
-                        write_result = write(mSocket, inbuf, 27); 
+                        //{
+                        //    for (int j = 0; j < 8; j++){
+                        //        long valueCH8 = 0;
+                        //        for(int i = 0; i < 3; ++i) valueCH8 += (inbuf[3*j+i+3] << (2-i)*8);
+                        //        //printf(" %d", valueCH8);
+                        //    }
+                        //    //printf("\n");
+                        //}
+                        //inbuf[0] = 0xf;
+                        //inbuf[1] = 0xf;
+                        //inbuf[2] = 0xf;
+
+                        ////set both timval struct to zero
+                        //struct timeval tv;
+                        //tv.tv_sec = 0;
+                        //tv.tv_usec = 0;
+                        //fd_set fds;
+                        //FD_ZERO(&fds);
+                        //FD_SET(mSocket, &fds);
+
+                        ////while (select( mSocket + 1, NULL , &fds, NULL, &tv ) < 1) {
+                        ////    tv.tv_sec = 0;
+                        ////    tv.tv_usec = 0;
+                        ////    FD_ZERO(&fds);
+                        ////    FD_SET(mSocket, &fds);
+                        ////    c++;
+                        ////}
+
+                        //vTaskDelay( 1 / portTICK_PERIOD_MS); // should send at 100 Hz
+                        write_result = write(mSocket, inbufBig, 256); 
+                        total_tx += write_result;
+                        c++;
+
+                        //printf("select af: %d \n\n", select( mSocket + 1, NULL , &fds, NULL, &tv ));
+                        //while( select( mSocket + 1, NULL , &fds, NULL, &tv ) > 0){
+                        //    c++;
+                        //    vTaskDelay( 1 / portTICK_PERIOD_MS); // should send at 100 Hz
+                        //}
+                        //printf("Delayed for %d loops",c);
+
 
                         if (write_result < 0){
-                            printf("failed to write outbuf, no ack");
-                            printf("Closing socket: %d\n",mSocket);
-                            close(mSocket);
-                            break;
+                            printf("total_tx: %d\n",total_tx);
+                            printf("failed 1x to rx ACK");
+                            vTaskDelay( 1 / portTICK_PERIOD_MS); // should send at 100 Hz
+                            write_result = write(mSocket, inbuf, 27); 
+                            if (write_result < 0){
+                                printf("failed to write outbuf, no ack");
+                                printf("Closing socket: %d\n",mSocket);
+                                close(mSocket);
+                                break;
+                            }
                         }
                         else {
                             //for (int j = 0; j < 8; j++){
