@@ -220,11 +220,6 @@ class HostCommManager {
 
         void _stream_ads(ADS* ads){
             
-            //TODO remove blocking code...
-            int nbset = 0;
-            int ctlr = lwip_ioctl(mSocket, FIONBIO, &nbset);
-            //printf("set blocking: %d\n", ctlr);
-
             bool FAKE_MODE = false;
 
             printf("Initializing internal ADS stream call\n");
@@ -249,6 +244,7 @@ class HostCommManager {
             int c = 0;
             long total_tx = 0;
             uint8_t block_counter = 0;
+            int nbset, ctlr;
             while (1){
 
                 // Set non blocking
@@ -336,7 +332,7 @@ class HostCommManager {
 
 
                     // Get sample from ADS
-                    vTaskDelay( 1 / portTICK_PERIOD_MS); // should send at 100 Hz
+                    //vTaskDelay( 1 / portTICK_PERIOD_MS); // should send at 100 Hz
                     //taskYIELD();
 
                     if (tCounter++ % 2000 == 0){
@@ -344,8 +340,8 @@ class HostCommManager {
                         tBool = !tBool;    
                     }
 
-                    if (ads->getDataFake(inbuf, tBool))
-                    //if (ads->getData(inbuf))
+                    //if (ads->getDataFake(inbuf, tBool))
+                    if (ads->getData(inbuf))
                     {
                         //{
                         //    for (int j = 0; j < 8; j++){
