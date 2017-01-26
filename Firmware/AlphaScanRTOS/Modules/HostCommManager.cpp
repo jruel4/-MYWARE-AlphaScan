@@ -379,6 +379,9 @@ class HostCommManager {
 
                         //vTaskDelay( 1 / portTICK_PERIOD_MS); // should send at 100 Hz
                         write_result = write(mSocket, inbuf, 29); 
+                        if (write_result != 29){
+                            printf("write_result: %d\n",write_result);
+                        }
                         total_tx += write_result;
                         c++;
 
