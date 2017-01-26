@@ -7,6 +7,7 @@ import random
 from CommandDefinitions import *
 from BitPacking import twos_comp
 import select
+from matplotlib import pyplot as plt
 
 class AlphaScanDevice:
     
@@ -112,7 +113,7 @@ class AlphaScanDevice:
         self.s.listen(1)        
         try:
             self.conn,addr = self.s.accept()
-            self.conn.settimeout(.05) # TODO maybe want to make this smaller
+            self.conn.settimeout(.0001) # TODO maybe want to make this smaller
             time.sleep(0.01) # time for device to respond
             self.UDP_IP = addr[0] # TODO this should say TCP_IP
             self.IS_CONNECTED = True
@@ -258,19 +259,30 @@ class AlphaScanDevice:
         self.data_wrong_size = 0
         self.invalid_start = 0
         self.no_valid_start = 0
+        self.out_of_data = 0
+        self.over_loops = 0
+        self.block_list = list()
         self.test_inbuf = list()
+        self.over_loop_list = list()
+        self.data_size_list = list()
+        self.read_size_list = list()
         self.inbuf = list()
         self.time_intervals = list()
         self.DEV_streamActive.set()
         self.error_array = list()
+        self.prev_data = None
+        self.total_buf = ''
         
         deviceData = [0 for i in range(8)]
         
         # clear tcp inbuf
         #self.conn.recv(2048) # this is not a proper flush, rx size should be set to match
-        self.flush_TCP()
         
-        diff = 3
+        self.flush_TCP()
+        self.conn.setblocking(0)
+        
+        diff = 5
+        
         
         while self.DEV_streamActive.is_set():
             try:
@@ -278,17 +290,36 @@ class AlphaScanDevice:
                 # TODO Receive and unpack sample from TCP connection
                 ready = select.select([self.conn], [], [] , 0)
                 if (ready[0]):
-                    self.data += self.conn.recv(24+diff)
+                    new_data = self.conn.recv(1024)
+                    self.total_buf += str(new_data)
+                    self.read_size_list += [len(new_data)]
+                    self.data += str(new_data)
+                    self.total_buf += str(new_data)
                     self.rx_count += 1     
-                if (len(self.data) >= 27):
+                    self.data_size_list += [len(self.data)]
+                
+                if (len(self.data) >= 29):
                     
                     current_data = None
                     for i in range(len(self.data)):
                         
-                        if (ord(self.data[i+0]) == 0xf and ord(self.data[i+1]) == 0xf and ord(self.data[i+2]) == 0xf):
-                            current_data = self.data[i+3:i+27]        
-                            self.data = self.data[i+28:]
-                            break
+                        if len(self.data[i:]) >= 29:
+                            if ((ord(self.data[i+0]) == 0x7f) and (ord(self.data[i+1]) == 0x7f) and (ord(self.data[i+2]) == 0x7f) and (ord(self.data[i+3]) == 0x7f) and (len(self.data[i+5:]) >= 24)):
+                                block_num = ord(self.data[i+4])
+                                self.block_list += [int(block_num)]
+                                current_data = self.data[i+5:i+29]     
+                                if (len(self.data[i+28:]) > 1):
+                                    self.data = self.data[i+29:]
+                                else:
+                                    self.data = ''
+                                break
+                        else:
+                            self.out_of_data += 1
+                                                
+                        if i == 0:
+                            self.over_loops += 1
+                            self.over_loop_list += [[self.data[i:],0]]
+                        self.over_loop_list[-1][1] += 1
                         
                     if current_data == None:
                         self.no_valid_start += 1
@@ -300,7 +331,7 @@ class AlphaScanDevice:
                     
                     # Populate fresh channel data into self.mysample
                     for j in xrange(8):
-                        deviceData[j] = [current_data[diff+(j*3):diff+(j*3+3)]] 
+                        deviceData[j] = [current_data[(j*3):(j*3+3)]] 
                         val = 0
                         for s,n in list(enumerate(deviceData[j][0])):
                             try:
@@ -313,17 +344,19 @@ class AlphaScanDevice:
                         self.mysample[j] = val
                     
                     self.sqwave += [list(self.mysample)]
-                    self.outlet.push_sample(self.mysample)
+                    #self.outlet.push_sample(self.mysample)
                     self.reads += 1
                     
                     #TODO count interval
-                    self.count_time_interval()
+                    #self.count_time_interval()
                     
                 else:
                     self.data_wrong_size += 1
                 
             except socket.timeout:
                 self.timeout_count += 1
+                
+    
                 
            
                 
@@ -464,7 +497,7 @@ class AlphaScanDevice:
         ###############################################################################
         
         #TODO NEED terminatino ACK, if NACK then resend termination command        
-        
+        self.conn.setblocking(1)
         try:
             self.generic_tcp_command_OPCODE(0xf)
             
@@ -614,6 +647,34 @@ class AlphaScanDevice:
             val = twos_comp(val)
             print(val)
             #self.mysample[j] = val
+            
+    def check_block_list(self):
+        p = 255
+        errors = 0
+        c = 0
+        err_list = list()
+        for n in self.block_list:
+            if n == 0:
+                if p != 255: 
+                    print("error",n,p)
+                    errors += 1
+                    err_list += [(n,p,c)]
+            else:
+                if p != n-1:
+                    print("error",n,p)
+                    errors += 1
+                    err_list += [(n,p,c)]
+            p = n 
+            c += 1
+            
+        return errors, err_list
+            
+    def plot_square_wave(self, chan):
+        chx = list()
+        for d in self.sqwave:
+            chx += [d[chan]]
+        plt.plot(chx)
+        plt.show
     
     
     def DEV_printTCPStream_TEST_0(self):
