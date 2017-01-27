@@ -631,13 +631,20 @@ void ADS::flushRegisterMapToADS(void)
 
 void ADS::printSerialRegistersFromADS(void)
 {
+
+    byte tmpArr[24] = {0};
+    
     if(DBG)
     {
         killStandby();
         killStreaming();
         RREG(ID, 23);
-        for(int i = 0; i < 24; ++i)
-            printf("\n%s : %X", ADS_REG_NAMES[i], spi_transfer_8(1, 0x00));
+        for(int i = 0; i < 24; ++i){
+            tmpArr[i] = spi_transfer_8(1, 0x00);
+        }
+        for(int i = 0; i < 24; ++i){
+            printf("\n%s : %X", ADS_REG_NAMES[i], tmpArr[i]);
+        }
         STANDBY();
         return;
     }

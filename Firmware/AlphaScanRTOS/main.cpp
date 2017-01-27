@@ -8,7 +8,7 @@
 #include "Modules/HostCommManager.cpp"
 #include "Modules/ads_ctrl.cpp"
 
-#define FIRMARE_VERSION "0.0.5"
+#define FIRMARE_VERSION "0.0.8"
 
 class AlphaScanManager : public esp_open_rtos::thread::task_t
 {
@@ -112,7 +112,7 @@ class AlphaScanManager : public esp_open_rtos::thread::task_t
             else if (rcode == 0x02){
                 printf("running ads code\n");
                 // Print Reg Map Serial
-                c_Ads.setupADS();
+                //c_Ads.setupADS();
                 c_Ads.printSerialRegistersFromADS();
                 printf("completed ads code\n");
             }
