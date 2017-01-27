@@ -5,6 +5,7 @@
 #include "task.h"
 #include "espressif/esp_common.h"
 #include "esp/uart.h"
+#include "esp/timer.h"
 #include "esp/spi.h"
 //#include "esp8266.h"
 #include <string.h>
@@ -582,7 +583,8 @@ void ADS::DRDYInterruptHandle(uint8_t gpio_num)
         {
             interruptStruct.inDataArray[i] = spi_transfer_8(1,0x00);
         }
-        interruptStruct.tickCount = xTaskGetTickCountFromISR();
+        interruptStruct.tickCount = timer_get_count(FRC2);
+        //interruptStruct.tickCount = xTaskGetTickCountFromISR();
         BaseType_t xHigherPriorityTaskWoken = pdFALSE;
         xQueueSendFromISR(xDataReadyQueue, &interruptStruct, &xHigherPriorityTaskWoken);
     }
@@ -719,7 +721,7 @@ void ADS::configureTestSignal()
     WREG(CONFIG3, 0, 0b11101101); //Internal reference buffer enabled(7), bias ref signal generated internally(3), bias buffer enabled(2), bias sense diasbled(1), bias LOFF disconnected(0)
     WREG(BIAS_SENSN, 0, 0b00000000); //Turn off all connections to bias on N side (not used)
     WREG(CH1SET, 7, ADSINPUT_ENABLED | ADSINPUT_GAIN04 | ADSINPUT_TESTSIG | ADSINPUT_SRB2_OPEN); //Write all eight channels - test signal
-    WREG(CONFIG1, 0, 0b10010000 | DR_1KSPS);
+    WREG(CONFIG1, 0, 0b10010000 | DR_250SPS);
     STANDBY();
 }
 

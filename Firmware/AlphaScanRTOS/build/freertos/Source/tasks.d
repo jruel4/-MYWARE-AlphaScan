@@ -60,4 +60,8 @@ build/freertos//Source/tasks.o: \
  /media/marzipan/Expansion_1/Development/Projects/superhouse_spi_test_build/esp-open-rtos/FreeRTOS/Source/include/list.h \
  /media/marzipan/Expansion_1/Development/Projects/superhouse_spi_test_build/esp-open-rtos/FreeRTOS/Source/include/timers.h \
  /media/marzipan/Expansion_1/Development/Projects/superhouse_spi_test_build/esp-open-rtos/FreeRTOS/Source/include/task.h \
- /media/marzipan/Expansion_1/Development/Projects/superhouse_spi_test_build/esp-open-rtos/FreeRTOS/Source/include/StackMacros.h
+ /media/marzipan/Expansion_1/Development/Projects/superhouse_spi_test_build/esp-open-rtos/FreeRTOS/Source/include/StackMacros.h \
+ /media/marzipan/Expansion_1/Development/Projects/superhouse_spi_test_build/esp-open-rtos/libc/xtensa-lx106-elf/include/stdio.h \
+ /media/marzipan/Expansion_1/Development/Projects/superhouse_spi_test_build/esp-open-rtos/libc/xtensa-lx106-elf/include/sys/types.h \
+ /media/marzipan/Expansion_1/Development/Projects/superhouse_spi_test_build/esp-open-rtos/libc/xtensa-lx106-elf/include/machine/types.h \
+ /media/marzipan/Expansion_1/Development/Projects/superhouse_spi_test_build/esp-open-rtos/libc/xtensa-lx106-elf/include/sys/stdio.h

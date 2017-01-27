@@ -1,5 +1,10 @@
+
+//TODO
+// Try making the MSS 29 with ADS sample rate low to see if we still get spikes in the queue size... if yesu than we can rule out weird lwip buffering
+
 #include "espressif/esp_common.h"
 #include "esp/uart.h"
+#include "esp/timer.h"
 #include <string.h>
 #include "FreeRTOS.h"
 #include "task.h"
@@ -220,6 +225,8 @@ class HostCommManager {
 
         void _stream_ads(ADS* ads){
             
+
+            //printf("set blocking: %d\n", ctlr);
             bool FAKE_MODE = false;
 
             printf("Initializing internal ADS stream call\n");
@@ -246,9 +253,10 @@ class HostCommManager {
             uint8_t block_counter = 0;
             uint32_t dReadyCounter = 0;
             int nbset, ctlr;
+            //nbset = 0;
+            //ctlr = lwip_ioctl(mSocket, FIONBIO, &nbset);
             while (1){
 
-                // Set non blocking
                 nbset = 1;
                 ctlr = lwip_ioctl(mSocket, FIONBIO, &nbset);
                 //printf("set non blocking: %d\n", ctlr);
@@ -278,6 +286,14 @@ class HostCommManager {
                         if (mInbuf[0] == 0xf){
                             // terminate stream
                             printf("received terminate command\n");
+                            char wbuf[400] = {0};
+                            vTaskList(wbuf);
+                            printf(wbuf);
+                            printf("--------------\n");
+                            vTaskGetRunTimeStats(wbuf);
+                            printf(wbuf);
+
+                            printf("timer_get_count: %d\n",timer_get_count(FRC2));
                             break;
                         }
                     }
@@ -293,8 +309,9 @@ class HostCommManager {
                     }
                 }
 
-                nbset = 0;
-                ctlr = lwip_ioctl(mSocket, FIONBIO, &nbset);
+                //TODO put blocking back in 
+                //nbset = 0;
+                //ctlr = lwip_ioctl(mSocket, FIONBIO, &nbset);
                 //printf("set blocking: %d\n", ctlr);
 
 
@@ -303,47 +320,21 @@ class HostCommManager {
                 // Add fake square wave code here
 
                 //add delay
-                if (FAKE_MODE){
-                    vTaskDelay( 30 / portTICK_PERIOD_MS); // should send at 100 Hz
-
-                    if (tCounter++ % 200 == 0){
-                        printf("toggling: %d\n", tBool);
-                        tBool = !tBool;    
-                    }
-
-                    if (tBool){
-                        write_result = write(mSocket, outbuf_high, 24); 
-                    }
-                    else {
-                        write_result = write(mSocket, outbuf_low, 24); 
-                    }
-
-                    if (write_result < 0){
-                        printf("failed to write outbuf, no ack");
-                        printf("Closing socket: %d\n",mSocket);
-                        close(mSocket);
-                        break;
-                    }
-                    else {
-                        //printf("Sent outbuf");
-                    }
-                }
-
-                else{
-
+                {
 
                     // Get sample from ADS
                     //vTaskDelay( 5 / portTICK_PERIOD_MS); // should send at 100 Hz
                     //taskYIELD();
 
-                    if (tCounter++ % 2000 == 0){
-                        //printf("toggling: %d\n", tBool);
-                        tBool = !tBool;    
-                    }
+                    //if (tCounter++ % 2000 == 0){
+                    //    //printf("toggling: %d\n", tBool);
+                    //    tBool = !tBool;    
+                    //}
 
                     //if (ads->getDataFake(inbuf, tBool))
                     //if (ads->getData(inbuf, 0)) //Nonblocking b/c of 0
                     int inWaiting;
+                    uint32_t loopTimeStamp = 0;
                     TickType_t tickTimestamp;
                     while ((inWaiting = ads->getDataWaiting(inbuf, 0, tickTimestamp)), inWaiting > 0) //Nonblocking b/c of 0
                     {
@@ -371,16 +362,22 @@ class HostCommManager {
                         inbuf[9] = (tickTimestamp >> 8) & 0xff;
                         inbuf[10] = (tickTimestamp >> 0) & 0xff;
 
+                        loopTimeStamp = timer_get_count(FRC2);
+                        inbuf[11] = (loopTimeStamp >> 16) & 0xff;
+                        inbuf[12] = (loopTimeStamp >> 8) & 0xff;
+                        inbuf[13] = (loopTimeStamp >> 0) & 0xff;
+
+
 
                         dReadyCounter = 0;
 
                         //set both timval struct to zero
-                        //struct timeval tv;
-                        //tv.tv_sec = 0;
-                        //tv.tv_usec = 0;
-                        //fd_set fds;
-                        //FD_ZERO(&fds);
-                        //FD_SET(mSocket, &fds);
+                        struct timeval tv;
+                        tv.tv_sec = 0;
+                        tv.tv_usec = 0;
+                        fd_set fds;
+                        FD_ZERO(&fds);
+                        FD_SET(mSocket, &fds);
 
                         //while (select( mSocket + 1, NULL , &fds, NULL, &tv ) < 1) {
                         //    tv.tv_sec = 0;
@@ -391,12 +388,20 @@ class HostCommManager {
                         //}
 
                         //vTaskDelay( 1 / portTICK_PERIOD_MS); // should send at 100 Hz
-                        write_result = write(mSocket, inbuf, 29); 
-                        if (write_result != 29){
-                            printf("write_result: %d\n",write_result);
+
+                        //if (select( mSocket + 1, NULL , &fds, NULL, &tv ) > 0) {
+                        if (true) {
+                            write_result = write(mSocket, inbuf, 29); 
+                            if (write_result != 29){
+                                printf("write_result: %d\n",write_result);
+                            }
                         }
-                        total_tx += write_result;
-                        c++;
+                        //total_tx += write_result;
+                        //total_tx += inWaiting;
+                        //if (c++ % 500 == 0){
+                        //    printf("qs: %d\n",total_tx);
+                        //    total_tx = 0;
+                        //}
 
                         //printf("select af: %d \n\n", select( mSocket + 1, NULL , &fds, NULL, &tv ));
                         //while( select( mSocket + 1, NULL , &fds, NULL, &tv ) > 0){
@@ -406,6 +411,11 @@ class HostCommManager {
                         //printf("Delayed for %d loops",c);
 
 
+                        /**
+                            When non-block writing with no SELECT checker, 
+                            write_result evenetually == -1, then the following 
+                            block closes out the streaming loop.
+                        **/
                         if (write_result < 0){
                             printf("total_tx: %d\n",total_tx);
                             printf("failed 1x to rx ACK");

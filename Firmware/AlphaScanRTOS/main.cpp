@@ -1,5 +1,6 @@
 #define LWIP_DEBUG
 #include "task.hpp"
+#include "esp/timer.h"
 #include "espressif/esp_common.h"
 #include "esp/uart.h"
 #include "Modules/SoftApManager.cpp"
@@ -140,3 +141,50 @@ extern "C" void user_init(void)
     t_Manager.setDebugSerial(true);
     t_Manager.task_create("main_loop", 2048);//TODO increase task stack depth to avoid overflow
 }
+
+/**
+    setting up timer for debug dumps
+**/
+//#define ETS_UNCACHED_ADDR(addr) (addr)
+//#define ETS_CACHED_ADDR(addr) (addr)
+//#define PERIPHS_TIMER_BASEDDR 0x60000600
+//#define READ_PERI_REG(addr) (*((volatile uint32_t *)ETS_UNCACHED_ADDR(addr)))
+//#define WRITE_PERI_REG(addr, val) (*((volatile uint32_t *)ETS_UNCACHED_ADDR(addr))) = (uint32_t)(val)
+//#define RTC_REG_READ(addr)                        READ_PERI_REG(PERIPHS_TIMER_BASEDDR + addr)
+//#define RTC_REG_WRITE(addr, val) WRITE_PERI_REG(PERIPHS_TIMER_BASEDDR + addr, val)
+////load initial_value to timer1
+//#define FRC1_LOAD_ADDRESS                    0x00
+////timer1's counter value(count from initial_value to 0)
+//#define FRC1_COUNT_ADDRESS                 0x04
+//#define FRC1_CTRL_ADDRESS                    0x08
+////clear timer1's interrupt when write this address
+//#define FRC1_INT_ADDRESS                      0x0c
+//#define FRC1_INT_CLR_MASK 0x00000001
+//#define FRC1_ENABLE_TIMER BIT7
+
+//typedef enum {
+//    DIVDED_BY_1 = 0,
+//    DIVDED_BY_16 = 4,
+//    DIVDED_BY_256 = 8,
+//} TIMER_PREDIVED_MODE;
+
+extern "C" void vConfigureTimerForRunTimeStats( void ) {
+//    RTC_REG_WRITE(FRC1_CTRL_ADDRESS,  //FRC2_AUTO_RELOAD|
+//            DIVDED_BY_256
+//            | FRC1_ENABLE_TIMER);
+//
+//    RTC_REG_WRITE(FRC1_LOAD_ADDRESS, 0);
+    timer_set_interrupts(FRC2, false);
+    timer_set_run(FRC2, false);
+    timer_set_frequency(FRC2, 1000);
+    timer_set_load(FRC2, 0x7fffff);
+    timer_set_run(FRC2, true);
+}
+
+extern "C" uint32_t vGetRunTimerCountValue( void ){
+    return timer_get_count(FRC2);
+}
+
+//extern void vConfigureTimerForRunTimeStats( void );
+//#define portCONFIGURE_TIMER_FOR_RUN_TIME_STATS() vConfigureTimerForRunTimeStats()
+//#define portGET_RUN_TIME_COUNTER_VALUE() RTC_REG_READ(FRC1_COUNT_ADDRESS)
