@@ -472,12 +472,13 @@ bool ADS::readCS(void) { return (GP16O & 1); }
 
 // GLOBAL Semaphore and Task Handle
 TaskHandle_t DRDYBackgroundTask = NULL;
+byte g_dataInArray[29] = {0};
 
 bool ADS::getData(byte dataInArray[29])
 {
     if(ADS::isDataReady())
     {
-        ADS::getSamples(dataInArray);
+        memcpy(dataInArray + 5, g_dataInArray + 5, 24);
         return true;
     }
     else
@@ -509,7 +510,9 @@ bool ADS::isDataReady(void)
 bool ADS::isDataReady(TickType_t xTicksToWait)
 {
     if(!dataReadyIsRunning) setupDRDY();
-
+    if (DRDYBackgroundTask == NULL){
+        DRDYBackgroundTask = xTaskGetCurrentTaskHandle();
+    }
     uint32_t ulNotificationValue;
     ulNotificationValue = ulTaskNotifyTake( pdTRUE, NULL);
     //taskYIELD();
@@ -517,9 +520,10 @@ bool ADS::isDataReady(TickType_t xTicksToWait)
 
     bool isDataReady = false;
     if(ulNotificationValue == 1)
+    {
         isDataReady = true;
-
-    DRDYBackgroundTask = xTaskGetCurrentTaskHandle();
+    }
+    //DRDYBackgroundTask = xTaskGetCurrentTaskHandle();
     return isDataReady;
 }
 
@@ -539,14 +543,18 @@ void ADS::killDRDY(void)
     return;
 }
 
-void ADS::DRDYInterruptHandle(uint8_t gpio_num) {
+void ADS::DRDYInterruptHandle(uint8_t gpio_num)
+{
     if(DRDYBackgroundTask != NULL)
     {
+        for(int i = 2; i < 29; ++i)
+        {
+            g_dataInArray[i] = spi_transfer_8(1,0x00);
+        }
         BaseType_t xHigherPriorityTaskWoken = pdFALSE;
         vTaskNotifyGiveFromISR(DRDYBackgroundTask, &xHigherPriorityTaskWoken);
     }
     //Set this to NULL so we don't constantly sent notif's
-    DRDYBackgroundTask = NULL;
 }
 
 // REGISTER RELATED COMMANDS

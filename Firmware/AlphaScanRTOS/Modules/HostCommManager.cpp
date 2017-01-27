@@ -244,6 +244,7 @@ class HostCommManager {
             int c = 0;
             long total_tx = 0;
             uint8_t block_counter = 0;
+            uint32_t dReadyCounter = 0;
             int nbset, ctlr;
             while (1){
 
@@ -332,7 +333,7 @@ class HostCommManager {
 
 
                     // Get sample from ADS
-                    //vTaskDelay( 1 / portTICK_PERIOD_MS); // should send at 100 Hz
+                    //vTaskDelay( 5 / portTICK_PERIOD_MS); // should send at 100 Hz
                     //taskYIELD();
 
                     if (tCounter++ % 2000 == 0){
@@ -356,6 +357,12 @@ class HostCommManager {
                         inbuf[2] = 0x7f;
                         inbuf[3] = 0x7f;
                         inbuf[4] = block_counter++;
+
+                        inbuf[5] = (dReadyCounter >> 16) & 0xff;
+                        inbuf[6] = (dReadyCounter >> 8) & 0xff;
+                        inbuf[7] = (dReadyCounter >> 0) & 0xff;
+
+                        dReadyCounter = 0;
 
                         //set both timval struct to zero
                         //struct timeval tv;
@@ -409,6 +416,9 @@ class HostCommManager {
                             //}
                             //printf("\n");
                         }
+                    }
+                    else {
+                        dReadyCounter++;
                     }
                 }
             }
