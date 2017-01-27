@@ -342,7 +342,10 @@ class HostCommManager {
                     }
 
                     //if (ads->getDataFake(inbuf, tBool))
-                    if (ads->getData(inbuf, 0)) //Nonblocking b/c of 0
+                    //if (ads->getData(inbuf, 0)) //Nonblocking b/c of 0
+                    int inWaiting;
+                    TickType_t tickTimestamp;
+                    while ((inWaiting = ads->getDataWaiting(inbuf, 0, tickTimestamp)), inWaiting > 0) //Nonblocking b/c of 0
                     {
                         //{
                         //    for (int j = 0; j < 8; j++){
@@ -360,7 +363,14 @@ class HostCommManager {
 
                         //inbuf[5] = (dReadyCounter >> 16) & 0xff;
                         //inbuf[6] = (dReadyCounter >> 8) & 0xff;
-                        //inbuf[7] = (dReadyCounter >> 0) & 0xff;
+                        inbuf[5] = 0;
+                        inbuf[6] = 0;
+                        inbuf[7] = (inWaiting >> 0) & 0xff;
+
+                        inbuf[8] = (tickTimestamp >> 16) & 0xff;
+                        inbuf[9] = (tickTimestamp >> 8) & 0xff;
+                        inbuf[10] = (tickTimestamp >> 0) & 0xff;
+
 
                         dReadyCounter = 0;
 
@@ -405,7 +415,7 @@ class HostCommManager {
                                 printf("failed to write outbuf, no ack");
                                 printf("Closing socket: %d\n",mSocket);
                                 close(mSocket);
-                                break;
+                                return;
                             }
                         }
                         else {
@@ -416,9 +426,6 @@ class HostCommManager {
                             //}
                             //printf("\n");
                         }
-                    }
-                    else {
-                        //dReadyCounter++;
                     }
                 }
             }

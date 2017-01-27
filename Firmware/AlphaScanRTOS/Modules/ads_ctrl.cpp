@@ -172,13 +172,16 @@ public:
     byte transfer(byte VALUE);
     void getSamples(byte dataInArray[29]);
     bool getData(byte dataInArray[29]);
+    bool getData(byte dataInArray[29], TickType_t xTicksToWait);
     bool getDataFake(byte dataInArray[27], bool toggle);
+    int getDataWaiting(byte dataInArray[29], TickType_t xTicksToWait);
+    int getDataWaiting(byte dataInArray[29], TickType_t xTicksToWait, TickType_t& tickTimestamp);
 
     //DBG
     void printTaskHandle(TaskHandle_t currTask);
 
-    
-    
+
+
     // REGISTER RELATED COMMANDS
     void receiveRegisterMapFromADS(void);
     void receiveRegisterMapFromArray(byte inputArray[24]);
@@ -186,29 +189,29 @@ public:
     void flushRegisterMapToADS(void);
     void printSerialRegistersFromADS(void);
     void printSerialRegistersFromMemory(void);
-    
+
     // Setup
     void setupADS();
     void configureTestSignal();
     void startStreaming();
     void stopStreaming();
-    
+
     void writeCS(bool VAL);
     bool readCS(void);
     bool isDataReady(void);
     bool isDataReady(TickType_t xTicksToWait);
-    
+
 protected:
-    
+
     byte regMap[24];
-    
+
     //CONFIG
     void setupIO16();
     void setupSPI(uint32_t FREQ_DIVIDER);
 
     void setupDRDY(void);
     void killDRDY(void);
-    
+
     // BASIC ADS COMMANDS - HIDDEN
     byte _WAKEUP();
     byte _STANDBY();
@@ -218,7 +221,7 @@ protected:
     byte _RDATAC();
     byte _SDATAC();
     byte _RDATA();
-    
+
 private:
     void DRDYInterruptHandle(uint8_t gpio_num);
     bool dataReadyIsRunning = false;
@@ -233,32 +236,32 @@ private:
     bool standby = false;
 
 
-const char *ADS_REG_NAMES[24] = {
-    "ID",
-    "CONFIG1",
-    "CONFIG2",
-    "CONFIG3",
-    "LOFF",
-    "CH1SET",
-    "CH2SET",
-    "CH3SET",
-    "CH4SET",
-    "CH5SET",
-    "CH6SET",
-    "CH7SET",
-    "CH8SET",
-    "BIAS_SENSP",
-    "BIAS_SENSN",
-    "LOFF_SENSP",
-    "LOFF_SENSN",
-    "LOFF_FLIP",
-    "LOFF_STATP",
-    "LOFF_STATN",
-    "GPIO",
-    "MISC1",
-    "MISC2",
-    "CONFIG4"
-};
+    const char *ADS_REG_NAMES[24] = {
+        "ID",
+        "CONFIG1",
+        "CONFIG2",
+        "CONFIG3",
+        "LOFF",
+        "CH1SET",
+        "CH2SET",
+        "CH3SET",
+        "CH4SET",
+        "CH5SET",
+        "CH6SET",
+        "CH7SET",
+        "CH8SET",
+        "BIAS_SENSP",
+        "BIAS_SENSN",
+        "LOFF_SENSP",
+        "LOFF_SENSN",
+        "LOFF_FLIP",
+        "LOFF_STATP",
+        "LOFF_STATN",
+        "GPIO",
+        "MISC1",
+        "MISC2",
+        "CONFIG4"
+    };
 
 };
 
@@ -281,7 +284,7 @@ const char *ADS_REG_NAMES[24] = {
 #define SPI_FREQ_DIV_20M  SPI_GET_FREQ_DIV(2,  2)  ///< 20MHz
 #define SPI_FREQ_DIV_40M  SPI_GET_FREQ_DIV(1,  2)  ///< 40MHz
 #define SPI_FREQ_DIV_80M  SPI_GET_FREQ_DIV(1,  1)  ///< 80MHz
-*/
+ */
 
 
 // CLASS
@@ -296,13 +299,13 @@ ADS::ADS()
 ADS::ADS(uint32_t FREQ_DIVIDER)
 {
     for(int i = 0; i < 24; ++i)
-	    regMap[i] = 0;
-//    streaming = false;
-//    standby = false;
-//    dataReadyIsRunning = false;
-//    dataIsReady = false;
-//    DRDYBackgroundTask = NULL;
-//    xMaxBlockTime = pdMS_TO_TICKS( 5 );
+        regMap[i] = 0;
+    //    streaming = false;
+    //    standby = false;
+    //    dataReadyIsRunning = false;
+    //    dataIsReady = false;
+    //    DRDYBackgroundTask = NULL;
+    //    xMaxBlockTime = pdMS_TO_TICKS( 5 );
     setupSPI(FREQ_DIVIDER);
     setupADS();
     STANDBY();
@@ -476,10 +479,10 @@ QueueHandle_t xDataReadyQueue; // Do not need to set NULL
 // Passed by queue
 struct inADSData
 {
-	TickType_t tickCount = 0;
-	byte inDataArray[27] = 0;
+    TickType_t tickCount = 0;
+    byte inDataArray[27] = {0};
 } s_tmpDataBuffer;
-typedef stuct inADSData inADSData;
+typedef struct inADSData inADSData;
 
 bool ADS::getDataFake(byte dataInArray[29], bool toggle)
 {
@@ -500,26 +503,62 @@ bool ADS::getDataFake(byte dataInArray[29], bool toggle)
 
 bool ADS::getData(byte dataInArray[29])
 {
-    return ADS::isDataReady(dataInArray, pdMS_TO_TICKS( 10 ));
+    return ADS::getData(dataInArray, pdMS_TO_TICKS( 10 ));
 }
 
 bool ADS::getData(byte dataInArray[29], TickType_t xTicksToWait)
 {
     if(!dataReadyIsRunning) setupDRDY();
-	if(xDataReadyQueue == NULL) printf("Queue failed to create!\n");
-	(xQueueReceive(xDataReadyQueue, &s_tmpDataBuffer, xTicksToWait)) == pdTRUE ? 
-		memcpy(dataInArray + 5, s_tmpDataBuffer.inDataArray + 5, 24)
-		:
-		return false; //ticks are in 10ms
-    return isDataReady;
+    if(xDataReadyQueue == NULL) printf("Queue failed to create!\n");
+
+    if (xQueueReceive(xDataReadyQueue, &s_tmpDataBuffer, xTicksToWait) == pdTRUE) { 
+        memcpy(dataInArray + 5, s_tmpDataBuffer.inDataArray + 5, 24);
+        return true;
+    }
+    else{
+        return false; //ticks are in 10ms
+    }
+}
+
+int ADS::getDataWaiting(byte dataInArray[29], TickType_t xTicksToWait)
+{
+    if(!dataReadyIsRunning) setupDRDY();
+    if(xDataReadyQueue == NULL) printf("Queue failed to create!\n");
+
+    int inWaiting = uxQueueMessagesWaiting(xDataReadyQueue);
+
+    if (xQueueReceive(xDataReadyQueue, &s_tmpDataBuffer, xTicksToWait) == pdTRUE) { 
+        memcpy(dataInArray + 5, s_tmpDataBuffer.inDataArray + 5, 24);
+        return inWaiting;
+    }
+    else{
+        return -1; //ticks are in 10ms
+    }
+}
+
+int ADS::getDataWaiting(byte dataInArray[29], TickType_t xTicksToWait, TickType_t& tickTimestamp)
+{
+    if(!dataReadyIsRunning) setupDRDY();
+    if(xDataReadyQueue == NULL) printf("Queue failed to create!\n");
+
+    int inWaiting = uxQueueMessagesWaiting(xDataReadyQueue);
+
+    if (xQueueReceive(xDataReadyQueue, &s_tmpDataBuffer, xTicksToWait) == pdTRUE) { 
+        memcpy(dataInArray + 5, s_tmpDataBuffer.inDataArray + 5, 24);
+        tickTimestamp = s_tmpDataBuffer.tickCount;
+        return inWaiting;
+    }
+    else{
+        return -1; //ticks are in 10ms
+    }
 }
 
 void ADS::setupDRDY(void)
 {
     gpio_enable(DRDY_PIN, GPIO_INPUT);
     dataReadyIsRunning = true;
-	xDataReadyQueue = xQueueCreate(50, sizeof(inADSData));
-	if(xDataReadyQueue == NULL) printf("Queue failed to create!\n");
+    xDataReadyQueue = xQueueCreate(100, sizeof(inADSData));
+    if(xDataReadyQueue == NULL) printf("Queue failed to create!\n");
     gpio_set_interrupt(DRDY_PIN, GPIO_INTTYPE_EDGE_NEG, (void(*)(uint8_t))&ADS::DRDYInterruptHandle);
     return;
 }
@@ -543,9 +582,9 @@ void ADS::DRDYInterruptHandle(uint8_t gpio_num)
         {
             interruptStruct.inDataArray[i] = spi_transfer_8(1,0x00);
         }
-		interruptStruct.tickCount = xTaskGetTickCountFromISR()
+        interruptStruct.tickCount = xTaskGetTickCountFromISR();
         BaseType_t xHigherPriorityTaskWoken = pdFALSE;
-		xQueueSendFromISR(xDataReadyQueue, &interruptStruct, &xHigherPriorityTaskWoken);
+        xQueueSendFromISR(xDataReadyQueue, &interruptStruct, &xHigherPriorityTaskWoken);
     }
 }
 
@@ -632,25 +671,25 @@ void ADS::setupSPI(uint32_t FREQ_DIVIDER)
     if(DBG) printf("\nSetting up SPI");
     //Bus 1, Mode 1 (CPOL=0 CPHA=1), 1MHz, MSB, little endian, manually toggle CS
     spi_init(1, SPI_MODE1, SPI_FREQ_DIV_1M, true, SPI_BIG_ENDIAN, true);
-    
+
     //Setup CPHA - TODO may not be necessary with new RTOS version?
     SPI1U |= (SPIUSME);
-    
+
     //Configure as output, etc...
     setupIO16();
     writeCS(LOW);
-    
+
     return;
 }
 
 void ADS::setupADS()
 {
     if(DBG) printf("\nBeginning ADS setup.");
-    
+
     /*
-     I don't know why this is necessary - I believe it
-     synchronizes communication with the ADS. Appears to
-     not work without toggling CS high and low.
+       I don't know why this is necessary - I believe it
+       synchronizes communication with the ADS. Appears to
+       not work without toggling CS high and low.
      */
     writeCS(HIGH);
     vTaskDelay(1 / portTICK_PERIOD_MS);
@@ -667,7 +706,7 @@ void ADS::setupADS()
     SDATAC();
     clearSPI();
     if(DBG) printf("\nRREG response, \"ID\" is %X", RREG(ID));
-    
+
     STANDBY();
     return;
 }
@@ -686,7 +725,7 @@ void ADS::configureTestSignal()
 void ADS::startStreaming() {
     if(streaming) return;
     killStandby();
-    
+
     _SDATAC();
     clearSPI();
     _START();
