@@ -3,12 +3,13 @@
 #include "esp/timer.h"
 #include "espressif/esp_common.h"
 #include "esp/uart.h"
+#include "esp/spi.h"
 #include "Modules/SoftApManager.cpp"
 #include "Modules/OtaManager.cpp"
 #include "Modules/HostCommManager.cpp"
 #include "Modules/ads_ctrl.cpp"
 
-#define FIRMARE_VERSION "0.0.8"
+#define FIRMARE_VERSION "0.0.13"
 
 class AlphaScanManager : public esp_open_rtos::thread::task_t
 {
@@ -27,7 +28,7 @@ class AlphaScanManager : public esp_open_rtos::thread::task_t
         SoftAP c_SoftAp;        
         HostCommManager c_HostComm;
         OtaManager c_Ota; 
-        ADS c_Ads;
+        ADS* c_Ads = new ADS(SPI_FREQ_DIV_10M);
         
         // Variables
         bool mDebugSerial;
@@ -112,8 +113,7 @@ class AlphaScanManager : public esp_open_rtos::thread::task_t
             else if (rcode == 0x02){
                 printf("running ads code\n");
                 // Print Reg Map Serial
-                //c_Ads.setupADS();
-                c_Ads.printSerialRegistersFromADS();
+                c_Ads->printSerialRegistersFromADS();
                 printf("completed ads code\n");
             }
             else if (rcode == 0x03){
@@ -123,7 +123,7 @@ class AlphaScanManager : public esp_open_rtos::thread::task_t
 
                 // Receive new data from ADS - send to host
                 // Check TCP read for terminate command
-                c_HostComm.stream_ads(&c_Ads);
+                c_HostComm.stream_ads(c_Ads);
 
                 printf("test signal stream completed\n");
             }
