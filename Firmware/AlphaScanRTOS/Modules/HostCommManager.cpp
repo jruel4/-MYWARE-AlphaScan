@@ -342,7 +342,7 @@ class HostCommManager {
                     }
 
                     //if (ads->getDataFake(inbuf, tBool))
-                    if (ads->getData(inbuf))
+                    if (ads->getData(inbuf, 0)) //Nonblocking b/c of 0
                     {
                         //{
                         //    for (int j = 0; j < 8; j++){

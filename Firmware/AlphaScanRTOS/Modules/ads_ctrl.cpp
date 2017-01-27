@@ -471,19 +471,15 @@ bool ADS::readCS(void) { return (GP16O & 1); }
 
 
 // GLOBAL Semaphore and Task Handle
-TaskHandle_t DRDYBackgroundTask = NULL;
-byte g_dataInArray[29] = {0};
+QueueHandle_t xDataReadyQueue; // Do not need to set NULL
 
-bool ADS::getData(byte dataInArray[29])
+// Passed by queue
+struct inADSData
 {
-    if(ADS::isDataReady())
-    {
-        memcpy(dataInArray + 5, g_dataInArray + 5, 24);
-        return true;
-    }
-    else
-        return false;
-}
+	TickType_t tickCount = 0;
+	byte inDataArray[27] = 0;
+} s_tmpDataBuffer;
+typedef stuct inADSData inADSData;
 
 bool ADS::getDataFake(byte dataInArray[29], bool toggle)
 {
@@ -502,28 +498,19 @@ bool ADS::getDataFake(byte dataInArray[29], bool toggle)
     return true;
 }
 
-bool ADS::isDataReady(void)
+bool ADS::getData(byte dataInArray[29])
 {
-    return ADS::isDataReady(pdMS_TO_TICKS( 1 ));
+    return ADS::isDataReady(dataInArray, pdMS_TO_TICKS( 10 ));
 }
 
-bool ADS::isDataReady(TickType_t xTicksToWait)
+bool ADS::getData(byte dataInArray[29], TickType_t xTicksToWait)
 {
     if(!dataReadyIsRunning) setupDRDY();
-    if (DRDYBackgroundTask == NULL){
-        DRDYBackgroundTask = xTaskGetCurrentTaskHandle();
-    }
-    uint32_t ulNotificationValue;
-    ulNotificationValue = ulTaskNotifyTake( pdTRUE, NULL);
-    //taskYIELD();
-    //ulNotificationValue = ulTaskNotifyTake( pdTRUE, xTicksToWait);
-
-    bool isDataReady = false;
-    if(ulNotificationValue == 1)
-    {
-        isDataReady = true;
-    }
-    //DRDYBackgroundTask = xTaskGetCurrentTaskHandle();
+	if(xDataReadyQueue == NULL) printf("Queue failed to create!\n");
+	(xQueueReceive(xDataReadyQueue, &s_tmpDataBuffer, xTicksToWait)) == pdTRUE ? 
+		memcpy(dataInArray + 5, s_tmpDataBuffer.inDataArray + 5, 24)
+		:
+		return false; //ticks are in 10ms
     return isDataReady;
 }
 
@@ -531,6 +518,8 @@ void ADS::setupDRDY(void)
 {
     gpio_enable(DRDY_PIN, GPIO_INPUT);
     dataReadyIsRunning = true;
+	xDataReadyQueue = xQueueCreate(50, sizeof(inADSData));
+	if(xDataReadyQueue == NULL) printf("Queue failed to create!\n");
     gpio_set_interrupt(DRDY_PIN, GPIO_INTTYPE_EDGE_NEG, (void(*)(uint8_t))&ADS::DRDYInterruptHandle);
     return;
 }
@@ -543,18 +532,21 @@ void ADS::killDRDY(void)
     return;
 }
 
+// Interrupt only struct
+inADSData interruptStruct;
+
 void ADS::DRDYInterruptHandle(uint8_t gpio_num)
 {
-    if(DRDYBackgroundTask != NULL)
+    if(xDataReadyQueue != NULL)
     {
         for(int i = 2; i < 29; ++i)
         {
-            g_dataInArray[i] = spi_transfer_8(1,0x00);
+            interruptStruct.inDataArray[i] = spi_transfer_8(1,0x00);
         }
+		interruptStruct.tickCount = xTaskGetTickCountFromISR()
         BaseType_t xHigherPriorityTaskWoken = pdFALSE;
-        vTaskNotifyGiveFromISR(DRDYBackgroundTask, &xHigherPriorityTaskWoken);
+		xQueueSendFromISR(xDataReadyQueue, &interruptStruct, &xHigherPriorityTaskWoken);
     }
-    //Set this to NULL so we don't constantly sent notif's
 }
 
 // REGISTER RELATED COMMANDS
