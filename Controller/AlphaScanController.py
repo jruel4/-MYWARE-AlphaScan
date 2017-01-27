@@ -261,6 +261,7 @@ class AlphaScanDevice:
         self.no_valid_start = 0
         self.out_of_data = 0
         self.over_loops = 0
+        self.select_not_ready = 0
         self.block_list = list()
         self.test_inbuf = list()
         self.over_loop_list = list()
@@ -281,9 +282,6 @@ class AlphaScanDevice:
         self.flush_TCP()
         self.conn.setblocking(0)
         
-        diff = 5
-        
-        
         while self.DEV_streamActive.is_set():
             try:
                 self.pre_rx += 1
@@ -297,6 +295,9 @@ class AlphaScanDevice:
                     self.total_buf += str(new_data)
                     self.rx_count += 1     
                     self.data_size_list += [len(self.data)]
+                
+                else:
+                    self.select_not_ready += 1
                 
                 if (len(self.data) >= 29):
                     
@@ -656,12 +657,12 @@ class AlphaScanDevice:
         for n in self.block_list:
             if n == 0:
                 if p != 255: 
-                    print("error",n,p)
+                    #print("error",n,p)
                     errors += 1
                     err_list += [(n,p,c)]
             else:
                 if p != n-1:
-                    print("error",n,p)
+                    #print("error",n,p)
                     errors += 1
                     err_list += [(n,p,c)]
             p = n 
@@ -733,7 +734,7 @@ class AlphaScanDevice:
         
         while self.DEV_streamActive.is_set():
 
-            if (self.rx_count % 10) == 0:
+            if (self.rx_count % 100) == 0:
                 elapsed = (time.time() - self.begin)
                 if elapsed > 0:
                     bytes_per_sec = self.total_rx / elapsed
@@ -762,10 +763,41 @@ class AlphaScanDevice:
         for i in range(len(self.total_buf) // packet_size):
             self.block_list += [ord(self.total_buf[4 + packet_size*i])]
                         
+    def gen_sq_wave(self):
+        deviceData = [0 for i in range(8)]
+        packet_size = 29
+        self.over_loops = 0
+        self.sqwave = list()
+        for i in range(len(self.total_buf) // packet_size):    
+            current_data = self.total_buf[(5 + (packet_size*i)): (5 + (packet_size*i + 24))]
+            header = self.total_buf[(packet_size*i): (packet_size*i) + 4]
+            if ord(header[0]) != 0x7f or ord(header[1]) != 0x7f or ord(header[2]) != 0x7f or ord(header[3]) != 0x7f:
+                self.over_loops += 1
+            for j in xrange(8):
+                deviceData[j] = [current_data[(j*3):(j*3+3)]] 
+                val = 0
+                for s,n in list(enumerate(deviceData[j][0])):
+                    try:
+                        val ^= ord(n) << ((2-s)*8)
+                    except ValueError as e:
+                        print("value error",e)
+                    except TypeError as e:
+                        print("value error",e)
+                val = twos_comp(val)
+                self.mysample[j] = val
             
+            self.sqwave += [list(self.mysample)]
             
-            
-            
+    def debug_overview(self):
+        self.gen_block_list()
+        self.gen_sq_wave()
+        print("ol: ",self.over_loops)
+        errs = self.check_block_list()
+        if (len(errs) < 10):
+            print(errs)
+        else:
+            print("block miss count: ",len(errs))
+        self.plot_square_wave(0)
             
             
             
