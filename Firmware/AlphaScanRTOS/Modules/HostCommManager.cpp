@@ -358,9 +358,9 @@ class HostCommManager {
                         inbuf[3] = 0x7f;
                         inbuf[4] = block_counter++;
 
-                        inbuf[5] = (dReadyCounter >> 16) & 0xff;
-                        inbuf[6] = (dReadyCounter >> 8) & 0xff;
-                        inbuf[7] = (dReadyCounter >> 0) & 0xff;
+                        //inbuf[5] = (dReadyCounter >> 16) & 0xff;
+                        //inbuf[6] = (dReadyCounter >> 8) & 0xff;
+                        //inbuf[7] = (dReadyCounter >> 0) & 0xff;
 
                         dReadyCounter = 0;
 
@@ -418,7 +418,7 @@ class HostCommManager {
                         }
                     }
                     else {
-                        dReadyCounter++;
+                        //dReadyCounter++;
                     }
                 }
             }
