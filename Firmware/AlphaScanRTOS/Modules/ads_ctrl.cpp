@@ -567,7 +567,8 @@ void ADS::setupDRDY(void)
 //TODO - Implement kill DRDY
 void ADS::killDRDY(void)
 {
-	vQueueDelete(xDataReadyQueue);
+	if(xDataReadyQueue != NULL) vQueueDelete(xDataReadyQueue);
+    xDataReadyQueue = NULL;
     dataReadyIsRunning = false;
     //TODO - disable DRDY interrupt here
     return;

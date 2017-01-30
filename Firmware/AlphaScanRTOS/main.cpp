@@ -9,7 +9,7 @@
 #include "Modules/HostCommManager.cpp"
 #include "Modules/ads_ctrl.cpp"
 
-#define FIRMARE_VERSION "0.0.13"
+#define FIRMARE_VERSION "0.0.15"
 
 class AlphaScanManager : public esp_open_rtos::thread::task_t
 {
@@ -100,7 +100,6 @@ class AlphaScanManager : public esp_open_rtos::thread::task_t
             c_HostComm.initialize();
             mMainLoopCounter = 0;
             mSystemState = RUN_MODE;
-
         }
 
         void _trigger_task(int rcode){
@@ -138,13 +137,15 @@ AlphaScanManager t_Manager;
  */
 extern "C" void user_init(void)
 {
+    vTaskDelay(15 / portTICK_PERIOD_MS);
     t_Manager.setDebugSerial(true);
+
     t_Manager.task_create("main_loop", 2048);//TODO increase task stack depth to avoid overflow
 }
 
 /**
-    setting up timer for debug dumps
-**/
+  setting up timer for debug dumps
+ **/
 //#define ETS_UNCACHED_ADDR(addr) (addr)
 //#define ETS_CACHED_ADDR(addr) (addr)
 //#define PERIPHS_TIMER_BASEDDR 0x60000600
@@ -169,15 +170,15 @@ extern "C" void user_init(void)
 //} TIMER_PREDIVED_MODE;
 
 extern "C" void vConfigureTimerForRunTimeStats( void ) {
-//    RTC_REG_WRITE(FRC1_CTRL_ADDRESS,  //FRC2_AUTO_RELOAD|
-//            DIVDED_BY_256
-//            | FRC1_ENABLE_TIMER);
-//
-//    RTC_REG_WRITE(FRC1_LOAD_ADDRESS, 0);
+    //    RTC_REG_WRITE(FRC1_CTRL_ADDRESS,  //FRC2_AUTO_RELOAD|
+    //            DIVDED_BY_256
+    //            | FRC1_ENABLE_TIMER);
+    //
+    //    RTC_REG_WRITE(FRC1_LOAD_ADDRESS, 0);
     timer_set_interrupts(FRC2, false);
     timer_set_run(FRC2, false);
     timer_set_frequency(FRC2, 1000);
-    timer_set_load(FRC2, 0x7fffff);
+    //timer_set_load(FRC2, 0x7fffff);
     timer_set_run(FRC2, true);
 }
 

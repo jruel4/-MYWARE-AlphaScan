@@ -225,6 +225,7 @@ class HostCommManager {
 
         void _stream_ads(ADS* ads){
             
+            printf("\nStarting _stream_ads\n");
 
             //printf("set blocking: %d\n", ctlr);
             bool FAKE_MODE = false;
@@ -233,8 +234,11 @@ class HostCommManager {
             int r;
             int write_result;
             // setup ads streaming, interrupt, etc.
+            printf("\nStarting _stream_ads 0 \n");
             ads->configureTestSignal();
+            printf("\nStarting _stream_ads 1 \n");
             ads->startStreaming();
+            printf("\nStarting _stream_ads 2\n");
             // Generate fake square wave buffer
             uint16_t tCounter = 0;
             bool tBool = false;
@@ -253,14 +257,17 @@ class HostCommManager {
             uint8_t block_counter = 0;
             uint32_t dReadyCounter = 0;
             int nbset, ctlr;
+            
+            //TODO
             //nbset = 0;
             //ctlr = lwip_ioctl(mSocket, FIONBIO, &nbset);
             while (1){
 
+                int aTest = 0;
                 nbset = 1;
                 ctlr = lwip_ioctl(mSocket, FIONBIO, &nbset);
                 //printf("set non blocking: %d\n", ctlr);
-
+                
                 int rready = _read_ready(false);
                 if (rready < 0){
                     printf("Connection died\n");
@@ -277,6 +284,7 @@ class HostCommManager {
 
 
                     // Read TCP in for stop op code
+                    printf("\naTest = %d", aTest);
                     int r = read(mSocket, mInbuf, pkt_size);
                     //r = lwip_recv(mSocket, mInbuf, pkt_size, 0);
                     //r = lwip_recv(mSocket, mInbuf, pkt_size, MSG_DONTWAIT);
@@ -309,7 +317,6 @@ class HostCommManager {
                     }
                 }
 
-                //TODO put blocking back in 
                 //nbset = 0;
                 //ctlr = lwip_ioctl(mSocket, FIONBIO, &nbset);
                 //printf("set blocking: %d\n", ctlr);
@@ -389,7 +396,7 @@ class HostCommManager {
 
                         //vTaskDelay( 1 / portTICK_PERIOD_MS); // should send at 100 Hz
 
-                        //if (select( mSocket + 1, NULL , &fds, NULL, &tv ) > 0) {
+                        //if (select( mSocket + 1, NULL , &fds, NULL, &tv ) > 0) 
                         if (true) {
                             write_result = write(mSocket, inbuf, 29); 
                             if (write_result != 29){
@@ -412,11 +419,12 @@ class HostCommManager {
 
 
                         /**
-                            When non-block writing with no SELECT checker, 
-                            write_result evenetually == -1, then the following 
-                            block closes out the streaming loop.
-                        **/
+                          When non-block writing with no SELECT checker, 
+                          write_result evenetually == -1, then the following 
+                          block closes out the streaming loop.
+                         **/
                         if (write_result < 0){
+                            //TODO perform more robust cheking before exiting loop
                             printf("total_tx: %d\n",total_tx);
                             printf("failed 1x to rx ACK");
                             vTaskDelay( 1 / portTICK_PERIOD_MS); // should send at 100 Hz
@@ -425,7 +433,7 @@ class HostCommManager {
                                 printf("failed to write outbuf, no ack");
                                 printf("Closing socket: %d\n",mSocket);
                                 close(mSocket);
-                                return;
+                                break;
                             }
                         }
                         else {
@@ -439,6 +447,10 @@ class HostCommManager {
                     }
                 }
             }
+            nbset = 0;
+            ctlr = lwip_ioctl(mSocket, FIONBIO, &nbset);
+            printf("set blocking: %d\n", ctlr);
+            ads->stopStreaming();
         }
 
         int _read_ready(bool check_alive){
