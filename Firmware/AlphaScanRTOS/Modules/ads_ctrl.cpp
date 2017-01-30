@@ -567,6 +567,7 @@ void ADS::setupDRDY(void)
 //TODO - Implement kill DRDY
 void ADS::killDRDY(void)
 {
+	vQueueDelete(xDataReadyQueue);
     dataReadyIsRunning = false;
     //TODO - disable DRDY interrupt here
     return;
@@ -734,6 +735,7 @@ void ADS::configureTestSignal()
 
 void ADS::startStreaming() {
     if(streaming) return;
+	if(!dataReadyIsRunning) setupDRDY();
     killStandby();
 
     _SDATAC();
@@ -745,6 +747,8 @@ void ADS::startStreaming() {
 
 void ADS::stopStreaming() {
     killStandby();
+	killDRDY();
+	
     _SDATAC();
     clearSPI();
     _STOP();
