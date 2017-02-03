@@ -89,7 +89,7 @@ build/lwip//lwip/src/api/api_msg.o: \
  /media/marzipan/Expansion_1/Development/Projects/superhouse_spi_test_build/esp-open-rtos/lwip/lwip/src/include/lwip/raw.h \
  /media/marzipan/Expansion_1/Development/Projects/superhouse_spi_test_build/esp-open-rtos/lwip/lwip/src/include/lwip/memp.h \
  /media/marzipan/Expansion_1/Development/Projects/superhouse_spi_test_build/esp-open-rtos/lwip/lwip/src/include/lwip/memp_std.h \
- /media/marzipan/Expansion_1/Development/Projects/superhouse_spi_test_build/esp-open-rtos/lwip/lwip/src/include/lwip/mem.h \
+ /media/marzipan/Expansion_1/Development/Projects/superhouse_spi_test_build/esp-open-rtos/lwip/include/lwippools.h \
  /media/marzipan/Expansion_1/Development/Projects/superhouse_spi_test_build/esp-open-rtos/lwip/lwip/src/include/lwip/tcpip.h \
  /media/marzipan/Expansion_1/Development/Projects/superhouse_spi_test_build/esp-open-rtos/lwip/lwip/src/include/lwip/netifapi.h \
  /media/marzipan/Expansion_1/Development/Projects/superhouse_spi_test_build/esp-open-rtos/lwip/lwip/src/include/lwip/timers.h \

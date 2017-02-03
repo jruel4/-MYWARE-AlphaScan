@@ -20,7 +20,9 @@
 #include "ssid_config.h"
 //#include "debug_dumps.h"
 
-
+//NOTE: VARIABLES
+//Queue size for interrupt->host communication, recommended at least 100; note, the actual size is 100*(sizeof(inADS))
+#define SAMPLE_QUEUE_SIZE 200
 
 #define DBG 1
 
@@ -196,7 +198,7 @@ public:
     void configureTestSignal();
     void startStreaming();
     void stopStreaming();
-
+    int getQueueSize(void);
     void writeCS(bool VAL);
     bool readCS(void);
     bool isDataReady(void);
@@ -485,6 +487,11 @@ struct inADSData
 } s_tmpDataBuffer;
 typedef struct inADSData inADSData;
 
+int ADS::getQueueSize(void){
+        return uxQueueMessagesWaiting(xDataReadyQueue);
+    }
+
+
 bool ADS::getDataFake(byte dataInArray[29], bool toggle)
 {
     for (int i = 5; i < 29; i++){
@@ -558,7 +565,7 @@ void ADS::setupDRDY(void)
 {
     gpio_enable(DRDY_PIN, GPIO_INPUT);
     dataReadyIsRunning = true;
-    xDataReadyQueue = xQueueCreate(100, sizeof(inADSData));
+    xDataReadyQueue = xQueueCreate(SAMPLE_QUEUE_SIZE, sizeof(inADSData));
     if(xDataReadyQueue == NULL) printf("Queue failed to create!\n");
     gpio_set_interrupt(DRDY_PIN, GPIO_INTTYPE_EDGE_NEG, (void(*)(uint8_t))&ADS::DRDYInterruptHandle);
     return;

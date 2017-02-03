@@ -91,6 +91,11 @@ build/program//main.o: \
  /media/marzipan/Expansion_1/Development/Projects/superhouse_spi_test_build/esp-open-rtos/core/include/esp/uart.h \
  /media/marzipan/Expansion_1/Development/Projects/superhouse_spi_test_build/esp-open-rtos/core/include/esp/clocks.h \
  /media/marzipan/Expansion_1/Development/Projects/superhouse_spi_test_build/esp-open-rtos/core/include/esp/spi.h \
+ /media/marzipan/Expansion_1/Development/Projects/superhouse_spi_test_build/esp-open-rtos/lwip/lwip/src/include/lwip/stats.h \
+ /media/marzipan/Expansion_1/Development/Projects/superhouse_spi_test_build/esp-open-rtos/lwip/lwip/src/include/lwip/mem.h \
+ /media/marzipan/Expansion_1/Development/Projects/superhouse_spi_test_build/esp-open-rtos/lwip/lwip/src/include/lwip/memp.h \
+ /media/marzipan/Expansion_1/Development/Projects/superhouse_spi_test_build/esp-open-rtos/lwip/lwip/src/include/lwip/memp_std.h \
+ /media/marzipan/Expansion_1/Development/Projects/superhouse_spi_test_build/esp-open-rtos/lwip/include/lwippools.h \
  /media/marzipan/Expansion_1/Development/Projects/AlphaScan/Firmware/AlphaScanRTOS/Modules/SoftApManager.cpp \
  /media/marzipan/Expansion_1/Development/Projects/superhouse_spi_test_build/esp-open-rtos/libc/xtensa-lx106-elf/include/string.h \
  /media/marzipan/Expansion_1/Development/Projects/superhouse_spi_test_build/esp-open-rtos/libc/xtensa-lx106-elf/include/sys/string.h \
@@ -123,5 +128,9 @@ build/program//main.o: \
  /media/marzipan/Expansion_1/Development/Projects/superhouse_spi_test_build/esp-open-rtos/bootloader/rboot.h \
  /media/marzipan/Expansion_1/Development/Projects/superhouse_spi_test_build/esp-open-rtos/bootloader/rboot/rboot.h \
  /media/marzipan/Expansion_1/Development/Projects/AlphaScan/Firmware/AlphaScanRTOS/Modules/HostCommManager.cpp \
+ /media/marzipan/Expansion_1/Development/Projects/superhouse_spi_test_build/esp-open-rtos/lwip/lwip/src/include/lwip/tcp.h \
+ /media/marzipan/Expansion_1/Development/Projects/superhouse_spi_test_build/esp-open-rtos/lwip/lwip/src/include/ipv4/lwip/ip.h \
+ /media/marzipan/Expansion_1/Development/Projects/superhouse_spi_test_build/esp-open-rtos/lwip/lwip/src/include/lwip/netif.h \
+ /media/marzipan/Expansion_1/Development/Projects/superhouse_spi_test_build/esp-open-rtos/lwip/lwip/src/include/ipv4/lwip/icmp.h \
  /media/marzipan/Expansion_1/Development/Projects/AlphaScan/Firmware/AlphaScanRTOS/Modules/ads_ctrl.cpp \
  /media/marzipan/Expansion_1/Development/Projects/AlphaScan/Firmware/AlphaScanRTOS/Modules/ads_ctrl.cpp

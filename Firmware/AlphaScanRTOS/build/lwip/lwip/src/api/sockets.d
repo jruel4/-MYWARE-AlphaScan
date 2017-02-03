@@ -86,6 +86,7 @@ build/lwip//lwip/src/api/sockets.o: \
  /media/marzipan/Expansion_1/Development/Projects/superhouse_spi_test_build/esp-open-rtos/lwip/lwip/src/include/lwip/mem.h \
  /media/marzipan/Expansion_1/Development/Projects/superhouse_spi_test_build/esp-open-rtos/lwip/lwip/src/include/ipv4/lwip/ip.h \
  /media/marzipan/Expansion_1/Development/Projects/superhouse_spi_test_build/esp-open-rtos/lwip/lwip/src/include/ipv4/lwip/icmp.h \
+ /media/marzipan/Expansion_1/Development/Projects/superhouse_spi_test_build/esp-open-rtos/lwip/lwip/src/include/lwip/tcp_impl.h \
  /media/marzipan/Expansion_1/Development/Projects/superhouse_spi_test_build/esp-open-rtos/lwip/lwip/src/include/lwip/raw.h \
  /media/marzipan/Expansion_1/Development/Projects/superhouse_spi_test_build/esp-open-rtos/lwip/lwip/src/include/lwip/udp.h \
  /media/marzipan/Expansion_1/Development/Projects/superhouse_spi_test_build/esp-open-rtos/lwip/lwip/src/include/lwip/tcpip.h \

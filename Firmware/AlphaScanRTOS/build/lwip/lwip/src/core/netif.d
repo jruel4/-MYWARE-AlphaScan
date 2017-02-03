@@ -46,6 +46,6 @@ build/lwip//lwip/src/core/netif.o: \
  /media/marzipan/Expansion_1/Development/Projects/superhouse_spi_test_build/esp-open-rtos/lwip/lwip/src/include/lwip/stats.h \
  /media/marzipan/Expansion_1/Development/Projects/superhouse_spi_test_build/esp-open-rtos/lwip/lwip/src/include/lwip/memp.h \
  /media/marzipan/Expansion_1/Development/Projects/superhouse_spi_test_build/esp-open-rtos/lwip/lwip/src/include/lwip/memp_std.h \
- /media/marzipan/Expansion_1/Development/Projects/superhouse_spi_test_build/esp-open-rtos/lwip/lwip/src/include/lwip/mem.h \
+ /media/marzipan/Expansion_1/Development/Projects/superhouse_spi_test_build/esp-open-rtos/lwip/include/lwippools.h \
  /media/marzipan/Expansion_1/Development/Projects/superhouse_spi_test_build/esp-open-rtos/lwip/lwip/src/include/lwip/dhcp.h \
  /media/marzipan/Expansion_1/Development/Projects/superhouse_spi_test_build/esp-open-rtos/lwip/lwip/src/include/lwip/udp.h

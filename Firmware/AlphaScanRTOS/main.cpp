@@ -4,6 +4,7 @@
 #include "espressif/esp_common.h"
 #include "esp/uart.h"
 #include "esp/spi.h"
+#include "lwip/stats.h"
 #include "Modules/SoftApManager.cpp"
 #include "Modules/OtaManager.cpp"
 #include "Modules/HostCommManager.cpp"
@@ -46,7 +47,7 @@ class AlphaScanManager : public esp_open_rtos::thread::task_t
             if (mDebugSerial){
                 printf("AlphaScanManager:task(): start\n");
             }
-            while(true) {
+            while(1) {
                 switch (mSystemState){
                     case AP_MODE:
                         {

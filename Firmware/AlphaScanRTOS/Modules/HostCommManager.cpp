@@ -1,7 +1,3 @@
-
-//TODO
-// Try making the MSS 29 with ADS sample rate low to see if we still get spikes in the queue size... if yesu than we can rule out weird lwip buffering
-
 #include "espressif/esp_common.h"
 #include "esp/uart.h"
 #include "esp/timer.h"
@@ -11,8 +7,11 @@
 #include "lwip/err.h"
 #include "lwip/sockets.h"
 #include "lwip/sys.h"
+#include "lwip/tcp.h"
 #include "lwip/netdb.h"
 #include "lwip/dns.h"
+#include "lwip/memp.h"
+#include "lwip/stats.h"
 #include "ipv4/lwip/ip_addr.h"
 #include "ssid_config.h"
 #include <algorithm>
@@ -20,7 +19,9 @@
 
 #define WEB_SERVER "marzipan-Lenovo-ideapad-Y700-15ISK"
 #define WEB_PORT 50007
-#define pkt_size (28*10)
+#define SAMPLE_SIZE (29)
+#define SAMPLES_PER_PACKET (7)
+#define PACKET_SIZE (SAMPLE_SIZE * SAMPLES_PER_PACKET)
 
 class HostCommManager {
 
@@ -48,16 +49,18 @@ class HostCommManager {
 
         // Variables
         int mSocket = -1;
-        char mOutbuf[pkt_size] = {0};
-        char mInbuf[pkt_size] = {0};
+        unsigned char mOutbuf[PACKET_SIZE] = {0};
+        unsigned char mInbuf[PACKET_SIZE] = {0};
         int mKeepAliveCounter = 0;
+        const static int TEST_BUF_LEN = 1400;
+        char test_outbuf[TEST_BUF_LEN] = {0};
 
         // Connect to host
         void _establish_host_connection(){
 
             struct addrinfo res;
             struct ip_addr my_host_ip;
-            IP4_ADDR(&my_host_ip, 192, 168, 1, 168);
+            IP4_ADDR(&my_host_ip, 192, 168, 1, 175);
 
             struct sockaddr_in my_sockaddr_in;
             my_sockaddr_in.sin_addr.s_addr = my_host_ip.addr;
@@ -76,9 +79,15 @@ class HostCommManager {
 
             int nbset = 1;
             int ctlr = -2;
+            int optval = 1;
             while(1) {
 
+                get_pool_sizes();
+                printf("heap size: %d\n", xPortGetFreeHeapSize());
+
                 mSocket = socket(res.ai_family, res.ai_socktype, 0);
+                lwip_setsockopt(mSocket, IPPROTO_TCP, TCP_NODELAY, (void*)&optval, sizeof(optval));
+
                 printf("mSocket = %d\n",mSocket);
 
                 if(mSocket < 0) {
@@ -111,6 +120,7 @@ class HostCommManager {
                 //setsockopt(mSocket, SOL_SOCKET, SO_KEEPALIVE, &optval, sizeof(optval));
                 //printf("set keep alive tcp option");
 
+                //stats_display();
                 printf("... connected\r\n");
                 break;
             }
@@ -132,7 +142,7 @@ class HostCommManager {
                 //proceed with read
             }
 
-            int r = read(mSocket, mInbuf, pkt_size);
+            int r = read(mSocket, mInbuf, PACKET_SIZE);
             if (r > 0){
                 printf("received: %s", mInbuf);
 
@@ -224,7 +234,13 @@ class HostCommManager {
         }
 
         void _stream_ads(ADS* ads){
-            
+
+            int pkt_full_ctr = 0;
+            int pkt_part_ctr = 0;
+            int pkt_partial_write_ctr_1 = 0;
+            int pkt_partial_write_ctr_2 = 0;
+            int pkt_partial_write_ctr_3 = 0;
+
             printf("\nStarting _stream_ads\n");
 
             //printf("set blocking: %d\n", ctlr);
@@ -240,7 +256,7 @@ class HostCommManager {
             ads->startStreaming();
             printf("\nStarting _stream_ads 2\n");
             // Generate fake square wave buffer
-            uint16_t tCounter = 0;
+            uint16_t tCounter = 1;
             bool tBool = false;
 
             char outbuf_high[24] = {0};
@@ -249,15 +265,18 @@ class HostCommManager {
             }
 
             char outbuf_low[24] = {0};
-            unsigned char inbuf[29] = {0};
-            //unsigned char inbufBig[256] = {0};
+            unsigned char inbuf[SAMPLE_SIZE] = {0};
+            unsigned char inbufBig[PACKET_SIZE + SAMPLE_SIZE] = {0};
+            unsigned int sampleCounter = 0;
+            unsigned int bytesExtraOffset = 0; //Keeps track of the additional bytes from an incomplete write
+
 
             int c = 0;
             long total_tx = 0;
             uint8_t block_counter = 0;
             uint32_t dReadyCounter = 0;
             int nbset, ctlr;
-            
+
             //TODO
             //nbset = 0;
             //ctlr = lwip_ioctl(mSocket, FIONBIO, &nbset);
@@ -267,7 +286,7 @@ class HostCommManager {
                 nbset = 1;
                 ctlr = lwip_ioctl(mSocket, FIONBIO, &nbset);
                 //printf("set non blocking: %d\n", ctlr);
-                
+
                 int rready = _read_ready(false);
                 if (rready < 0){
                     printf("Connection died\n");
@@ -285,15 +304,17 @@ class HostCommManager {
 
                     // Read TCP in for stop op code
                     printf("\naTest = %d", aTest);
-                    int r = read(mSocket, mInbuf, pkt_size);
-                    //r = lwip_recv(mSocket, mInbuf, pkt_size, 0);
-                    //r = lwip_recv(mSocket, mInbuf, pkt_size, MSG_DONTWAIT);
+                    int r = read(mSocket, mInbuf, PACKET_SIZE);
+                    //r = lwip_recv(mSocket, mInbuf, PACKET_SIZE, 0);
+                    //r = lwip_recv(mSocket, mInbuf, PACKET_SIZE, MSG_DONTWAIT);
                     printf("return from lwip_recv with r=%d\n",r);
                     if (r > 0){
                         printf("received: %s", mInbuf);
                         if (mInbuf[0] == 0xf){
                             // terminate stream
                             printf("received terminate command\n");
+                            printf("\npart_ctr: %d, full_ctr: %d\n",pkt_part_ctr, pkt_full_ctr);
+                            printf("\npart_write_1: %d, part_write_2: %d, part_write_3: %d\n",pkt_partial_write_ctr_1, pkt_partial_write_ctr_2, pkt_partial_write_ctr_3);
                             char wbuf[400] = {0};
                             vTaskList(wbuf);
                             printf(wbuf);
@@ -333,10 +354,6 @@ class HostCommManager {
                     //vTaskDelay( 5 / portTICK_PERIOD_MS); // should send at 100 Hz
                     //taskYIELD();
 
-                    //if (tCounter++ % 2000 == 0){
-                    //    //printf("toggling: %d\n", tBool);
-                    //    tBool = !tBool;    
-                    //}
 
                     //if (ads->getDataFake(inbuf, tBool))
                     //if (ads->getData(inbuf, 0)) //Nonblocking b/c of 0
@@ -345,6 +362,13 @@ class HostCommManager {
                     TickType_t tickTimestamp;
                     while ((inWaiting = ads->getDataWaiting(inbuf, 0, tickTimestamp)), inWaiting > 0) //Nonblocking b/c of 0
                     {
+                        //if (tCounter++ % 1000 == 0){
+                        //stats_display();
+                        //    //printf("toggling: %d\n", tBool);
+                        //    tBool = !tBool;    
+                        //}
+                        sampleCounter++;
+                        if(sampleCounter > SAMPLES_PER_PACKET) sampleCounter = 1;
                         //{
                         //    for (int j = 0; j < 8; j++){
                         //        long valueCH8 = 0;
@@ -375,6 +399,7 @@ class HostCommManager {
                         inbuf[13] = (loopTimeStamp >> 0) & 0xff;
 
 
+                        memcpy((inbufBig + (SAMPLE_SIZE * (sampleCounter-1)) + bytesExtraOffset), inbuf, SAMPLE_SIZE);
 
                         dReadyCounter = 0;
 
@@ -396,13 +421,95 @@ class HostCommManager {
 
                         //vTaskDelay( 1 / portTICK_PERIOD_MS); // should send at 100 Hz
 
-                        //if (select( mSocket + 1, NULL , &fds, NULL, &tv ) > 0) 
-                        if (true) {
-                            write_result = write(mSocket, inbuf, 29); 
-                            if (write_result != 29){
-                                printf("write_result: %d\n",write_result);
+                        //Here, our buffer has completely filled up; we *need* to send data - if not possible, quit once queue is full
+                        if (sampleCounter == SAMPLES_PER_PACKET) {
+                            pkt_full_ctr += 1;
+                            write_result = write(mSocket, inbufBig, PACKET_SIZE+bytesExtraOffset); 
+                            //if (write_result != PACKET_SIZE)
+                            //{
+                            //    printf("write_result: %d\n",write_result);
+                            //}
+
+
+                            //Issue with writing; keep trying to send
+                            if (write_result < 0){
+                                //TODO perform more robust cheking before exiting loop
+                                //printf("failed 1x to rx ACK");
+                                //printf("heap size before: %d\n", xPortGetFreeHeapSize());
+                                //printf("Queue Size: %d\n",ads->getQueueSize());
+                                //NOTE: SAMPLE_QUEUE_SIZE is defined in ads_ctrl.cpp
+                                while (ads->getQueueSize() < SAMPLE_QUEUE_SIZE && write_result < 0){
+                                    write_result = write(mSocket, inbufBig, PACKET_SIZE + bytesExtraOffset); 
+                                }
+
+                                //TODO - Account for partial writes; memmov etc...
+                                if (write_result != (PACKET_SIZE+bytesExtraOffset))
+                                {
+                                    pkt_partial_write_ctr_1 += 1;
+
+                                    memmove(inbufBig, (inbufBig + write_result), ((PACKET_SIZE+bytesExtraOffset) - write_result));
+                                    sampleCounter = sampleCounter - ((write_result + SAMPLE_SIZE-1) / SAMPLE_SIZE);
+                                    bytesExtraOffset = write_result % SAMPLE_SIZE;
+                                }
+
+                                //printf("Queue Size: %d\n",ads->getQueueSize());
+                                //printf("heap size after: %d\n", xPortGetFreeHeapSize());
+
+                                //stats_display();
+
+                                if (write_result < 0){
+                                    printf("failed to write outbuf, no ack, Queue size: %d\n",ads->getQueueSize());
+                                    printf("Closing socket: %d\n",mSocket);
+                                    ads->stopStreaming();
+                                    stats_display();
+                                    close(mSocket);
+                                    return;
+                                }
+                                bytesExtraOffset = 0;
                             }
+                            else if (write_result < (PACKET_SIZE + bytesExtraOffset)) {
+                                //TODO Need to account for partial packet sent; memmov etc...
+                                pkt_partial_write_ctr_2 += 1;
+
+                                memmove(inbufBig, (inbufBig + write_result), ((PACKET_SIZE+bytesExtraOffset) - write_result));
+                                sampleCounter = sampleCounter - ((write_result + SAMPLE_SIZE -1) / SAMPLE_SIZE);
+                                bytesExtraOffset = write_result % SAMPLE_SIZE;
+                            }
+
                         }
+
+                        //If buffer is not full but send is available still try sending data
+                        else if (false)
+                            //else if (select( mSocket + 1, NULL , &fds, NULL, &tv ) > 0) 
+                        {
+                            pkt_part_ctr += 1;
+                            unsigned int sizeOfPacket = (sampleCounter*SAMPLE_SIZE) + bytesExtraOffset;
+                            write_result = write(mSocket, inbufBig, sizeOfPacket);
+                            if(write_result > 0)
+                            {
+                                if(sizeOfPacket != write_result)
+                                { 
+                                    pkt_partial_write_ctr_3 += 1;
+                                    memmove(inbufBig, (inbufBig + write_result), (sizeOfPacket - write_result));
+                                    sampleCounter = sampleCounter - ((write_result + SAMPLE_SIZE - 1)/ SAMPLE_SIZE);
+                                    bytesExtraOffset = write_result % SAMPLE_SIZE;
+                                }
+                                else
+                                {
+                                    sampleCounter = 0;
+                                    bytesExtraOffset = 0;
+                                }
+                                continue;
+                            }
+                            //TODO - Account for partial write that doesn't even send whole packet - is this needed?
+
+                            //This should never happen (we are "select"ing before hand so should not be errors)
+                            else
+                            {
+                                printf("ERROR 404");    
+                            }                         
+                        }
+
                         //total_tx += write_result;
                         //total_tx += inWaiting;
                         //if (c++ % 500 == 0){
@@ -423,27 +530,6 @@ class HostCommManager {
                           write_result evenetually == -1, then the following 
                           block closes out the streaming loop.
                          **/
-                        if (write_result < 0){
-                            //TODO perform more robust cheking before exiting loop
-                            printf("total_tx: %d\n",total_tx);
-                            printf("failed 1x to rx ACK");
-                            vTaskDelay( 1 / portTICK_PERIOD_MS); // should send at 100 Hz
-                            write_result = write(mSocket, inbuf, 29); 
-                            if (write_result < 0){
-                                printf("failed to write outbuf, no ack");
-                                printf("Closing socket: %d\n",mSocket);
-                                close(mSocket);
-                                break;
-                            }
-                        }
-                        else {
-                            //for (int j = 0; j < 8; j++){
-                            //    long valueCH8 = 0;
-                            //    for(int i = 0; i < 3; ++i) valueCH8 += (inbuf[3*j+i+3] << (2-i)*8);
-                            //    printf(" %f", valueCH8);
-                            //}
-                            //printf("\n");
-                        }
                     }
                 }
             }
@@ -456,12 +542,64 @@ class HostCommManager {
         int _read_ready(bool check_alive){
 
             // Periodically check connection
-            if (check_alive && (mKeepAliveCounter++ > 10E3)){
+            // Set counter to 5.2E3 for 20KBps tx rate (w/o serial printing)
+            if (check_alive && (mKeepAliveCounter++ > 5.2E3)){
                 mKeepAliveCounter = 0;
-                if (write(mSocket, "ACK", 3) < 0){
+                // TODO remove this outer for loop
+                int retry_counter = 0;
+                int result = -1;
+                static int retry_total = 0;
+
+                test_outbuf[0] = 'x';
+                test_outbuf[1] = 'x';
+                test_outbuf[2] = 'x';
+                test_outbuf[3]++;
+                test_outbuf[4] = 'y';
+                test_outbuf[5] = 'y';
+                test_outbuf[6] = 'y';
+
+                while (result = write(mSocket, test_outbuf, TEST_BUF_LEN), result < 0){
+
+                    //vTaskDelay(10 / portTICK_PERIOD_MS);
+                    //if (retry_total++ % 100 == 0)
+                    //    printf("retry_total: %d\n",retry_total);
+                    //if (retry_counter++ < 10000)
+                    //    continue;
+
+                    //printf("Attempting to recover\n");
+                    //print_seg_queues(mSocket);
+
+                    //Make blocking
+                    int nbset = 0;
+                    int ctlr = lwip_ioctl(mSocket, FIONBIO, &nbset);
+
+                    if (result = write(mSocket, test_outbuf, TEST_BUF_LEN), result < 0){
+                        printf("Failed to recover\n");
+                    }
+                    else {
+                        printf("Succeeded to recover\n");
+                        vTaskDelay(10 / portTICK_PERIOD_MS);
+                        nbset = 1;
+                        ctlr = lwip_ioctl(mSocket, FIONBIO, &nbset);
+                        break;
+                    }
+
+                    get_pool_sizes();
+                    printf("--------------\n");
+                    char wbuf[400] = {0};
+                    vTaskList(wbuf);
+                    printf(wbuf);
+                    printf("--------------\n");
+                    vTaskGetRunTimeStats(wbuf);
+                    printf(wbuf);
+                    printf("--------------\n");
+                    printf("retry_total: %d\n",retry_total);
+                    printf("heap size: %d\n", xPortGetFreeHeapSize());
                     printf("failed to receive ACK");
+                    //stats_display();
                     return -1;
                 }
+                //tcp_output(mSocket
             }
 
             if (mSocket < 0){
