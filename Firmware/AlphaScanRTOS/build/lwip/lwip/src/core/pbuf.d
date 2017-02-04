@@ -81,5 +81,18 @@ build/lwip//lwip/src/core/pbuf.o: \
  /home/john/GitHub_02-02/AlphaScanRTOS/FreeRTOS/Source/include/semphr.h \
  /home/john/GitHub_02-02/AlphaScanRTOS/FreeRTOS/Source/include/queue.h \
  /home/john/GitHub_02-02/AlphaScanRTOS/lwip/include/arch/perf.h \
+ /home/john/GitHub_02-02/AlphaScanRTOS/lwip/lwip/src/include/lwip/tcp_impl.h \
+ /home/john/GitHub_02-02/AlphaScanRTOS/lwip/lwip/src/include/lwip/tcp.h \
+ /home/john/GitHub_02-02/AlphaScanRTOS/lwip/lwip/src/include/ipv4/lwip/ip.h \
+ /home/john/GitHub_02-02/AlphaScanRTOS/lwip/lwip/src/include/ipv4/lwip/ip_addr.h \
+ /home/john/GitHub_02-02/AlphaScanRTOS/lwip/lwip/src/include/lwip/netif.h \
+ /home/john/GitHub_02-02/AlphaScanRTOS/lwip/lwip/src/include/ipv4/lwip/icmp.h \
  /home/john/GitHub_02-02/AlphaScanRTOS/libc/xtensa-lx106-elf/include/string.h \
- /home/john/GitHub_02-02/AlphaScanRTOS/libc/xtensa-lx106-elf/include/sys/string.h
+ /home/john/GitHub_02-02/AlphaScanRTOS/libc/xtensa-lx106-elf/include/sys/string.h \
+ /home/john/GitHub_02-02/AlphaScanRTOS/lwip/lwip/src/include/lwip/tcpip.h \
+ /home/john/GitHub_02-02/AlphaScanRTOS/lwip/lwip/src/include/lwip/api_msg.h \
+ /home/john/GitHub_02-02/AlphaScanRTOS/lwip/lwip/src/include/ipv4/lwip/igmp.h \
+ /home/john/GitHub_02-02/AlphaScanRTOS/lwip/lwip/src/include/lwip/api.h \
+ /home/john/GitHub_02-02/AlphaScanRTOS/lwip/lwip/src/include/lwip/netbuf.h \
+ /home/john/GitHub_02-02/AlphaScanRTOS/lwip/lwip/src/include/lwip/netifapi.h \
+ /home/john/GitHub_02-02/AlphaScanRTOS/lwip/lwip/src/include/lwip/timers.h
