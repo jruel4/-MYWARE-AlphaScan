@@ -271,7 +271,9 @@ class AlphaScanDevice:
         self.time_intervals = list()
         self.DEV_streamActive.set()
         self.error_array = list()
+        self.sqwave = list()
         self.prev_data = None
+        
         self.total_buf = ''
         
         deviceData = [0 for i in range(8)]
@@ -756,7 +758,201 @@ class AlphaScanDevice:
                 self.skipped_rx += 1
 
 
+    def DEV_printTCPStream_TEST_1(self):
 
+        self.s = socket.socket(socket.AF_INET,socket.SOCK_STREAM) 
+        self.s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        self.s.bind((self.TCP_IP,self.TCP_PORT)) 
+        # error: [Errno 10048] Only one usage of each socket address (protocol/network address/port) is normally permitted
+        
+        self.s.settimeout(10)
+        self.s.listen(1)        
+        try:
+            self.conn,addr = self.s.accept()
+            self.conn.settimeout(.001) # TODO maybe want to make this smaller
+
+            self.UDP_IP = addr[0] # TODO this should say TCP_IP
+            self.IS_CONNECTED = True
+            
+        except:
+            self.IS_CONNECTED = False
+            self.close_TCP(); # cleanup socket
+            return False        
+            
+        #self.generic_tcp_command_OPCODE(0x3)
+        
+        global sqwave
+        ###############################################################################
+        # UDP Stream thread target
+        ###############################################################################
+
+        self.reads = 0
+        self.unknown_stream_errors = 0
+        self.time_interval_count = 0
+        self.rx_count = 0
+        self.pre_rx = 0
+        self.timeout_count = 0
+        self.invalid_start = 0
+        self.skipped_rx = 0
+        self.test_inbuf = list()
+        self.read_size_list = list()
+        self.inbuf = list()
+        self.time_intervals = list()
+        self.DEV_streamActive.set()
+        self.error_array = list()
+        self.total_rx = 0
+        self.total_buf = ''
+        
+        # clear tcp inbuf
+        #self.conn.recv(2048) # this is not a proper flush, rx size should be set to match
+        self.flush_TCP()
+        self.conn.setblocking(0)
+       
+        self.begin = time.time()
+        
+        while self.DEV_streamActive.is_set():
+
+            if ((self.rx_count % 5000) == 0) and (self.rx_count > 0):
+                elapsed = (time.time() - self.begin) #in seconds
+                if elapsed > 0:
+                    bytes_per_sec = self.total_rx / elapsed
+                    print("Bytes per second: ",(bytes_per_sec))
+                
+#==============================================================================
+#             try:
+#==============================================================================
+            self.pre_rx += 1
+            # TODO Receive and unpack sample from TCP connection
+
+            ready = select.select([self.conn], [], [] , 0)
+            if (ready[0]):
+                self.data = self.conn.recv(1460)
+                self.read_size_list += [len(self.data)]
+                self.total_buf += str(self.data)
+                self.rx_count += 1     
+                self.total_rx += len(self.data)
+            else:
+                self.skipped_rx += 1
+                
+    def DEV_printTCPStream_TEST_2(self):
+
+        self.s = socket.socket(socket.AF_INET,socket.SOCK_STREAM) 
+        self.s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        self.s.bind((self.TCP_IP,self.TCP_PORT)) 
+        # error: [Errno 10048] Only one usage of each socket address (protocol/network address/port) is normally permitted
+        
+        self.s.settimeout(10)
+        self.s.listen(1)        
+        try:
+            self.conn,addr = self.s.accept()
+            self.conn.settimeout(.001) # TODO maybe want to make this smaller
+
+            self.UDP_IP = addr[0] # TODO this should say TCP_IP
+            self.IS_CONNECTED = True
+            
+        except:
+            self.IS_CONNECTED = False
+            self.close_TCP(); # cleanup socket
+            return False        
+            
+        #self.generic_tcp_command_OPCODE(0x3)
+        
+        global sqwave
+        ###############################################################################
+        # UDP Stream thread target
+        ###############################################################################
+
+        self.reads = 0
+        self.unknown_stream_errors = 0
+        self.time_interval_count = 0
+        self.rx_count = 0
+        self.pre_rx = 0
+        self.timeout_count = 0
+        self.invalid_start = 0
+        self.skipped_rx = 0
+        self.test_inbuf = list()
+        self.read_size_list = list()
+        self.inbuf = list()
+        self.time_intervals = list()
+        self.DEV_streamActive.set()
+        self.error_array = list()
+        self.Bps_list = list()
+        self.total_rx = 0
+        self.total_buf = ''
+        
+        # clear tcp inbuf
+        #self.conn.recv(2048) # this is not a proper flush, rx size should be set to match
+        self.flush_TCP()
+        
+       
+        self.begin = time.time()
+        
+#==============================================================================
+#         self.conn.setblocking(0)
+#         while(True):
+#             ready = select.select([self.conn], [], [] , 0)
+#             if (ready[0]):
+#                 self.conn.recv(1400)
+#==============================================================================
+                
+            
+        
+        while self.DEV_streamActive.is_set():
+
+            if ((self.rx_count % 100) == 0) and (self.rx_count > 0):
+
+                #TODO add in a sleep to explicitely test recovery                 
+                
+                elapsed = (time.time() - self.begin) #in seconds
+                if elapsed > 0:
+                    bytes_per_sec = self.total_rx / elapsed
+                    #print("Bytes per second: ",(bytes_per_sec))
+                    self.Bps_list += [bytes_per_sec]
+                    
+                
+#==============================================================================
+#             try:
+#==============================================================================
+            self.pre_rx += 1
+            # TODO Receive and unpack sample from TCP connection
+
+#==============================================================================
+#             ready = select.select([self.conn], [], [] , 0)
+#             if (ready[0]):
+#==============================================================================
+            try:
+                #TODO add timer for measuring interval between read attempts
+                self.data = self.conn.recv(1400)
+                self.read_size_list += [(time.time(),len(self.data))]
+                self.total_buf += str(self.data)
+                self.rx_count += 1     
+                self.total_rx += len(self.data)
+            except:
+                self.skipped_rx += 1
+                
+    def gen_throughput_over_time(self):
+        '''
+        input: requries that self.red_size_list be populated
+        '''
+        timestamps = [u[0] for u in self.read_size_list]
+        read_sizes = [u[1] for u in self.read_size_list]
+        Bps_ps = list()
+        # Cycle over every read event to create an element 
+        for i in range(len(timestamps)):
+            # For every read event take subsequent events in the next second
+            t = timestamps[i]
+            r = read_sizes[i]
+            tval = 0
+            for j in range(i+1,len(timestamps)):
+                tval = timestamps[j] - t
+                if tval < 1.0:
+                    r += read_sizes[j]
+                else:
+                    # Add entry to Bps_ps
+                    Bps_ps += [(r/tval),tval]
+                    # Continue to next Bps_ps entry
+                    break 
+            
     def gen_block_list(self):
         self.block_list = list()
         packet_size = 29
