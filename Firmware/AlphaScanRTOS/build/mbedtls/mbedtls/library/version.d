@@ -1,22 +1,22 @@
 build/mbedtls//mbedtls/library/version.o: \
- /media/marzipan/Expansion_1/Development/Projects/superhouse_spi_test_build/esp-open-rtos/extras/mbedtls/mbedtls/library/version.c \
- /media/marzipan/Expansion_1/Development/Projects/superhouse_spi_test_build/esp-open-rtos/extras/mbedtls/include/mbedtls/config.h \
- /media/marzipan/Expansion_1/Development/Projects/superhouse_spi_test_build/esp-open-rtos/extras/mbedtls/mbedtls/include/mbedtls/check_config.h \
- /media/marzipan/Expansion_1/Development/Projects/superhouse_spi_test_build/esp-open-rtos/libc/xtensa-lx106-elf/include/limits.h \
- /media/marzipan/Expansion_1/Development/Projects/superhouse_spi_test_build/esp-open-rtos/libc/xtensa-lx106-elf/include/newlib.h \
- /media/marzipan/Expansion_1/Development/Projects/superhouse_spi_test_build/esp-open-rtos/extras/mbedtls/mbedtls/include/mbedtls/version.h \
- /media/marzipan/Expansion_1/Development/Projects/superhouse_spi_test_build/esp-open-rtos/extras/mbedtls/mbedtls/include/mbedtls/config.h \
- /media/marzipan/Expansion_1/Development/Projects/superhouse_spi_test_build/esp-open-rtos/libc/xtensa-lx106-elf/include/string.h \
- /media/marzipan/Expansion_1/Development/Projects/superhouse_spi_test_build/esp-open-rtos/libc/xtensa-lx106-elf/include/_ansi.h \
- /media/marzipan/Expansion_1/Development/Projects/superhouse_spi_test_build/esp-open-rtos/libc/xtensa-lx106-elf/include/sys/config.h \
- /media/marzipan/Expansion_1/Development/Projects/superhouse_spi_test_build/esp-open-rtos/libc/xtensa-lx106-elf/include/machine/ieeefp.h \
- /media/marzipan/Expansion_1/Development/Projects/superhouse_spi_test_build/esp-open-rtos/libc/xtensa-lx106-elf/include/sys/features.h \
- /media/marzipan/Expansion_1/Development/Projects/superhouse_spi_test_build/esp-open-rtos/libc/xtensa-lx106-elf/include/xtensa/config/core-isa.h \
- /media/marzipan/Expansion_1/Development/Projects/superhouse_spi_test_build/esp-open-rtos/libc/xtensa-lx106-elf/include/sys/reent.h \
- /media/marzipan/Expansion_1/Development/Projects/superhouse_spi_test_build/esp-open-rtos/libc/xtensa-lx106-elf/include/_ansi.h \
- /media/marzipan/Expansion_1/Development/Projects/superhouse_spi_test_build/esp-open-rtos/libc/xtensa-lx106-elf/include/sys/_types.h \
- /media/marzipan/Expansion_1/Development/Projects/superhouse_spi_test_build/esp-open-rtos/libc/xtensa-lx106-elf/include/machine/_types.h \
- /media/marzipan/Expansion_1/Development/Projects/superhouse_spi_test_build/esp-open-rtos/libc/xtensa-lx106-elf/include/machine/_default_types.h \
- /media/marzipan/Expansion_1/Development/Projects/superhouse_spi_test_build/esp-open-rtos/libc/xtensa-lx106-elf/include/sys/lock.h \
- /media/marzipan/Expansion_1/Development/Projects/superhouse_spi_test_build/esp-open-rtos/libc/xtensa-lx106-elf/include/sys/cdefs.h \
- /media/marzipan/Expansion_1/Development/Projects/superhouse_spi_test_build/esp-open-rtos/libc/xtensa-lx106-elf/include/sys/string.h
+ /home/john/GitHub_02-02/AlphaScanRTOS/extras/mbedtls/mbedtls/library/version.c \
+ /home/john/GitHub_02-02/AlphaScanRTOS/extras/mbedtls/include/mbedtls/config.h \
+ /home/john/GitHub_02-02/AlphaScanRTOS/extras/mbedtls/mbedtls/include/mbedtls/check_config.h \
+ /home/john/GitHub_02-02/AlphaScanRTOS/libc/xtensa-lx106-elf/include/limits.h \
+ /home/john/GitHub_02-02/AlphaScanRTOS/libc/xtensa-lx106-elf/include/newlib.h \
+ /home/john/GitHub_02-02/AlphaScanRTOS/extras/mbedtls/mbedtls/include/mbedtls/version.h \
+ /home/john/GitHub_02-02/AlphaScanRTOS/extras/mbedtls/mbedtls/include/mbedtls/config.h \
+ /home/john/GitHub_02-02/AlphaScanRTOS/libc/xtensa-lx106-elf/include/string.h \
+ /home/john/GitHub_02-02/AlphaScanRTOS/libc/xtensa-lx106-elf/include/_ansi.h \
+ /home/john/GitHub_02-02/AlphaScanRTOS/libc/xtensa-lx106-elf/include/sys/config.h \
+ /home/john/GitHub_02-02/AlphaScanRTOS/libc/xtensa-lx106-elf/include/machine/ieeefp.h \
+ /home/john/GitHub_02-02/AlphaScanRTOS/libc/xtensa-lx106-elf/include/sys/features.h \
+ /home/john/GitHub_02-02/AlphaScanRTOS/libc/xtensa-lx106-elf/include/xtensa/config/core-isa.h \
+ /home/john/GitHub_02-02/AlphaScanRTOS/libc/xtensa-lx106-elf/include/sys/reent.h \
+ /home/john/GitHub_02-02/AlphaScanRTOS/libc/xtensa-lx106-elf/include/_ansi.h \
+ /home/john/GitHub_02-02/AlphaScanRTOS/libc/xtensa-lx106-elf/include/sys/_types.h \
+ /home/john/GitHub_02-02/AlphaScanRTOS/libc/xtensa-lx106-elf/include/machine/_types.h \
+ /home/john/GitHub_02-02/AlphaScanRTOS/libc/xtensa-lx106-elf/include/machine/_default_types.h \
+ /home/john/GitHub_02-02/AlphaScanRTOS/libc/xtensa-lx106-elf/include/sys/lock.h \
+ /home/john/GitHub_02-02/AlphaScanRTOS/libc/xtensa-lx106-elf/include/sys/cdefs.h \
+ /home/john/GitHub_02-02/AlphaScanRTOS/libc/xtensa-lx106-elf/include/sys/string.h

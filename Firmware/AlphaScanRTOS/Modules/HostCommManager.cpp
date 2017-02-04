@@ -52,7 +52,7 @@ class HostCommManager {
         unsigned char mOutbuf[PACKET_SIZE] = {0};
         unsigned char mInbuf[PACKET_SIZE] = {0};
         int mKeepAliveCounter = 0;
-        const static int TEST_BUF_LEN = 1400;
+        const static int TEST_BUF_LEN = 256;
         char test_outbuf[TEST_BUF_LEN] = {0};
 
         // Connect to host
@@ -60,7 +60,7 @@ class HostCommManager {
 
             struct addrinfo res;
             struct ip_addr my_host_ip;
-            IP4_ADDR(&my_host_ip, 192, 168, 1, 175);
+            IP4_ADDR(&my_host_ip, 192, 168, 1, 202);
 
             struct sockaddr_in my_sockaddr_in;
             my_sockaddr_in.sin_addr.s_addr = my_host_ip.addr;
@@ -479,7 +479,7 @@ class HostCommManager {
                         }
 
                         //If buffer is not full but send is available still try sending data
-                        else if (false)
+                        else if (sampleCounter % 10 == 0)
                             //else if (select( mSocket + 1, NULL , &fds, NULL, &tv ) > 0) 
                         {
                             pkt_part_ctr += 1;
@@ -543,7 +543,7 @@ class HostCommManager {
 
             // Periodically check connection
             // Set counter to 5.2E3 for 20KBps tx rate (w/o serial printing)
-            if (check_alive && (mKeepAliveCounter++ > 5.2E3)){
+            if (check_alive && (mKeepAliveCounter++ > 1E3) || 1){
                 mKeepAliveCounter = 0;
                 // TODO remove this outer for loop
                 int retry_counter = 0;
@@ -558,6 +558,7 @@ class HostCommManager {
                 test_outbuf[5] = 'y';
                 test_outbuf[6] = 'y';
 
+		//if(false) { //JCR
                 while (result = write(mSocket, test_outbuf, TEST_BUF_LEN), result < 0){
 
                     //vTaskDelay(10 / portTICK_PERIOD_MS);
@@ -572,13 +573,14 @@ class HostCommManager {
                     //Make blocking
                     int nbset = 0;
                     int ctlr = lwip_ioctl(mSocket, FIONBIO, &nbset);
-
+			
+			taskYIELD();
                     if (result = write(mSocket, test_outbuf, TEST_BUF_LEN), result < 0){
                         printf("Failed to recover\n");
                     }
                     else {
-                        printf("Succeeded to recover\n");
-                        vTaskDelay(10 / portTICK_PERIOD_MS);
+                        //printf("Succeeded to recover\n");
+                        //vTaskDelay(10 / portTICK_PERIOD_MS);
                         nbset = 1;
                         ctlr = lwip_ioctl(mSocket, FIONBIO, &nbset);
                         break;
@@ -599,6 +601,7 @@ class HostCommManager {
                     //stats_display();
                     return -1;
                 }
+//}
                 //tcp_output(mSocket
             }
 

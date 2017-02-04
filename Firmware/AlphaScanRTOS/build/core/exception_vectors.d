@@ -1,3 +1,3 @@
 build/core//exception_vectors.o: \
- /media/marzipan/Expansion_1/Development/Projects/superhouse_spi_test_build/esp-open-rtos/core/exception_vectors.S \
- /media/marzipan/Expansion_1/Development/Projects/superhouse_spi_test_build/esp-open-rtos/core/led_debug.s
+ /home/john/GitHub_02-02/AlphaScanRTOS/core/exception_vectors.S \
+ /home/john/GitHub_02-02/AlphaScanRTOS/core/led_debug.s

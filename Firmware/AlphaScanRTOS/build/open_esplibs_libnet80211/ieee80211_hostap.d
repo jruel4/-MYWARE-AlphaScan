@@ -1,3 +1,3 @@
 build/open_esplibs_libnet80211//ieee80211_hostap.o: \
- /media/marzipan/Expansion_1/Development/Projects/superhouse_spi_test_build/esp-open-rtos/open_esplibs/libnet80211/ieee80211_hostap.c \
- /media/marzipan/Expansion_1/Development/Projects/superhouse_spi_test_build/esp-open-rtos/open_esplibs/include/open_esplibs.h
+ /home/john/GitHub_02-02/AlphaScanRTOS/open_esplibs/libnet80211/ieee80211_hostap.c \
+ /home/john/GitHub_02-02/AlphaScanRTOS/open_esplibs/include/open_esplibs.h

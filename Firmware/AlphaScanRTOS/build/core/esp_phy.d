@@ -1,17 +1,17 @@
 build/core//esp_phy.o: \
- /media/marzipan/Expansion_1/Development/Projects/superhouse_spi_test_build/esp-open-rtos/core/esp_phy.c \
- /media/marzipan/Expansion_1/Development/Projects/superhouse_spi_test_build/esp-open-rtos/core/include/esp/phy.h \
- /media/marzipan/Expansion_1/Development/Projects/superhouse_spi_test_build/esp-open-rtos/core/include/esp/types.h \
- /media/marzipan/Expansion_1/Development/Projects/superhouse_spi_test_build/esp-open-rtos/libc/xtensa-lx106-elf/include/stdint.h \
- /media/marzipan/Expansion_1/Development/Projects/superhouse_spi_test_build/esp-open-rtos/libc/xtensa-lx106-elf/include/machine/_default_types.h \
- /media/marzipan/Expansion_1/Development/Projects/superhouse_spi_test_build/esp-open-rtos/libc/xtensa-lx106-elf/include/sys/features.h \
- /media/marzipan/Expansion_1/Development/Projects/superhouse_spi_test_build/esp-open-rtos/libc/xtensa-lx106-elf/include/sys/_intsup.h \
- /media/marzipan/Expansion_1/Development/Projects/superhouse_spi_test_build/esp-open-rtos/core/include/common_macros.h \
- /media/marzipan/Expansion_1/Development/Projects/superhouse_spi_test_build/esp-open-rtos/libc/xtensa-lx106-elf/include/sys/cdefs.h \
- /media/marzipan/Expansion_1/Development/Projects/superhouse_spi_test_build/esp-open-rtos/core/include/esp/gpio.h \
- /media/marzipan/Expansion_1/Development/Projects/superhouse_spi_test_build/esp-open-rtos/core/include/esp/gpio_regs.h \
- /media/marzipan/Expansion_1/Development/Projects/superhouse_spi_test_build/esp-open-rtos/core/include/esp/rtc_regs.h \
- /media/marzipan/Expansion_1/Development/Projects/superhouse_spi_test_build/esp-open-rtos/core/include/esp/iomux.h \
- /media/marzipan/Expansion_1/Development/Projects/superhouse_spi_test_build/esp-open-rtos/core/include/esp/iomux_regs.h \
- /media/marzipan/Expansion_1/Development/Projects/superhouse_spi_test_build/esp-open-rtos/core/include/esp/interrupts.h \
- /media/marzipan/Expansion_1/Development/Projects/superhouse_spi_test_build/esp-open-rtos/FreeRTOS/Source/portable/esp8266/xtruntime.h
+ /home/john/GitHub_02-02/AlphaScanRTOS/core/esp_phy.c \
+ /home/john/GitHub_02-02/AlphaScanRTOS/core/include/esp/phy.h \
+ /home/john/GitHub_02-02/AlphaScanRTOS/core/include/esp/types.h \
+ /home/john/GitHub_02-02/AlphaScanRTOS/libc/xtensa-lx106-elf/include/stdint.h \
+ /home/john/GitHub_02-02/AlphaScanRTOS/libc/xtensa-lx106-elf/include/machine/_default_types.h \
+ /home/john/GitHub_02-02/AlphaScanRTOS/libc/xtensa-lx106-elf/include/sys/features.h \
+ /home/john/GitHub_02-02/AlphaScanRTOS/libc/xtensa-lx106-elf/include/sys/_intsup.h \
+ /home/john/GitHub_02-02/AlphaScanRTOS/core/include/common_macros.h \
+ /home/john/GitHub_02-02/AlphaScanRTOS/libc/xtensa-lx106-elf/include/sys/cdefs.h \
+ /home/john/GitHub_02-02/AlphaScanRTOS/core/include/esp/gpio.h \
+ /home/john/GitHub_02-02/AlphaScanRTOS/core/include/esp/gpio_regs.h \
+ /home/john/GitHub_02-02/AlphaScanRTOS/core/include/esp/rtc_regs.h \
+ /home/john/GitHub_02-02/AlphaScanRTOS/core/include/esp/iomux.h \
+ /home/john/GitHub_02-02/AlphaScanRTOS/core/include/esp/iomux_regs.h \
+ /home/john/GitHub_02-02/AlphaScanRTOS/core/include/esp/interrupts.h \
+ /home/john/GitHub_02-02/AlphaScanRTOS/FreeRTOS/Source/portable/esp8266/xtruntime.h

@@ -1,2 +1,2 @@
 build/core//spiflash-cache-enable.o: \
- /media/marzipan/Expansion_1/Development/Projects/superhouse_spi_test_build/esp-open-rtos/core/spiflash-cache-enable.S
+ /home/john/GitHub_02-02/AlphaScanRTOS/core/spiflash-cache-enable.S
