@@ -934,24 +934,29 @@ class AlphaScanDevice:
         '''
         input: requries that self.red_size_list be populated
         '''
-        timestamps = [u[0] for u in self.read_size_list]
+        self.timestamps = [u[0] for u in self.read_size_list]
         read_sizes = [u[1] for u in self.read_size_list]
-        Bps_ps = list()
+        self.Bps_ps = list()
         # Cycle over every read event to create an element 
         for i in range(len(timestamps)):
             # For every read event take subsequent events in the next second
-            t = timestamps[i]
+            t = self.timestamps[i]
             r = read_sizes[i]
             tval = 0
-            for j in range(i+1,len(timestamps)):
-                tval = timestamps[j] - t
+            for j in range(i+1,len(self.timestamps)):
+                tval = self.timestamps[j] - t
                 if tval < 1.0:
                     r += read_sizes[j]
                 else:
                     # Add entry to Bps_ps
-                    Bps_ps += [(r/tval),tval]
+                    self.Bps_ps += [(r/tval),tval]
                     # Continue to next Bps_ps entry
                     break 
+                
+    def plotThroughput(self):
+        throughput = [u[0] for u in self.Bps_ps]
+        plt.plot(self.timestamps, throughput)
+        plt.show()
             
     def gen_block_list(self):
         self.block_list = list()
