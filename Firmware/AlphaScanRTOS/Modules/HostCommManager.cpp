@@ -6,6 +6,7 @@
 #include "task.h"
 #include "lwip/err.h"
 #include "lwip/sockets.h"
+//#include "../../../../AlphaScanRTOS/lwip/lwip/src/api/sockets.c"
 #include "lwip/sys.h"
 #include "lwip/tcp.h"
 #include "lwip/netdb.h"
@@ -16,11 +17,41 @@
 #include "ssid_config.h"
 #include <algorithm>
 #include "ads_ctrl.cpp"
+#include "lwip/api.h"
+//JCR
+//extern struct lwip_sock;
+//extern struct netconn;
+
+//extern struct lwip_sock {
+  /** sockets currently are built on netconns, each socket has one netconn */
+  //struct netconn *conn;
+  /** data that was left from the previous read */
+  //void *lastdata;
+  /** offset in the data that was left from the previous read */
+  //u16_t lastoffset;
+  /** number of times data was received, set by event_callback(),
+      tested by the receive and select functions */
+  //s16_t rcvevent;
+  /** number of times data was ACKed (free send buffer), set by event_callback(),
+      tested by select */
+  //u16_t sendevent;
+  /** error happened for this socket, set by event_callback(), tested by select */
+  //u16_t errevent; 
+  /** last error that occurred on this socket */
+  //int err;
+  /** counter of how many threads are waiting for this socket using select */
+  //int select_waiting;
+//};
+
+
+//extern static struct lwip_sock * get_socket(int s);
+//extern err_t tcp_output(struct tcp_pcb *pcb);
+
 
 #define WEB_SERVER "marzipan-Lenovo-ideapad-Y700-15ISK"
 #define WEB_PORT 50007
 #define SAMPLE_SIZE (29)
-#define SAMPLES_PER_PACKET (7)
+#define SAMPLES_PER_PACKET (4*7)
 #define PACKET_SIZE (SAMPLE_SIZE * SAMPLES_PER_PACKET)
 
 class HostCommManager {
@@ -60,7 +91,7 @@ class HostCommManager {
 
 			struct addrinfo res;
 			struct ip_addr my_host_ip;
-			IP4_ADDR(&my_host_ip, 192, 168, 1, 175);
+			IP4_ADDR(&my_host_ip, 192, 168, 1, 202);
 
 			struct sockaddr_in my_sockaddr_in;
 			my_sockaddr_in.sin_addr.s_addr = my_host_ip.addr;
@@ -277,6 +308,10 @@ class HostCommManager {
 			uint32_t dReadyCounter = 0;
 			int nbset, ctlr;
 
+
+			//JCR 02-04
+			//lwip_sock *socks = get_socket(mSocket);
+
 			//TODO
 			//nbset = 0;
 			//ctlr = lwip_ioctl(mSocket, FIONBIO, &nbset);
@@ -322,6 +357,9 @@ class HostCommManager {
 							vTaskGetRunTimeStats(wbuf);
 							printf(wbuf);
 
+
+									printf("heap size: %d\n", xPortGetFreeHeapSize());
+stats_display();
 							printf("timer_get_count: %d\n",timer_get_count(FRC2));
 							break;
 						}
@@ -421,9 +459,13 @@ class HostCommManager {
 
 						//vTaskDelay( 1 / portTICK_PERIOD_MS); // should send at 100 Hz
 
+						//static int oncey = 0;
 						//Here, our buffer has completely filled up; we *need* to send data - if not possible, quit once queue is full
 						if (sampleCounter == SAMPLES_PER_PACKET) {
 							pkt_full_ctr += 1;
+							//if(oncey == 0) printf("Outputing\n");
+							//err_t tOutErr = tcp_output(socks->conn->pcb.tcp);
+							//if(oncey == 0) { printf("Outputed\n"); oncey=1; }
 							write_result = write(mSocket, inbufBig, PACKET_SIZE+bytesExtraOffset); 
 							//if (write_result != PACKET_SIZE)
 							//{
@@ -465,10 +507,11 @@ class HostCommManager {
 								//stats_display();
 
 								if (write_result < 0){
+									stats_display();
 									printf("failed to write outbuf, no ack, Queue size: %d\n",ads->getQueueSize());
 									printf("Closing socket: %d\n",mSocket);
 									ads->stopStreaming();
-									stats_display();
+									printf("heap size: %d\n", xPortGetFreeHeapSize());
 									close(mSocket);
 									return;
 								}
