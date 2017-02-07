@@ -91,7 +91,7 @@ class HostCommManager {
 
 			struct addrinfo res;
 			struct ip_addr my_host_ip;
-			IP4_ADDR(&my_host_ip, 192, 168, 1, 202);
+			IP4_ADDR(&my_host_ip, 192, 168, 1, 175);
 
 			struct sockaddr_in my_sockaddr_in;
 			my_sockaddr_in.sin_addr.s_addr = my_host_ip.addr;
@@ -688,47 +688,39 @@ stats_display();
 			}
 		}
 
-        void _stream_task(ADS* ads)
-        {
+        // TODO Move these to appt location
+        static const int pkt_size = 1400;
+        static const int inbuf_size = 3;
 
-            // Use this from main loop to launch stream task
-            // OR simply run inside of main loop to avoid any task switching
-            //xTaskCreate(&_stream_task, (signed char *)"udp_stream_task", 4096, NULL, 2, NULL);
-
-            const int WEB_PORT = 50007;
-            const int pkt_size = 1400;
-            const int inbuf_size = 3;
+        void _stream_task(ADS* ads) {
 
             // Setup remote address
-            struct addrinfo res;
             struct ip_addr my_host_ip;
             IP4_ADDR(&my_host_ip, 192, 168, 1, 168);
-            struct sockaddr_in my_sockaddr_in = {
 
-                .sin_addr.s_addr = my_host_ip.addr,
-                .sin_len = sizeof(struct sockaddr_in),
-                .sin_family = AF_INET,
-                .sin_port = htons(WEB_PORT),
-                .sin_zero = 0        
-            };
+            struct sockaddr_in my_sockaddr_in;
+            my_sockaddr_in.sin_addr.s_addr = my_host_ip.addr;
+            my_sockaddr_in.sin_len = sizeof(struct sockaddr_in);
+            my_sockaddr_in.sin_family = AF_INET;
+            my_sockaddr_in.sin_port = htons(WEB_PORT);
+            std::fill_n(my_sockaddr_in.sin_zero, 8, (char)0x0);
 
+            struct addrinfo res;
             res.ai_addr = (struct sockaddr*) (void*)(&my_sockaddr_in);
             res.ai_addrlen = sizeof(struct sockaddr_in);
             res.ai_family = AF_INET;
             res.ai_socktype = SOCK_DGRAM;
 
             // Setup local address
+            struct sockaddr_in my_sock_addr_x;
+            my_sock_addr_x.sin_addr.s_addr = htonl(INADDR_ANY);
+            my_sock_addr_x.sin_len = sizeof(struct sockaddr_in);
+            my_sock_addr_x.sin_family = AF_INET;
+            my_sock_addr_x.sin_port = htons(WEB_PORT);
+            std::fill_n(my_sock_addr_x.sin_zero, 8, (char)0x0);
+
             struct addrinfo res_x;
-            struct sockaddr_in my_sockaddr_x = {
-
-                .sin_addr.s_addr = htonl(INADDR_ANY), // Binding local addr
-                .sin_len = sizeof(struct sockaddr_in),
-                .sin_family = AF_INET,
-                .sin_port = htons(WEB_PORT),
-                .sin_zero = 0        
-            };
-
-            res_x.ai_addr = (struct sockaddr*) (void*)(&my_sockaddr_x);
+            res_x.ai_addr = (struct sockaddr*) (void*)(&my_sock_addr_x);
             res_x.ai_addrlen = sizeof(struct sockaddr_in);
             res_x.ai_family = AF_INET;
             res_x.ai_socktype = SOCK_DGRAM;
@@ -754,27 +746,27 @@ stats_display();
                 printf("... bind success\r\n");
 
                 // Init stream variables
-                char outbuf[pkt_size] = {0};
-                char inbuf[inbuf_size] = {0};
+                byte outbuf[pkt_size] = {0};
+                byte inbuf[inbuf_size] = {0};
                 uint8_t pkt_cnt = 0;
                 uint8_t drop_count = 0;
                 bool local_buf_acked = true;
 
                 /******************************** 
-                 Main stream loop
+                  Main stream loop
                  *********************************/
 
                 while(1) {
 
                     // If new data in local buf, send it
                     if (!local_buf_acked) {
-                        if (sendto(s, outbuf, pkt_size, 0, res.ai_addr, &(res.ai_addrlen) ) < 0) {
+                        if (sendto(s, outbuf, pkt_size, 0, res.ai_addr, res.ai_addrlen ) < 0) {
                             printf("... socket send failed\r\n");
                             close(s);
                             break;
                         }
                     }
-                    
+
                     // If local buf is free, check queue for new packet's worth of data
                     if (local_buf_acked){
                         if (ads->getQueueSize() >= 57){
@@ -786,6 +778,7 @@ stats_display();
                             else{
                                 printf("Failed to load outbuf, file: %s, line: %d\n",__FILE__,__LINE__);
                             }
+                        }
                     }
 
                     // Blocking read for ACK on currently buffered packet
@@ -799,7 +792,7 @@ stats_display();
                         local_buf_acked = true;
                     }
                     else  {
-                        else if (inbuf[3] == 0xff){
+                        if (inbuf[3] == 0xff){
                             printf("Received TERMINATE command\n");
                             return;
                         }

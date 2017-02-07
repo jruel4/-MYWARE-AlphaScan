@@ -18,7 +18,6 @@
 
 #define WEB_SERVER "marzipan-Lenovo-ideapad-Y700-15ISK"
 #define WEB_PORT 50007
-#define pkt_size (28*10)
 
 /* TFTP client will request this image filenames from this server */
 #define TFTP_IMAGE_SERVER "192.168.1.23"
