@@ -687,4 +687,125 @@ stats_display();
 				return 1;
 			}
 		}
+
+        void _stream_task(ADS* ads)
+        {
+
+            // Use this from main loop to launch stream task
+            // OR simply run inside of main loop to avoid any task switching
+            //xTaskCreate(&_stream_task, (signed char *)"udp_stream_task", 4096, NULL, 2, NULL);
+
+            const int WEB_PORT = 50007;
+            const int pkt_size = 1400;
+            const int inbuf_size = 3;
+
+            // Setup remote address
+            struct addrinfo res;
+            struct ip_addr my_host_ip;
+            IP4_ADDR(&my_host_ip, 192, 168, 1, 168);
+            struct sockaddr_in my_sockaddr_in = {
+
+                .sin_addr.s_addr = my_host_ip.addr,
+                .sin_len = sizeof(struct sockaddr_in),
+                .sin_family = AF_INET,
+                .sin_port = htons(WEB_PORT),
+                .sin_zero = 0        
+            };
+
+            res.ai_addr = (struct sockaddr*) (void*)(&my_sockaddr_in);
+            res.ai_addrlen = sizeof(struct sockaddr_in);
+            res.ai_family = AF_INET;
+            res.ai_socktype = SOCK_DGRAM;
+
+            // Setup local address
+            struct addrinfo res_x;
+            struct sockaddr_in my_sockaddr_x = {
+
+                .sin_addr.s_addr = htonl(INADDR_ANY), // Binding local addr
+                .sin_len = sizeof(struct sockaddr_in),
+                .sin_family = AF_INET,
+                .sin_port = htons(WEB_PORT),
+                .sin_zero = 0        
+            };
+
+            res_x.ai_addr = (struct sockaddr*) (void*)(&my_sockaddr_x);
+            res_x.ai_addrlen = sizeof(struct sockaddr_in);
+            res_x.ai_family = AF_INET;
+            res_x.ai_socktype = SOCK_DGRAM;
+
+            while(1) {
+
+                // Allocated socket
+                int s = socket(res_x.ai_family, res_x.ai_socktype, 0);
+                if(s < 0) {
+                    printf("... Failed to allocate socket.\r\n");
+                    vTaskDelay(1000 / portTICK_PERIOD_MS);
+                    continue;
+                }
+                printf("... allocated socket\r\n");
+
+                // Bind local socket
+                if(bind(s, res_x.ai_addr, res_x.ai_addrlen) < 0) {
+                    close(s);
+                    printf("bind failed.\r\n");
+                    vTaskDelay(1000 / portTICK_PERIOD_MS);
+                    continue;
+                }
+                printf("... bind success\r\n");
+
+                // Init stream variables
+                char outbuf[pkt_size] = {0};
+                char inbuf[inbuf_size] = {0};
+                uint8_t pkt_cnt = 0;
+                uint8_t drop_count = 0;
+                bool local_buf_acked = true;
+
+                /******************************** 
+                 Main stream loop
+                 *********************************/
+
+                while(1) {
+
+                    // If new data in local buf, send it
+                    if (!local_buf_acked) {
+                        if (sendto(s, outbuf, pkt_size, 0, res.ai_addr, &(res.ai_addrlen) ) < 0) {
+                            printf("... socket send failed\r\n");
+                            close(s);
+                            break;
+                        }
+                    }
+                    
+                    // If local buf is free, check queue for new packet's worth of data
+                    if (local_buf_acked){
+                        if (ads->getQueueSize() >= 57){
+                            // Fill local buffer with new data
+                            if (ads->getDataPacket(outbuf)){ 
+                                local_buf_acked = false;
+                                outbuf[0] = pkt_cnt;
+                            }
+                            else{
+                                printf("Failed to load outbuf, file: %s, line: %d\n",__FILE__,__LINE__);
+                            }
+                    }
+
+                    // Blocking read for ACK on currently buffered packet
+                    // TODO ADS interrupt should be running during this time, "blocking" read needs to allow gpio interrupt to take priority
+                    // TODO if this is a problem, we can use non-blocking read with a select() check, taskYIELD(), and read flash which only sends packet if we've received another ack
+                    recvfrom(s, inbuf, inbuf_size, 0, res.ai_addr, &(res.ai_addrlen)); 
+                    if (inbuf[0] == outbuf[0])
+                    {
+                        // It's a proper ACK, move to next packet
+                        outbuf[0] = pkt_cnt++;
+                        local_buf_acked = true;
+                    }
+                    else  {
+                        else if (inbuf[3] == 0xff){
+                            printf("Received TERMINATE command\n");
+                            return;
+                        }
+                        drop_count++;
+                    }
+                }
+            }
+        }
 };

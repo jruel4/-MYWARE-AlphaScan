@@ -179,6 +179,7 @@ public:
     bool getDataFake(byte dataInArray[27], bool toggle);
     int getDataWaiting(byte dataInArray[29], TickType_t xTicksToWait);
     int getDataWaiting(byte dataInArray[29], TickType_t xTicksToWait, TickType_t& tickTimestamp);
+    bool getDataPacket(byte dataInArray[1400]);
 
     //DBG
     void printTaskHandle(TaskHandle_t currTask);
@@ -488,8 +489,8 @@ struct inADSData
 typedef struct inADSData inADSData;
 
 int ADS::getQueueSize(void){
-        return uxQueueMessagesWaiting(xDataReadyQueue);
-    }
+    return uxQueueMessagesWaiting(xDataReadyQueue);
+}
 
 
 bool ADS::getDataFake(byte dataInArray[29], bool toggle)
@@ -544,6 +545,28 @@ int ADS::getDataWaiting(byte dataInArray[29], TickType_t xTicksToWait)
     }
 }
 
+bool ADS::getDataPacket(byte dataInArray[1400])
+{
+    if(!dataReadyIsRunning) setupDRDY();
+    if(xDataReadyQueue == NULL) {
+        printf("Queue failed to create!\n");
+        return false;
+    }
+
+    for (int i = 0; i < 57; i++) {
+        if (xQueueReceive(xDataReadyQueue, &s_tmpDataBuffer, 0) == pdTRUE) { 
+            // leave 24 spaces up from for status bytes, only copy data bytes
+            // Copy elements 5-28 (i.e. 24 elements) from inDataArray
+            memcpy(dataInArray + 24 + (i*24), s_tmpDataBuffer.inDataArray + 5, 24);
+        }
+        else {
+            printf("xQueueReceive failed, file: %s, line: %d\n", __FILE__, __LINE__);
+            return false;
+        }
+    }
+    return true;
+}
+
 int ADS::getDataWaiting(byte dataInArray[29], TickType_t xTicksToWait, TickType_t& tickTimestamp)
 {
     if(!dataReadyIsRunning) setupDRDY();
@@ -574,7 +597,7 @@ void ADS::setupDRDY(void)
 //TODO - Implement kill DRDY
 void ADS::killDRDY(void)
 {
-	if(xDataReadyQueue != NULL) vQueueDelete(xDataReadyQueue);
+    if(xDataReadyQueue != NULL) vQueueDelete(xDataReadyQueue);
     xDataReadyQueue = NULL;
     dataReadyIsRunning = false;
     //TODO - disable DRDY interrupt here
@@ -642,7 +665,7 @@ void ADS::printSerialRegistersFromADS(void)
 {
 
     byte tmpArr[24] = {0};
-    
+
     if(DBG)
     {
         killStandby();
@@ -743,7 +766,7 @@ void ADS::configureTestSignal()
 
 void ADS::startStreaming() {
     if(streaming) return;
-	if(!dataReadyIsRunning) setupDRDY();
+    if(!dataReadyIsRunning) setupDRDY();
     killStandby();
 
     _SDATAC();
@@ -755,8 +778,8 @@ void ADS::startStreaming() {
 
 void ADS::stopStreaming() {
     killStandby();
-	killDRDY();
-	
+    killDRDY();
+
     _SDATAC();
     clearSPI();
     _STOP();
