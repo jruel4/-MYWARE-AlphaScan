@@ -6008,721 +6008,721 @@ END GROUP
                 0x000000004021456c                _ZN3ADS13stopStreamingEv
  *fill*         0x00000000402145c7        0x1 
  .text._ZN15HostCommManager12_stream_taskEP3ADS
-                0x00000000402145c8      0x212 ./build/program.a(main.o)
-                                        0x2b2 (size before relaxing)
+                0x00000000402145c8      0x216 ./build/program.a(main.o)
+                                        0x2be (size before relaxing)
                 0x00000000402145f8                _ZN15HostCommManager12_stream_taskEP3ADS
- *fill*         0x00000000402147da        0x2 
+ *fill*         0x00000000402147de        0x2 
  .text._ZN16AlphaScanManager4taskEv
-                0x00000000402147dc      0x49a ./build/program.a(main.o)
+                0x00000000402147e0      0x49a ./build/program.a(main.o)
                                         0x625 (size before relaxing)
-                0x0000000040214878                _ZN16AlphaScanManager4taskEv
- *fill*         0x0000000040214c76        0x2 
+                0x000000004021487c                _ZN16AlphaScanManager4taskEv
+ *fill*         0x0000000040214c7a        0x2 
  .text.user_init
-                0x0000000040214c78       0x3b ./build/program.a(main.o)
+                0x0000000040214c7c       0x3b ./build/program.a(main.o)
                                          0x4b (size before relaxing)
-                0x0000000040214c84                user_init
- *fill*         0x0000000040214cb3        0x1 
+                0x0000000040214c88                user_init
+ *fill*         0x0000000040214cb7        0x1 
  .text.startup._GLOBAL__sub_I_AP_SSID
-                0x0000000040214cb4       0xa3 ./build/program.a(main.o)
+                0x0000000040214cb8       0xa3 ./build/program.a(main.o)
                                          0xcb (size before relaxing)
- *fill*         0x0000000040214d57        0x1 
+ *fill*         0x0000000040214d5b        0x1 
  .text.tftp_send_error
-                0x0000000040214d58       0x6d ./build/rboot-ota.a(ota-tftp.o)
+                0x0000000040214d5c       0x6d ./build/rboot-ota.a(ota-tftp.o)
                                          0x9d (size before relaxing)
- *fill*         0x0000000040214dc5        0x3 
+ *fill*         0x0000000040214dc9        0x3 
  .text.tftp_send_ack
-                0x0000000040214dc8       0x4b ./build/rboot-ota.a(ota-tftp.o)
+                0x0000000040214dcc       0x4b ./build/rboot-ota.a(ota-tftp.o)
                                          0x6b (size before relaxing)
- *fill*         0x0000000040214e13        0x1 
+ *fill*         0x0000000040214e17        0x1 
  .text.tftp_get_field$isra$2
-                0x0000000040214e14       0x97 ./build/rboot-ota.a(ota-tftp.o)
+                0x0000000040214e18       0x97 ./build/rboot-ota.a(ota-tftp.o)
                                          0xa3 (size before relaxing)
- *fill*         0x0000000040214eab        0x1 
+ *fill*         0x0000000040214eaf        0x1 
  .text.tftp_receive_data
-                0x0000000040214eac      0x2ee ./build/rboot-ota.a(ota-tftp.o)
+                0x0000000040214eb0      0x2ee ./build/rboot-ota.a(ota-tftp.o)
                                         0x3a2 (size before relaxing)
- *fill*         0x000000004021519a        0x2 
+ *fill*         0x000000004021519e        0x2 
  .text.tftp_task
-                0x000000004021519c      0x22a ./build/rboot-ota.a(ota-tftp.o)
+                0x00000000402151a0      0x22a ./build/rboot-ota.a(ota-tftp.o)
                                         0x311 (size before relaxing)
- *fill*         0x00000000402153c6        0x2 
+ *fill*         0x00000000402153ca        0x2 
  .text.ota_tftp_init_server
-                0x00000000402153c8       0x29 ./build/rboot-ota.a(ota-tftp.o)
+                0x00000000402153cc       0x29 ./build/rboot-ota.a(ota-tftp.o)
                                          0x2d (size before relaxing)
-                0x00000000402153d0                ota_tftp_init_server
- *fill*         0x00000000402153f1        0x3 
+                0x00000000402153d4                ota_tftp_init_server
+ *fill*         0x00000000402153f5        0x3 
  .text.ota_tftp_download
-                0x00000000402153f4      0x14d ./build/rboot-ota.a(ota-tftp.o)
+                0x00000000402153f8      0x14d ./build/rboot-ota.a(ota-tftp.o)
                                         0x1c1 (size before relaxing)
-                0x00000000402153f4                ota_tftp_download
- *fill*         0x0000000040215541        0x3 
+                0x00000000402153f8                ota_tftp_download
+ *fill*         0x0000000040215545        0x3 
  .text.rboot_get_config
-                0x0000000040215544       0x2d ./build/rboot-ota.a(rboot-api.o)
+                0x0000000040215548       0x2d ./build/rboot-ota.a(rboot-api.o)
                                          0x39 (size before relaxing)
-                0x0000000040215544                rboot_get_config
- *fill*         0x0000000040215571        0x3 
+                0x0000000040215548                rboot_get_config
+ *fill*         0x0000000040215575        0x3 
  .text.rboot_set_config
-                0x0000000040215574       0xa5 ./build/rboot-ota.a(rboot-api.o)
+                0x0000000040215578       0xa5 ./build/rboot-ota.a(rboot-api.o)
                                          0xd5 (size before relaxing)
-                0x0000000040215574                rboot_set_config
- *fill*         0x0000000040215619        0x3 
+                0x0000000040215578                rboot_set_config
+ *fill*         0x000000004021561d        0x3 
  .text.rboot_set_current_rom
-                0x000000004021561c       0x3b ./build/rboot-ota.a(rboot-api.o)
+                0x0000000040215620       0x3b ./build/rboot-ota.a(rboot-api.o)
                                          0x4f (size before relaxing)
-                0x000000004021561c                rboot_set_current_rom
- *fill*         0x0000000040215657        0x1 
+                0x0000000040215620                rboot_set_current_rom
+ *fill*         0x000000004021565b        0x1 
  .text.rboot_verify_image
-                0x0000000040215658      0x1f9 ./build/rboot-ota.a(rboot-api.o)
+                0x000000004021565c      0x1f9 ./build/rboot-ota.a(rboot-api.o)
                                         0x215 (size before relaxing)
-                0x000000004021567c                rboot_verify_image
- *fill*         0x0000000040215851        0x3 
+                0x0000000040215680                rboot_verify_image
+ *fill*         0x0000000040215855        0x3 
  .text.rboot_digest_image
-                0x0000000040215854       0x67 ./build/rboot-ota.a(rboot-api.o)
+                0x0000000040215858       0x67 ./build/rboot-ota.a(rboot-api.o)
                                          0x6b (size before relaxing)
-                0x0000000040215854                rboot_digest_image
- *fill*         0x00000000402158bb        0x1 
+                0x0000000040215858                rboot_digest_image
+ *fill*         0x00000000402158bf        0x1 
  .text.mbedtls_sha256_init
-                0x00000000402158bc       0x17 ./build/mbedtls.a(sha256.o)
+                0x00000000402158c0       0x17 ./build/mbedtls.a(sha256.o)
                                          0x1b (size before relaxing)
-                0x00000000402158bc                mbedtls_sha256_init
- *fill*         0x00000000402158d3        0x1 
+                0x00000000402158c0                mbedtls_sha256_init
+ *fill*         0x00000000402158d7        0x1 
  .text.mbedtls_sha256_starts
-                0x00000000402158d4       0xa1 ./build/mbedtls.a(sha256.o)
-                0x0000000040215914                mbedtls_sha256_starts
- *fill*         0x0000000040215975        0x3 
+                0x00000000402158d8       0xa1 ./build/mbedtls.a(sha256.o)
+                0x0000000040215918                mbedtls_sha256_starts
+ *fill*         0x0000000040215979        0x3 
  .text.mbedtls_sha256_process
-                0x0000000040215978      0x1ab ./build/mbedtls.a(sha256.o)
-                0x000000004021597c                mbedtls_sha256_process
- *fill*         0x0000000040215b23        0x1 
+                0x000000004021597c      0x1ab ./build/mbedtls.a(sha256.o)
+                0x0000000040215980                mbedtls_sha256_process
+ *fill*         0x0000000040215b27        0x1 
  .text.mbedtls_sha256_update$part$0
-                0x0000000040215b24       0xb4 ./build/mbedtls.a(sha256.o)
+                0x0000000040215b28       0xb4 ./build/mbedtls.a(sha256.o)
                                          0xcc (size before relaxing)
  .text.mbedtls_sha256_update
-                0x0000000040215bd8       0x11 ./build/mbedtls.a(sha256.o)
+                0x0000000040215bdc       0x11 ./build/mbedtls.a(sha256.o)
                                          0x18 (size before relaxing)
-                0x0000000040215bd8                mbedtls_sha256_update
- *fill*         0x0000000040215be9        0x3 
+                0x0000000040215bdc                mbedtls_sha256_update
+ *fill*         0x0000000040215bed        0x3 
  .text.mbedtls_sha256_finish
-                0x0000000040215bec      0x14d ./build/mbedtls.a(sha256.o)
+                0x0000000040215bf0      0x14d ./build/mbedtls.a(sha256.o)
                                         0x159 (size before relaxing)
-                0x0000000040215bf0                mbedtls_sha256_finish
- *fill*         0x0000000040215d39        0x3 
+                0x0000000040215bf4                mbedtls_sha256_finish
+ *fill*         0x0000000040215d3d        0x3 
  .text._spi_buf_prepare$part$0
-                0x0000000040215d3c       0x5e ./build/core.a(esp_spi.o)
+                0x0000000040215d40       0x5e ./build/core.a(esp_spi.o)
                                          0x66 (size before relaxing)
- *fill*         0x0000000040215d9a        0x2 
+ *fill*         0x0000000040215d9e        0x2 
  .text._spi_buf_transfer
-                0x0000000040215d9c       0xf8 ./build/core.a(esp_spi.o)
+                0x0000000040215da0       0xf8 ./build/core.a(esp_spi.o)
                                         0x110 (size before relaxing)
  .text.spi_set_mode
-                0x0000000040215e94       0x77 ./build/core.a(esp_spi.o)
+                0x0000000040215e98       0x77 ./build/core.a(esp_spi.o)
                                          0x7b (size before relaxing)
-                0x0000000040215e9c                spi_set_mode
- *fill*         0x0000000040215f0b        0x1 
+                0x0000000040215ea0                spi_set_mode
+ *fill*         0x0000000040215f0f        0x1 
  .text.spi_set_frequency_div
-                0x0000000040215f0c       0x84 ./build/core.a(esp_spi.o)
+                0x0000000040215f10       0x84 ./build/core.a(esp_spi.o)
                                          0x90 (size before relaxing)
-                0x0000000040215f0c                spi_set_frequency_div
+                0x0000000040215f10                spi_set_frequency_div
  .text.spi_init
-                0x0000000040215f90      0x252 ./build/core.a(esp_spi.o)
+                0x0000000040215f94      0x252 ./build/core.a(esp_spi.o)
                                         0x28a (size before relaxing)
-                0x0000000040215fb0                spi_init
- *fill*         0x00000000402161e2        0x2 
+                0x0000000040215fb4                spi_init
+ *fill*         0x00000000402161e6        0x2 
  .text.spi_transfer_8
-                0x00000000402161e4       0x3a ./build/core.a(esp_spi.o)
+                0x00000000402161e8       0x3a ./build/core.a(esp_spi.o)
                                          0x4a (size before relaxing)
-                0x00000000402161e4                spi_transfer_8
- *fill*         0x000000004021621e        0x2 
+                0x00000000402161e8                spi_transfer_8
+ *fill*         0x0000000040216222        0x2 
  .text.gpio_enable
-                0x0000000040216220      0x158 ./build/core.a(esp_gpio.o)
+                0x0000000040216224      0x158 ./build/core.a(esp_gpio.o)
                                         0x170 (size before relaxing)
-                0x0000000040216220                gpio_enable
+                0x0000000040216224                gpio_enable
  .text.gpio_set_interrupt
-                0x0000000040216378       0x59 ./build/core.a(esp_gpio.o)
+                0x000000004021637c       0x59 ./build/core.a(esp_gpio.o)
                                          0x61 (size before relaxing)
-                0x0000000040216380                gpio_set_interrupt
- *fill*         0x00000000402163d1        0x3 
+                0x0000000040216384                gpio_set_interrupt
+ *fill*         0x00000000402163d5        0x3 
  .text._write_stdout_r
-                0x00000000402163d4       0x53 ./build/core.a(newlib_syscalls.o)
+                0x00000000402163d8       0x53 ./build/core.a(newlib_syscalls.o)
                                          0x57 (size before relaxing)
-                0x00000000402163d4                _write_stdout_r
- *fill*         0x0000000040216427        0x1 
+                0x00000000402163d8                _write_stdout_r
+ *fill*         0x000000004021642b        0x1 
  .text._write_r
-                0x0000000040216428       0x29 ./build/core.a(newlib_syscalls.o)
+                0x000000004021642c       0x29 ./build/core.a(newlib_syscalls.o)
                                          0x31 (size before relaxing)
-                0x000000004021642c                _write_r
- *fill*         0x0000000040216451        0x3 
+                0x0000000040216430                _write_r
+ *fill*         0x0000000040216455        0x3 
  .text._read_stdin_r
-                0x0000000040216454       0x4a ./build/core.a(newlib_syscalls.o)
+                0x0000000040216458       0x4a ./build/core.a(newlib_syscalls.o)
                                          0x4e (size before relaxing)
-                0x0000000040216454                _read_stdin_r
- *fill*         0x000000004021649e        0x2 
- .text._read_r  0x00000000402164a0       0x23 ./build/core.a(newlib_syscalls.o)
+                0x0000000040216458                _read_stdin_r
+ *fill*         0x00000000402164a2        0x2 
+ .text._read_r  0x00000000402164a4       0x23 ./build/core.a(newlib_syscalls.o)
                                          0x2f (size before relaxing)
-                0x00000000402164a0                _read_r
- *fill*         0x00000000402164c3        0x1 
- .text._Znwj    0x00000000402164c4       0x13 ./build/core.a(cplusplus_operators.o)
+                0x00000000402164a4                _read_r
+ *fill*         0x00000000402164c7        0x1 
+ .text._Znwj    0x00000000402164c8       0x13 ./build/core.a(cplusplus_operators.o)
                                          0x17 (size before relaxing)
-                0x00000000402164c4                _Znwj
- *fill*         0x00000000402164d7        0x1 
- .text._ZdlPv   0x00000000402164d8       0x13 ./build/core.a(cplusplus_operators.o)
+                0x00000000402164c8                _Znwj
+ *fill*         0x00000000402164db        0x1 
+ .text._ZdlPv   0x00000000402164dc       0x13 ./build/core.a(cplusplus_operators.o)
                                          0x17 (size before relaxing)
-                0x00000000402164d8                _ZdlPv
- *fill*         0x00000000402164eb        0x1 
- .text          0x00000000402164ec      0x1ff /media/marzipan/Expansion_1/Development/Projects/esp_open_sdk/esp-open-sdk/xtensa-lx106-elf/lib/gcc/xtensa-lx106-elf/4.8.5/libgcc.a(_addsubsf3.o)
-                0x0000000040216508                __addsf3
-                0x00000000402165f0                __subsf3
- *fill*         0x00000000402166eb        0x1 
- .text          0x00000000402166ec      0x15d /media/marzipan/Expansion_1/Development/Projects/esp_open_sdk/esp-open-sdk/xtensa-lx106-elf/lib/gcc/xtensa-lx106-elf/4.8.5/libgcc.a(_mulsf3.o)
-                0x0000000040216764                __mulsf3
- *fill*         0x0000000040216849        0x3 
- .text          0x000000004021684c       0x40 /media/marzipan/Expansion_1/Development/Projects/esp_open_sdk/esp-open-sdk/xtensa-lx106-elf/lib/gcc/xtensa-lx106-elf/4.8.5/libgcc.a(_fixsfsi.o)
-                0x000000004021684c                __fixsfsi
- .text          0x000000004021688c       0x51 /media/marzipan/Expansion_1/Development/Projects/esp_open_sdk/esp-open-sdk/xtensa-lx106-elf/lib/gcc/xtensa-lx106-elf/4.8.5/libgcc.a(_fixunssfsi.o)
-                0x000000004021688c                __fixunssfsi
- *fill*         0x00000000402168dd        0x3 
- .text          0x00000000402168e0      0x2f6 /media/marzipan/Expansion_1/Development/Projects/esp_open_sdk/esp-open-sdk/xtensa-lx106-elf/lib/gcc/xtensa-lx106-elf/4.8.5/libgcc.a(_addsubdf3.o)
-                0x0000000040216900                __adddf3
-                0x0000000040216a50                __subdf3
- *fill*         0x0000000040216bd6        0x2 
- .text          0x0000000040216bd8      0x20b /media/marzipan/Expansion_1/Development/Projects/esp_open_sdk/esp-open-sdk/xtensa-lx106-elf/lib/gcc/xtensa-lx106-elf/4.8.5/libgcc.a(_divdf3.o)
-                0x0000000040216cc0                __divdf3
- *fill*         0x0000000040216de3        0x1 
- .text          0x0000000040216de4      0x169 /media/marzipan/Expansion_1/Development/Projects/esp_open_sdk/esp-open-sdk/xtensa-lx106-elf/lib/gcc/xtensa-lx106-elf/4.8.5/libgcc.a(_cmpdf2.o)
-                0x0000000040216de4                __eqdf2
-                0x0000000040216de4                __nedf2
-                0x0000000040216e14                __gtdf2
-                0x0000000040216e38                __ledf2
-                0x0000000040216e9c                __gedf2
-                0x0000000040216ec0                __ltdf2
-                0x0000000040216f24                __unorddf2
- *fill*         0x0000000040216f4d        0x3 
- .text          0x0000000040216f50       0x48 /media/marzipan/Expansion_1/Development/Projects/esp_open_sdk/esp-open-sdk/xtensa-lx106-elf/lib/gcc/xtensa-lx106-elf/4.8.5/libgcc.a(_fixdfsi.o)
-                0x0000000040216f50                __fixdfsi
- .text          0x0000000040216f98       0x59 /media/marzipan/Expansion_1/Development/Projects/esp_open_sdk/esp-open-sdk/xtensa-lx106-elf/lib/gcc/xtensa-lx106-elf/4.8.5/libgcc.a(_fixunsdfsi.o)
-                0x0000000040216f98                __fixunsdfsi
- *fill*         0x0000000040216ff1        0x3 
- .text          0x0000000040216ff4       0xa0 /media/marzipan/Expansion_1/Development/Projects/esp_open_sdk/esp-open-sdk/xtensa-lx106-elf/lib/gcc/xtensa-lx106-elf/4.8.5/libgcc.a(_truncdfsf2.o)
-                0x0000000040216ff4                __truncdfsf2
- .text          0x0000000040217094       0x21 /media/marzipan/Expansion_1/Development/Projects/esp_open_sdk/esp-open-sdk/xtensa-lx106-elf/lib/gcc/xtensa-lx106-elf/4.8.5/libgcc.a(_popcountsi2.o)
-                0x0000000040217094                __popcountsi2
- *fill*         0x00000000402170b5        0x3 
- .text          0x00000000402170b8       0x1d /media/marzipan/Expansion_1/Development/Projects/SuperHouseRTOS_2_3_17/esp-open-rtos/libc/xtensa-lx106-elf/lib/libc.a(lib_a-calloc.o)
-                0x00000000402170b8                calloc
- *fill*         0x00000000402170d5        0x3 
- .text          0x00000000402170d8       0x83 /media/marzipan/Expansion_1/Development/Projects/SuperHouseRTOS_2_3_17/esp-open-rtos/libc/xtensa-lx106-elf/lib/libc.a(lib_a-strcpy.o)
-                0x00000000402170d8                strcpy
- *fill*         0x000000004021715b        0x1 
- .text          0x000000004021715c       0xfa /media/marzipan/Expansion_1/Development/Projects/SuperHouseRTOS_2_3_17/esp-open-rtos/libc/xtensa-lx106-elf/lib/libc.a(lib_a-strncpy.o)
-                0x0000000040217194                strncpy
- *fill*         0x0000000040217256        0x2 
- .text          0x0000000040217258       0x3b /media/marzipan/Expansion_1/Development/Projects/SuperHouseRTOS_2_3_17/esp-open-rtos/libc/xtensa-lx106-elf/lib/libc.a(lib_a-strrchr.o)
-                0x0000000040217258                strrchr
- *fill*         0x0000000040217293        0x1 
+                0x00000000402164dc                _ZdlPv
+ *fill*         0x00000000402164ef        0x1 
+ .text          0x00000000402164f0      0x1ff /media/marzipan/Expansion_1/Development/Projects/esp_open_sdk/esp-open-sdk/xtensa-lx106-elf/lib/gcc/xtensa-lx106-elf/4.8.5/libgcc.a(_addsubsf3.o)
+                0x000000004021650c                __addsf3
+                0x00000000402165f4                __subsf3
+ *fill*         0x00000000402166ef        0x1 
+ .text          0x00000000402166f0      0x15d /media/marzipan/Expansion_1/Development/Projects/esp_open_sdk/esp-open-sdk/xtensa-lx106-elf/lib/gcc/xtensa-lx106-elf/4.8.5/libgcc.a(_mulsf3.o)
+                0x0000000040216768                __mulsf3
+ *fill*         0x000000004021684d        0x3 
+ .text          0x0000000040216850       0x40 /media/marzipan/Expansion_1/Development/Projects/esp_open_sdk/esp-open-sdk/xtensa-lx106-elf/lib/gcc/xtensa-lx106-elf/4.8.5/libgcc.a(_fixsfsi.o)
+                0x0000000040216850                __fixsfsi
+ .text          0x0000000040216890       0x51 /media/marzipan/Expansion_1/Development/Projects/esp_open_sdk/esp-open-sdk/xtensa-lx106-elf/lib/gcc/xtensa-lx106-elf/4.8.5/libgcc.a(_fixunssfsi.o)
+                0x0000000040216890                __fixunssfsi
+ *fill*         0x00000000402168e1        0x3 
+ .text          0x00000000402168e4      0x2f6 /media/marzipan/Expansion_1/Development/Projects/esp_open_sdk/esp-open-sdk/xtensa-lx106-elf/lib/gcc/xtensa-lx106-elf/4.8.5/libgcc.a(_addsubdf3.o)
+                0x0000000040216904                __adddf3
+                0x0000000040216a54                __subdf3
+ *fill*         0x0000000040216bda        0x2 
+ .text          0x0000000040216bdc      0x20b /media/marzipan/Expansion_1/Development/Projects/esp_open_sdk/esp-open-sdk/xtensa-lx106-elf/lib/gcc/xtensa-lx106-elf/4.8.5/libgcc.a(_divdf3.o)
+                0x0000000040216cc4                __divdf3
+ *fill*         0x0000000040216de7        0x1 
+ .text          0x0000000040216de8      0x169 /media/marzipan/Expansion_1/Development/Projects/esp_open_sdk/esp-open-sdk/xtensa-lx106-elf/lib/gcc/xtensa-lx106-elf/4.8.5/libgcc.a(_cmpdf2.o)
+                0x0000000040216de8                __eqdf2
+                0x0000000040216de8                __nedf2
+                0x0000000040216e18                __gtdf2
+                0x0000000040216e3c                __ledf2
+                0x0000000040216ea0                __gedf2
+                0x0000000040216ec4                __ltdf2
+                0x0000000040216f28                __unorddf2
+ *fill*         0x0000000040216f51        0x3 
+ .text          0x0000000040216f54       0x48 /media/marzipan/Expansion_1/Development/Projects/esp_open_sdk/esp-open-sdk/xtensa-lx106-elf/lib/gcc/xtensa-lx106-elf/4.8.5/libgcc.a(_fixdfsi.o)
+                0x0000000040216f54                __fixdfsi
+ .text          0x0000000040216f9c       0x59 /media/marzipan/Expansion_1/Development/Projects/esp_open_sdk/esp-open-sdk/xtensa-lx106-elf/lib/gcc/xtensa-lx106-elf/4.8.5/libgcc.a(_fixunsdfsi.o)
+                0x0000000040216f9c                __fixunsdfsi
+ *fill*         0x0000000040216ff5        0x3 
+ .text          0x0000000040216ff8       0xa0 /media/marzipan/Expansion_1/Development/Projects/esp_open_sdk/esp-open-sdk/xtensa-lx106-elf/lib/gcc/xtensa-lx106-elf/4.8.5/libgcc.a(_truncdfsf2.o)
+                0x0000000040216ff8                __truncdfsf2
+ .text          0x0000000040217098       0x21 /media/marzipan/Expansion_1/Development/Projects/esp_open_sdk/esp-open-sdk/xtensa-lx106-elf/lib/gcc/xtensa-lx106-elf/4.8.5/libgcc.a(_popcountsi2.o)
+                0x0000000040217098                __popcountsi2
+ *fill*         0x00000000402170b9        0x3 
+ .text          0x00000000402170bc       0x1d /media/marzipan/Expansion_1/Development/Projects/SuperHouseRTOS_2_3_17/esp-open-rtos/libc/xtensa-lx106-elf/lib/libc.a(lib_a-calloc.o)
+                0x00000000402170bc                calloc
+ *fill*         0x00000000402170d9        0x3 
+ .text          0x00000000402170dc       0x83 /media/marzipan/Expansion_1/Development/Projects/SuperHouseRTOS_2_3_17/esp-open-rtos/libc/xtensa-lx106-elf/lib/libc.a(lib_a-strcpy.o)
+                0x00000000402170dc                strcpy
+ *fill*         0x000000004021715f        0x1 
+ .text          0x0000000040217160       0xfa /media/marzipan/Expansion_1/Development/Projects/SuperHouseRTOS_2_3_17/esp-open-rtos/libc/xtensa-lx106-elf/lib/libc.a(lib_a-strncpy.o)
+                0x0000000040217198                strncpy
+ *fill*         0x000000004021725a        0x2 
+ .text          0x000000004021725c       0x3b /media/marzipan/Expansion_1/Development/Projects/SuperHouseRTOS_2_3_17/esp-open-rtos/libc/xtensa-lx106-elf/lib/libc.a(lib_a-strrchr.o)
+                0x000000004021725c                strrchr
+ *fill*         0x0000000040217297        0x1 
  .rodata.str1.4
-                0x0000000040217294      0x11b ./build/open_esplibs_libmain.a(user_interface.o)
+                0x0000000040217298      0x11b ./build/open_esplibs_libmain.a(user_interface.o)
                                         0x123 (size before relaxing)
- *fill*         0x00000000402173af        0x0 
- *fill*         0x00000000402173af        0x0 
- *fill*         0x00000000402173af        0x0 
- *fill*         0x00000000402173af        0x0 
- *fill*         0x00000000402173af        0x0 
- *fill*         0x00000000402173af        0x0 
- *fill*         0x00000000402173af        0x0 
- *fill*         0x00000000402173af        0x0 
- *fill*         0x00000000402173af        0x0 
- *fill*         0x00000000402173af        0x0 
- *fill*         0x00000000402173af        0x0 
- *fill*         0x00000000402173af        0x0 
- *fill*         0x00000000402173af        0x1 
+ *fill*         0x00000000402173b3        0x0 
+ *fill*         0x00000000402173b3        0x0 
+ *fill*         0x00000000402173b3        0x0 
+ *fill*         0x00000000402173b3        0x0 
+ *fill*         0x00000000402173b3        0x0 
+ *fill*         0x00000000402173b3        0x0 
+ *fill*         0x00000000402173b3        0x0 
+ *fill*         0x00000000402173b3        0x0 
+ *fill*         0x00000000402173b3        0x0 
+ *fill*         0x00000000402173b3        0x0 
+ *fill*         0x00000000402173b3        0x0 
+ *fill*         0x00000000402173b3        0x0 
+ *fill*         0x00000000402173b3        0x1 
  .text.sdk_uart_buff_switch
-                0x00000000402173b0        0x2 ./build/open_esplibs_libmain.a(uart.o)
-                0x00000000402173b0                sdk_uart_buff_switch
- *fill*         0x00000000402173b2        0x2 
- .text.sdk_Uart_Init
                 0x00000000402173b4        0x2 ./build/open_esplibs_libmain.a(uart.o)
-                0x00000000402173b4                sdk_Uart_Init
- *fill*         0x00000000402173b6        0x0 
- *fill*         0x00000000402173b6        0x0 
- *fill*         0x00000000402173b6        0x0 
- *fill*         0x00000000402173b6        0x0 
- *fill*         0x00000000402173b6        0x0 
- *fill*         0x00000000402173b6        0x0 
+                0x00000000402173b4                sdk_uart_buff_switch
  *fill*         0x00000000402173b6        0x2 
+ .text.sdk_Uart_Init
+                0x00000000402173b8        0x2 ./build/open_esplibs_libmain.a(uart.o)
+                0x00000000402173b8                sdk_Uart_Init
+ *fill*         0x00000000402173ba        0x0 
+ *fill*         0x00000000402173ba        0x0 
+ *fill*         0x00000000402173ba        0x0 
+ *fill*         0x00000000402173ba        0x0 
+ *fill*         0x00000000402173ba        0x0 
+ *fill*         0x00000000402173ba        0x0 
+ *fill*         0x00000000402173ba        0x2 
  .rodata.str1.4
-                0x00000000402173b8       0x3a ./build/open_esplibs_libmain.a(timers.o)
- *fill*         0x00000000402173f2        0x0 
- *fill*         0x00000000402173f2        0x0 
- *fill*         0x00000000402173f2        0x0 
- *fill*         0x00000000402173f2        0x0 
- *fill*         0x00000000402173f2        0x0 
- *fill*         0x00000000402173f2        0x0 
- *fill*         0x00000000402173f2        0x0 
- *fill*         0x00000000402173f2        0x0 
- *fill*         0x00000000402173f2        0x2 
+                0x00000000402173bc       0x3a ./build/open_esplibs_libmain.a(timers.o)
+ *fill*         0x00000000402173f6        0x0 
+ *fill*         0x00000000402173f6        0x0 
+ *fill*         0x00000000402173f6        0x0 
+ *fill*         0x00000000402173f6        0x0 
+ *fill*         0x00000000402173f6        0x0 
+ *fill*         0x00000000402173f6        0x0 
+ *fill*         0x00000000402173f6        0x0 
+ *fill*         0x00000000402173f6        0x0 
+ *fill*         0x00000000402173f6        0x2 
  .rodata.str1.4
-                0x00000000402173f4       0x35 ./build/open_esplibs_libwpa.a(wpa_main.o)
- *fill*         0x0000000040217429        0x0 
- *fill*         0x0000000040217429        0x0 
- *fill*         0x0000000040217429        0x0 
- *fill*         0x0000000040217429        0x0 
- *fill*         0x0000000040217429        0x0 
- *fill*         0x0000000040217429        0x0 
- *fill*         0x0000000040217429        0x0 
- *fill*         0x0000000040217429        0x0 
- *fill*         0x0000000040217429        0x0 
- *fill*         0x0000000040217429        0x0 
- *fill*         0x0000000040217429        0x0 
- *fill*         0x0000000040217429        0x0 
- *fill*         0x0000000040217429        0x0 
- *fill*         0x0000000040217429        0x0 
- *fill*         0x0000000040217429        0x0 
- *fill*         0x0000000040217429        0x0 
- *fill*         0x0000000040217429        0x0 
- *fill*         0x0000000040217429        0x0 
- *fill*         0x0000000040217429        0x0 
- *fill*         0x0000000040217429        0x0 
- *fill*         0x0000000040217429        0x0 
- *fill*         0x0000000040217429        0x0 
- *fill*         0x0000000040217429        0x0 
- *fill*         0x0000000040217429        0x0 
- *fill*         0x0000000040217429        0x0 
- *fill*         0x0000000040217429        0x0 
- *fill*         0x0000000040217429        0x0 
- *fill*         0x0000000040217429        0x0 
- *fill*         0x0000000040217429        0x0 
- *fill*         0x0000000040217429        0x0 
- *fill*         0x0000000040217429        0x0 
- *fill*         0x0000000040217429        0x0 
- *fill*         0x0000000040217429        0x0 
- *fill*         0x0000000040217429        0x0 
- *fill*         0x0000000040217429        0x0 
- *fill*         0x0000000040217429        0x0 
- *fill*         0x0000000040217429        0x0 
- *fill*         0x0000000040217429        0x0 
- *fill*         0x0000000040217429        0x0 
- *fill*         0x0000000040217429        0x3 
+                0x00000000402173f8       0x35 ./build/open_esplibs_libwpa.a(wpa_main.o)
+ *fill*         0x000000004021742d        0x0 
+ *fill*         0x000000004021742d        0x0 
+ *fill*         0x000000004021742d        0x0 
+ *fill*         0x000000004021742d        0x0 
+ *fill*         0x000000004021742d        0x0 
+ *fill*         0x000000004021742d        0x0 
+ *fill*         0x000000004021742d        0x0 
+ *fill*         0x000000004021742d        0x0 
+ *fill*         0x000000004021742d        0x0 
+ *fill*         0x000000004021742d        0x0 
+ *fill*         0x000000004021742d        0x0 
+ *fill*         0x000000004021742d        0x0 
+ *fill*         0x000000004021742d        0x0 
+ *fill*         0x000000004021742d        0x0 
+ *fill*         0x000000004021742d        0x0 
+ *fill*         0x000000004021742d        0x0 
+ *fill*         0x000000004021742d        0x0 
+ *fill*         0x000000004021742d        0x0 
+ *fill*         0x000000004021742d        0x0 
+ *fill*         0x000000004021742d        0x0 
+ *fill*         0x000000004021742d        0x0 
+ *fill*         0x000000004021742d        0x0 
+ *fill*         0x000000004021742d        0x0 
+ *fill*         0x000000004021742d        0x0 
+ *fill*         0x000000004021742d        0x0 
+ *fill*         0x000000004021742d        0x0 
+ *fill*         0x000000004021742d        0x0 
+ *fill*         0x000000004021742d        0x0 
+ *fill*         0x000000004021742d        0x0 
+ *fill*         0x000000004021742d        0x0 
+ *fill*         0x000000004021742d        0x0 
+ *fill*         0x000000004021742d        0x0 
+ *fill*         0x000000004021742d        0x0 
+ *fill*         0x000000004021742d        0x0 
+ *fill*         0x000000004021742d        0x0 
+ *fill*         0x000000004021742d        0x0 
+ *fill*         0x000000004021742d        0x0 
+ *fill*         0x000000004021742d        0x0 
+ *fill*         0x000000004021742d        0x0 
+ *fill*         0x000000004021742d        0x3 
  .text.uxQueueMessagesWaitingFromISR
-                0x000000004021742c        0x7 ./build/freertos.a(queue.o)
-                0x000000004021742c                uxQueueMessagesWaitingFromISR
- *fill*         0x0000000040217433        0x0 
- *fill*         0x0000000040217433        0x0 
- *fill*         0x0000000040217433        0x1 
+                0x0000000040217430        0x7 ./build/freertos.a(queue.o)
+                0x0000000040217430                uxQueueMessagesWaitingFromISR
+ *fill*         0x0000000040217437        0x0 
+ *fill*         0x0000000040217437        0x0 
+ *fill*         0x0000000040217437        0x1 
  .text.vListInitialise
-                0x0000000040217434       0x12 ./build/freertos.a(list.o)
-                0x0000000040217434                vListInitialise
- *fill*         0x0000000040217446        0x2 
+                0x0000000040217438       0x12 ./build/freertos.a(list.o)
+                0x0000000040217438                vListInitialise
+ *fill*         0x000000004021744a        0x2 
  .text.vListInitialiseItem
-                0x0000000040217448        0x6 ./build/freertos.a(list.o)
-                0x0000000040217448                vListInitialiseItem
- *fill*         0x000000004021744e        0x2 
+                0x000000004021744c        0x6 ./build/freertos.a(list.o)
+                0x000000004021744c                vListInitialiseItem
+ *fill*         0x0000000040217452        0x2 
  .text.vListInsertEnd
-                0x0000000040217450       0x18 ./build/freertos.a(list.o)
-                0x0000000040217450                vListInsertEnd
+                0x0000000040217454       0x18 ./build/freertos.a(list.o)
+                0x0000000040217454                vListInsertEnd
  .text.vListInsert
-                0x0000000040217468       0x2c ./build/freertos.a(list.o)
-                0x0000000040217468                vListInsert
+                0x000000004021746c       0x2c ./build/freertos.a(list.o)
+                0x000000004021746c                vListInsert
  .text.uxListRemove
-                0x0000000040217494       0x21 ./build/freertos.a(list.o)
-                0x0000000040217494                uxListRemove
- *fill*         0x00000000402174b5        0x0 
- *fill*         0x00000000402174b5        0x0 
- *fill*         0x00000000402174b5        0x0 
- *fill*         0x00000000402174b5        0x3 
+                0x0000000040217498       0x21 ./build/freertos.a(list.o)
+                0x0000000040217498                uxListRemove
+ *fill*         0x00000000402174b9        0x0 
+ *fill*         0x00000000402174b9        0x0 
+ *fill*         0x00000000402174b9        0x0 
+ *fill*         0x00000000402174b9        0x3 
  .rodata.tcpip_thread
-                0x00000000402174b8       0x18 ./build/lwip.a(tcpip.o)
- *fill*         0x00000000402174d0        0x0 
- *fill*         0x00000000402174d0        0x0 
+                0x00000000402174bc       0x18 ./build/lwip.a(tcpip.o)
+ *fill*         0x00000000402174d4        0x0 
+ *fill*         0x00000000402174d4        0x0 
  .rodata.str1.4
-                0x00000000402174d0        0xd ./build/lwip.a(tcpip.o)
- *fill*         0x00000000402174dd        0x0 
- *fill*         0x00000000402174dd        0x0 
- *fill*         0x00000000402174dd        0x0 
- *fill*         0x00000000402174dd        0x0 
- *fill*         0x00000000402174dd        0x0 
- *fill*         0x00000000402174dd        0x0 
- *fill*         0x00000000402174dd        0x0 
- *fill*         0x00000000402174dd        0x0 
- *fill*         0x00000000402174dd        0x3 
+                0x00000000402174d4        0xd ./build/lwip.a(tcpip.o)
+ *fill*         0x00000000402174e1        0x0 
+ *fill*         0x00000000402174e1        0x0 
+ *fill*         0x00000000402174e1        0x0 
+ *fill*         0x00000000402174e1        0x0 
+ *fill*         0x00000000402174e1        0x0 
+ *fill*         0x00000000402174e1        0x0 
+ *fill*         0x00000000402174e1        0x0 
+ *fill*         0x00000000402174e1        0x0 
+ *fill*         0x00000000402174e1        0x3 
  .rodata.dhcp_recv
-                0x00000000402174e0       0xf0 ./build/lwip.a(dhcp.o)
- *fill*         0x00000000402175d0        0x0 
- *fill*         0x00000000402175d0        0x0 
- *fill*         0x00000000402175d0        0x0 
- *fill*         0x00000000402175d0        0x0 
- *fill*         0x00000000402175d0        0x0 
- *fill*         0x00000000402175d0        0x0 
- *fill*         0x00000000402175d0        0x0 
+                0x00000000402174e4       0xf0 ./build/lwip.a(dhcp.o)
+ *fill*         0x00000000402175d4        0x0 
+ *fill*         0x00000000402175d4        0x0 
+ *fill*         0x00000000402175d4        0x0 
+ *fill*         0x00000000402175d4        0x0 
+ *fill*         0x00000000402175d4        0x0 
+ *fill*         0x00000000402175d4        0x0 
+ *fill*         0x00000000402175d4        0x0 
  .rodata.memp_sizes
-                0x00000000402175d0       0x1c ./build/lwip.a(memp.o)
-                0x00000000402175d0                memp_sizes
+                0x00000000402175d4       0x1c ./build/lwip.a(memp.o)
+                0x00000000402175d4                memp_sizes
  .text.tcp_init
-                0x00000000402175ec        0x2 ./build/lwip.a(tcp.o)
-                0x00000000402175ec                tcp_init
- *fill*         0x00000000402175ee        0x0 
- *fill*         0x00000000402175ee        0x0 
- *fill*         0x00000000402175ee        0x0 
- *fill*         0x00000000402175ee        0x0 
- *fill*         0x00000000402175ee        0x0 
- *fill*         0x00000000402175ee        0x2 
- .text.tcp_arg  0x00000000402175f0        0x4 ./build/lwip.a(tcp.o)
-                0x00000000402175f0                tcp_arg
+                0x00000000402175f0        0x2 ./build/lwip.a(tcp.o)
+                0x00000000402175f0                tcp_init
+ *fill*         0x00000000402175f2        0x0 
+ *fill*         0x00000000402175f2        0x0 
+ *fill*         0x00000000402175f2        0x0 
+ *fill*         0x00000000402175f2        0x0 
+ *fill*         0x00000000402175f2        0x0 
+ *fill*         0x00000000402175f2        0x2 
+ .text.tcp_arg  0x00000000402175f4        0x4 ./build/lwip.a(tcp.o)
+                0x00000000402175f4                tcp_arg
  .text.tcp_recv
-                0x00000000402175f4        0x5 ./build/lwip.a(tcp.o)
-                0x00000000402175f4                tcp_recv
- *fill*         0x00000000402175f9        0x3 
+                0x00000000402175f8        0x5 ./build/lwip.a(tcp.o)
+                0x00000000402175f8                tcp_recv
+ *fill*         0x00000000402175fd        0x3 
  .text.tcp_sent
-                0x00000000402175fc        0x5 ./build/lwip.a(tcp.o)
-                0x00000000402175fc                tcp_sent
- *fill*         0x0000000040217601        0x3 
- .text.tcp_err  0x0000000040217604        0x5 ./build/lwip.a(tcp.o)
-                0x0000000040217604                tcp_err
- *fill*         0x0000000040217609        0x3 
+                0x0000000040217600        0x5 ./build/lwip.a(tcp.o)
+                0x0000000040217600                tcp_sent
+ *fill*         0x0000000040217605        0x3 
+ .text.tcp_err  0x0000000040217608        0x5 ./build/lwip.a(tcp.o)
+                0x0000000040217608                tcp_err
+ *fill*         0x000000004021760d        0x3 
  .text.tcp_accept
-                0x000000004021760c        0x4 ./build/lwip.a(tcp.o)
-                0x000000004021760c                tcp_accept
+                0x0000000040217610        0x4 ./build/lwip.a(tcp.o)
+                0x0000000040217610                tcp_accept
  .text.tcp_poll
-                0x0000000040217610        0x8 ./build/lwip.a(tcp.o)
-                0x0000000040217610                tcp_poll
- *fill*         0x0000000040217618        0x0 
- *fill*         0x0000000040217618        0x0 
- *fill*         0x0000000040217618        0x0 
- *fill*         0x0000000040217618        0x0 
+                0x0000000040217614        0x8 ./build/lwip.a(tcp.o)
+                0x0000000040217614                tcp_poll
+ *fill*         0x000000004021761c        0x0 
+ *fill*         0x000000004021761c        0x0 
+ *fill*         0x000000004021761c        0x0 
+ *fill*         0x000000004021761c        0x0 
  .rodata.tcp_close_shutdown
-                0x0000000040217618       0x20 ./build/lwip.a(tcp.o)
- *fill*         0x0000000040217638        0x0 
- *fill*         0x0000000040217638        0x0 
- *fill*         0x0000000040217638        0x0 
- *fill*         0x0000000040217638        0x0 
- *fill*         0x0000000040217638        0x0 
- *fill*         0x0000000040217638        0x0 
- *fill*         0x0000000040217638        0x0 
- *fill*         0x0000000040217638        0x0 
- *fill*         0x0000000040217638        0x0 
- *fill*         0x0000000040217638        0x0 
- *fill*         0x0000000040217638        0x0 
+                0x000000004021761c       0x20 ./build/lwip.a(tcp.o)
+ *fill*         0x000000004021763c        0x0 
+ *fill*         0x000000004021763c        0x0 
+ *fill*         0x000000004021763c        0x0 
+ *fill*         0x000000004021763c        0x0 
+ *fill*         0x000000004021763c        0x0 
+ *fill*         0x000000004021763c        0x0 
+ *fill*         0x000000004021763c        0x0 
+ *fill*         0x000000004021763c        0x0 
+ *fill*         0x000000004021763c        0x0 
+ *fill*         0x000000004021763c        0x0 
+ *fill*         0x000000004021763c        0x0 
  .rodata.tcp_pcb_lists
-                0x0000000040217638       0x10 ./build/lwip.a(tcp.o)
-                0x0000000040217638                tcp_pcb_lists
+                0x000000004021763c       0x10 ./build/lwip.a(tcp.o)
+                0x000000004021763c                tcp_pcb_lists
  .rodata.tcp_persist_backoff
-                0x0000000040217648        0x7 ./build/lwip.a(tcp.o)
-                0x0000000040217648                tcp_persist_backoff
- *fill*         0x000000004021764f        0x0 
- *fill*         0x000000004021764f        0x0 
- *fill*         0x000000004021764f        0x1 
+                0x000000004021764c        0x7 ./build/lwip.a(tcp.o)
+                0x000000004021764c                tcp_persist_backoff
+ *fill*         0x0000000040217653        0x0 
+ *fill*         0x0000000040217653        0x0 
+ *fill*         0x0000000040217653        0x1 
  .rodata.str1.4
-                0x0000000040217650        0xf ./build/lwip.a(dns.o)
- *fill*         0x000000004021765f        0x0 
- *fill*         0x000000004021765f        0x0 
- *fill*         0x000000004021765f        0x0 
- *fill*         0x000000004021765f        0x0 
- *fill*         0x000000004021765f        0x1 
+                0x0000000040217654        0xf ./build/lwip.a(dns.o)
+ *fill*         0x0000000040217663        0x0 
+ *fill*         0x0000000040217663        0x0 
+ *fill*         0x0000000040217663        0x0 
+ *fill*         0x0000000040217663        0x0 
+ *fill*         0x0000000040217663        0x1 
  .text.pbuf_header
-                0x0000000040217660       0x96 ./build/lwip.a(pbuf.o)
-                0x0000000040217660                pbuf_header
- *fill*         0x00000000402176f6        0x0 
- *fill*         0x00000000402176f6        0x0 
- *fill*         0x00000000402176f6        0x2 
+                0x0000000040217664       0x96 ./build/lwip.a(pbuf.o)
+                0x0000000040217664                pbuf_header
+ *fill*         0x00000000402176fa        0x0 
+ *fill*         0x00000000402176fa        0x0 
+ *fill*         0x00000000402176fa        0x2 
  .rodata.pbuf_alloc
-                0x00000000402176f8       0x14 ./build/lwip.a(pbuf.o)
- *fill*         0x000000004021770c        0x0 
+                0x00000000402176fc       0x14 ./build/lwip.a(pbuf.o)
+ *fill*         0x0000000040217710        0x0 
  .text.pbuf_clen
-                0x000000004021770c       0x14 ./build/lwip.a(pbuf.o)
-                0x000000004021770c                pbuf_clen
- *fill*         0x0000000040217720        0x0 
+                0x0000000040217710       0x14 ./build/lwip.a(pbuf.o)
+                0x0000000040217710                pbuf_clen
+ *fill*         0x0000000040217724        0x0 
  .text.pbuf_cat
-                0x0000000040217720       0x2b ./build/lwip.a(pbuf.o)
-                0x0000000040217720                pbuf_cat
- *fill*         0x000000004021774b        0x0 
- *fill*         0x000000004021774b        0x0 
- *fill*         0x000000004021774b        0x1 
+                0x0000000040217724       0x2b ./build/lwip.a(pbuf.o)
+                0x0000000040217724                pbuf_cat
+ *fill*         0x000000004021774f        0x0 
+ *fill*         0x000000004021774f        0x0 
+ *fill*         0x000000004021774f        0x1 
  .text.netif_init
-                0x000000004021774c        0x2 ./build/lwip.a(netif.o)
-                0x000000004021774c                netif_init
- *fill*         0x000000004021774e        0x0 
- *fill*         0x000000004021774e        0x0 
- *fill*         0x000000004021774e        0x0 
- *fill*         0x000000004021774e        0x2 
+                0x0000000040217750        0x2 ./build/lwip.a(netif.o)
+                0x0000000040217750                netif_init
+ *fill*         0x0000000040217752        0x0 
+ *fill*         0x0000000040217752        0x0 
+ *fill*         0x0000000040217752        0x0 
+ *fill*         0x0000000040217752        0x2 
  .text.netif_set_gw
-                0x0000000040217750        0x8 ./build/lwip.a(netif.o)
-                0x0000000040217750                netif_set_gw
+                0x0000000040217754        0x8 ./build/lwip.a(netif.o)
+                0x0000000040217754                netif_set_gw
  .text.netif_set_netmask
-                0x0000000040217758        0x8 ./build/lwip.a(netif.o)
-                0x0000000040217758                netif_set_netmask
- *fill*         0x0000000040217760        0x0 
- *fill*         0x0000000040217760        0x0 
+                0x000000004021775c        0x8 ./build/lwip.a(netif.o)
+                0x000000004021775c                netif_set_netmask
+ *fill*         0x0000000040217764        0x0 
+ *fill*         0x0000000040217764        0x0 
  .text.stats_init
-                0x0000000040217760        0x2 ./build/lwip.a(stats.o)
-                0x0000000040217760                stats_init
- *fill*         0x0000000040217762        0x0 
- *fill*         0x0000000040217762        0x0 
- *fill*         0x0000000040217762        0x0 
- *fill*         0x0000000040217762        0x0 
- *fill*         0x0000000040217762        0x0 
- *fill*         0x0000000040217762        0x0 
- *fill*         0x0000000040217762        0x0 
- *fill*         0x0000000040217762        0x0 
- *fill*         0x0000000040217762        0x2 
- .text.udp_init
-                0x0000000040217764        0x2 ./build/lwip.a(udp.o)
-                0x0000000040217764                udp_init
+                0x0000000040217764        0x2 ./build/lwip.a(stats.o)
+                0x0000000040217764                stats_init
+ *fill*         0x0000000040217766        0x0 
+ *fill*         0x0000000040217766        0x0 
+ *fill*         0x0000000040217766        0x0 
+ *fill*         0x0000000040217766        0x0 
  *fill*         0x0000000040217766        0x0 
  *fill*         0x0000000040217766        0x0 
  *fill*         0x0000000040217766        0x0 
  *fill*         0x0000000040217766        0x0 
  *fill*         0x0000000040217766        0x2 
+ .text.udp_init
+                0x0000000040217768        0x2 ./build/lwip.a(udp.o)
+                0x0000000040217768                udp_init
+ *fill*         0x000000004021776a        0x0 
+ *fill*         0x000000004021776a        0x0 
+ *fill*         0x000000004021776a        0x0 
+ *fill*         0x000000004021776a        0x0 
+ *fill*         0x000000004021776a        0x2 
  .text.udp_disconnect
-                0x0000000040217768       0x14 ./build/lwip.a(udp.o)
-                0x0000000040217768                udp_disconnect
+                0x000000004021776c       0x14 ./build/lwip.a(udp.o)
+                0x000000004021776c                udp_disconnect
  .text.udp_recv
-                0x000000004021777c        0x6 ./build/lwip.a(udp.o)
-                0x000000004021777c                udp_recv
- *fill*         0x0000000040217782        0x0 
- *fill*         0x0000000040217782        0x0 
- *fill*         0x0000000040217782        0x0 
- *fill*         0x0000000040217782        0x0 
- *fill*         0x0000000040217782        0x0 
- *fill*         0x0000000040217782        0x0 
- *fill*         0x0000000040217782        0x0 
- *fill*         0x0000000040217782        0x0 
- *fill*         0x0000000040217782        0x0 
- *fill*         0x0000000040217782        0x0 
- *fill*         0x0000000040217782        0x0 
- *fill*         0x0000000040217782        0x0 
- *fill*         0x0000000040217782        0x2 
+                0x0000000040217780        0x6 ./build/lwip.a(udp.o)
+                0x0000000040217780                udp_recv
+ *fill*         0x0000000040217786        0x0 
+ *fill*         0x0000000040217786        0x0 
+ *fill*         0x0000000040217786        0x0 
+ *fill*         0x0000000040217786        0x0 
+ *fill*         0x0000000040217786        0x0 
+ *fill*         0x0000000040217786        0x0 
+ *fill*         0x0000000040217786        0x0 
+ *fill*         0x0000000040217786        0x0 
+ *fill*         0x0000000040217786        0x0 
+ *fill*         0x0000000040217786        0x0 
+ *fill*         0x0000000040217786        0x0 
+ *fill*         0x0000000040217786        0x0 
+ *fill*         0x0000000040217786        0x2 
  .text.ip4_addr_isbroadcast
-                0x0000000040217784       0x35 ./build/lwip.a(ip_addr.o)
-                0x0000000040217784                ip4_addr_isbroadcast
- *fill*         0x00000000402177b9        0x0 
- *fill*         0x00000000402177b9        0x0 
- *fill*         0x00000000402177b9        0x0 
- *fill*         0x00000000402177b9        0x0 
- *fill*         0x00000000402177b9        0x3 
+                0x0000000040217788       0x35 ./build/lwip.a(ip_addr.o)
+                0x0000000040217788                ip4_addr_isbroadcast
+ *fill*         0x00000000402177bd        0x0 
+ *fill*         0x00000000402177bd        0x0 
+ *fill*         0x00000000402177bd        0x0 
+ *fill*         0x00000000402177bd        0x0 
+ *fill*         0x00000000402177bd        0x3 
  .rodata.ip_addr_broadcast
-                0x00000000402177bc        0x4 ./build/lwip.a(ip_addr.o)
-                0x00000000402177bc                ip_addr_broadcast
- .rodata.ip_addr_any
                 0x00000000402177c0        0x4 ./build/lwip.a(ip_addr.o)
-                0x00000000402177c0                ip_addr_any
- *fill*         0x00000000402177c4        0x0 
- *fill*         0x00000000402177c4        0x0 
- *fill*         0x00000000402177c4        0x0 
+                0x00000000402177c0                ip_addr_broadcast
+ .rodata.ip_addr_any
+                0x00000000402177c4        0x4 ./build/lwip.a(ip_addr.o)
+                0x00000000402177c4                ip_addr_any
+ *fill*         0x00000000402177c8        0x0 
+ *fill*         0x00000000402177c8        0x0 
+ *fill*         0x00000000402177c8        0x0 
  .text.lwip_standard_chksum
-                0x00000000402177c4       0x84 ./build/lwip.a(inet_chksum.o)
- *fill*         0x0000000040217848        0x0 
- *fill*         0x0000000040217848        0x0 
- *fill*         0x0000000040217848        0x0 
- *fill*         0x0000000040217848        0x0 
- *fill*         0x0000000040217848        0x0 
- *fill*         0x0000000040217848        0x0 
- *fill*         0x0000000040217848        0x0 
- *fill*         0x0000000040217848        0x0 
- *fill*         0x0000000040217848        0x0 
- *fill*         0x0000000040217848        0x0 
- *fill*         0x0000000040217848        0x0 
+                0x00000000402177c8       0x84 ./build/lwip.a(inet_chksum.o)
+ *fill*         0x000000004021784c        0x0 
+ *fill*         0x000000004021784c        0x0 
+ *fill*         0x000000004021784c        0x0 
+ *fill*         0x000000004021784c        0x0 
+ *fill*         0x000000004021784c        0x0 
+ *fill*         0x000000004021784c        0x0 
+ *fill*         0x000000004021784c        0x0 
+ *fill*         0x000000004021784c        0x0 
+ *fill*         0x000000004021784c        0x0 
+ *fill*         0x000000004021784c        0x0 
+ *fill*         0x000000004021784c        0x0 
  .rodata.ethzero
-                0x0000000040217848        0x6 ./build/lwip.a(etharp.o)
-                0x0000000040217848                ethzero
- *fill*         0x000000004021784e        0x2 
+                0x000000004021784c        0x6 ./build/lwip.a(etharp.o)
+                0x000000004021784c                ethzero
+ *fill*         0x0000000040217852        0x2 
  .rodata.ethbroadcast
-                0x0000000040217850        0x6 ./build/lwip.a(etharp.o)
-                0x0000000040217850                ethbroadcast
- *fill*         0x0000000040217856        0x0 
- *fill*         0x0000000040217856        0x0 
- *fill*         0x0000000040217856        0x0 
- *fill*         0x0000000040217856        0x0 
- *fill*         0x0000000040217856        0x0 
- *fill*         0x0000000040217856        0x0 
- *fill*         0x0000000040217856        0x0 
- *fill*         0x0000000040217856        0x0 
- *fill*         0x0000000040217856        0x0 
- *fill*         0x0000000040217856        0x2 
- .text.sys_init
-                0x0000000040217858        0x2 ./build/lwip.a(sys_arch.o)
-                0x0000000040217858                sys_init
+                0x0000000040217854        0x6 ./build/lwip.a(etharp.o)
+                0x0000000040217854                ethbroadcast
+ *fill*         0x000000004021785a        0x0 
+ *fill*         0x000000004021785a        0x0 
+ *fill*         0x000000004021785a        0x0 
+ *fill*         0x000000004021785a        0x0 
  *fill*         0x000000004021785a        0x0 
  *fill*         0x000000004021785a        0x0 
  *fill*         0x000000004021785a        0x0 
  *fill*         0x000000004021785a        0x0 
  *fill*         0x000000004021785a        0x0 
  *fill*         0x000000004021785a        0x2 
+ .text.sys_init
+                0x000000004021785c        0x2 ./build/lwip.a(sys_arch.o)
+                0x000000004021785c                sys_init
+ *fill*         0x000000004021785e        0x0 
+ *fill*         0x000000004021785e        0x0 
+ *fill*         0x000000004021785e        0x0 
+ *fill*         0x000000004021785e        0x0 
+ *fill*         0x000000004021785e        0x0 
+ *fill*         0x000000004021785e        0x2 
  .rodata.lwip_setsockopt_internal
-                0x000000004021785c       0x18 ./build/lwip.a(sockets.o)
- *fill*         0x0000000040217874        0x0 
- *fill*         0x0000000040217874        0x0 
+                0x0000000040217860       0x18 ./build/lwip.a(sockets.o)
+ *fill*         0x0000000040217878        0x0 
+ *fill*         0x0000000040217878        0x0 
  .rodata.event_callback
-                0x0000000040217874       0x14 ./build/lwip.a(sockets.o)
+                0x0000000040217878       0x14 ./build/lwip.a(sockets.o)
  .text.lwip_socket_init
-                0x0000000040217888        0x2 ./build/lwip.a(sockets.o)
-                0x0000000040217888                lwip_socket_init
- *fill*         0x000000004021788a        0x0 
- *fill*         0x000000004021788a        0x0 
- *fill*         0x000000004021788a        0x0 
- *fill*         0x000000004021788a        0x0 
- *fill*         0x000000004021788a        0x0 
- *fill*         0x000000004021788a        0x0 
- *fill*         0x000000004021788a        0x0 
- *fill*         0x000000004021788a        0x0 
- *fill*         0x000000004021788a        0x2 
+                0x000000004021788c        0x2 ./build/lwip.a(sockets.o)
+                0x000000004021788c                lwip_socket_init
+ *fill*         0x000000004021788e        0x0 
+ *fill*         0x000000004021788e        0x0 
+ *fill*         0x000000004021788e        0x0 
+ *fill*         0x000000004021788e        0x0 
+ *fill*         0x000000004021788e        0x0 
+ *fill*         0x000000004021788e        0x0 
+ *fill*         0x000000004021788e        0x0 
+ *fill*         0x000000004021788e        0x0 
+ *fill*         0x000000004021788e        0x2 
  .rodata.err_to_errno_table
-                0x000000004021788c       0x40 ./build/lwip.a(sockets.o)
- *fill*         0x00000000402178cc        0x0 
+                0x0000000040217890       0x40 ./build/lwip.a(sockets.o)
+ *fill*         0x00000000402178d0        0x0 
  .text.raw_bind
-                0x00000000402178cc        0xa ./build/lwip.a(raw.o)
-                0x00000000402178cc                raw_bind
- *fill*         0x00000000402178d6        0x2 
+                0x00000000402178d0        0xa ./build/lwip.a(raw.o)
+                0x00000000402178d0                raw_bind
+ *fill*         0x00000000402178da        0x2 
  .text.raw_connect
-                0x00000000402178d8        0xa ./build/lwip.a(raw.o)
-                0x00000000402178d8                raw_connect
- *fill*         0x00000000402178e2        0x2 
+                0x00000000402178dc        0xa ./build/lwip.a(raw.o)
+                0x00000000402178dc                raw_connect
+ *fill*         0x00000000402178e6        0x2 
  .text.raw_recv
-                0x00000000402178e4        0x6 ./build/lwip.a(raw.o)
-                0x00000000402178e4                raw_recv
- *fill*         0x00000000402178ea        0x0 
- *fill*         0x00000000402178ea        0x0 
- *fill*         0x00000000402178ea        0x0 
- *fill*         0x00000000402178ea        0x0 
- *fill*         0x00000000402178ea        0x0 
- *fill*         0x00000000402178ea        0x0 
- *fill*         0x00000000402178ea        0x0 
- *fill*         0x00000000402178ea        0x2 
+                0x00000000402178e8        0x6 ./build/lwip.a(raw.o)
+                0x00000000402178e8                raw_recv
+ *fill*         0x00000000402178ee        0x0 
+ *fill*         0x00000000402178ee        0x0 
+ *fill*         0x00000000402178ee        0x0 
+ *fill*         0x00000000402178ee        0x0 
+ *fill*         0x00000000402178ee        0x0 
+ *fill*         0x00000000402178ee        0x0 
+ *fill*         0x00000000402178ee        0x0 
+ *fill*         0x00000000402178ee        0x2 
  .rodata.tcp_input
-                0x00000000402178ec       0x20 ./build/lwip.a(tcp_in.o)
- *fill*         0x000000004021790c        0x0 
- *fill*         0x000000004021790c        0x0 
- *fill*         0x000000004021790c        0x0 
- *fill*         0x000000004021790c        0x0 
- *fill*         0x000000004021790c        0x0 
- *fill*         0x000000004021790c        0x0 
- *fill*         0x000000004021790c        0x0 
- *fill*         0x000000004021790c        0x0 
- *fill*         0x000000004021790c        0x0 
- *fill*         0x000000004021790c        0x0 
- *fill*         0x000000004021790c        0x0 
- *fill*         0x000000004021790c        0x0 
- *fill*         0x000000004021790c        0x0 
- *fill*         0x000000004021790c        0x0 
- *fill*         0x000000004021790c        0x0 
- *fill*         0x000000004021790c        0x0 
+                0x00000000402178f0       0x20 ./build/lwip.a(tcp_in.o)
+ *fill*         0x0000000040217910        0x0 
+ *fill*         0x0000000040217910        0x0 
+ *fill*         0x0000000040217910        0x0 
+ *fill*         0x0000000040217910        0x0 
+ *fill*         0x0000000040217910        0x0 
+ *fill*         0x0000000040217910        0x0 
+ *fill*         0x0000000040217910        0x0 
+ *fill*         0x0000000040217910        0x0 
+ *fill*         0x0000000040217910        0x0 
+ *fill*         0x0000000040217910        0x0 
+ *fill*         0x0000000040217910        0x0 
+ *fill*         0x0000000040217910        0x0 
+ *fill*         0x0000000040217910        0x0 
+ *fill*         0x0000000040217910        0x0 
+ *fill*         0x0000000040217910        0x0 
+ *fill*         0x0000000040217910        0x0 
  .text.netbuf_data
-                0x000000004021790c       0x1c ./build/lwip.a(netbuf.o)
-                0x000000004021790c                netbuf_data
+                0x0000000040217910       0x1c ./build/lwip.a(netbuf.o)
+                0x0000000040217910                netbuf_data
  .text.netbuf_next
-                0x0000000040217928       0x1d ./build/lwip.a(netbuf.o)
-                0x0000000040217928                netbuf_next
- *fill*         0x0000000040217945        0x0 
- *fill*         0x0000000040217945        0x0 
- *fill*         0x0000000040217945        0x0 
- *fill*         0x0000000040217945        0x0 
- *fill*         0x0000000040217945        0x0 
- *fill*         0x0000000040217945        0x0 
- *fill*         0x0000000040217945        0x0 
- *fill*         0x0000000040217945        0x0 
- *fill*         0x0000000040217945        0x0 
- *fill*         0x0000000040217945        0x0 
- *fill*         0x0000000040217945        0x0 
- *fill*         0x0000000040217945        0x0 
- *fill*         0x0000000040217945        0x0 
- *fill*         0x0000000040217945        0x0 
- *fill*         0x0000000040217945        0x0 
- *fill*         0x0000000040217945        0x0 
- *fill*         0x0000000040217945        0x0 
- *fill*         0x0000000040217945        0x0 
- *fill*         0x0000000040217945        0x0 
- *fill*         0x0000000040217945        0x0 
- *fill*         0x0000000040217945        0x0 
- *fill*         0x0000000040217945        0x0 
- *fill*         0x0000000040217945        0x0 
- *fill*         0x0000000040217945        0x0 
- *fill*         0x0000000040217945        0x0 
- *fill*         0x0000000040217945        0x0 
- *fill*         0x0000000040217945        0x0 
- *fill*         0x0000000040217945        0x0 
- *fill*         0x0000000040217945        0x0 
- *fill*         0x0000000040217945        0x0 
- *fill*         0x0000000040217945        0x0 
- *fill*         0x0000000040217945        0x0 
- *fill*         0x0000000040217945        0x0 
- *fill*         0x0000000040217945        0x0 
- *fill*         0x0000000040217945        0x3 
- .text          0x0000000040217948       0x20 /media/marzipan/Expansion_1/Development/Projects/esp_open_sdk/esp-open-sdk/xtensa-lx106-elf/xtensa-lx106-elf/sysroot/usr/lib/libhal.a(clock.o)
-                0x0000000040217948                xthal_get_ccount
-                0x0000000040217950                xthal_set_ccompare
-                0x000000004021795c                xthal_get_ccompare
- *fill*         0x0000000040217968        0x0 
- .text          0x0000000040217968       0x44 /media/marzipan/Expansion_1/Development/Projects/esp_open_sdk/esp-open-sdk/xtensa-lx106-elf/lib/gcc/xtensa-lx106-elf/4.8.5/libgcc.a(_floatsisf.o)
-                0x0000000040217968                __floatunsisf
-                0x0000000040217970                __floatsisf
- *fill*         0x00000000402179ac        0x0 
- .text          0x00000000402179ac       0x36 /media/marzipan/Expansion_1/Development/Projects/esp_open_sdk/esp-open-sdk/xtensa-lx106-elf/lib/gcc/xtensa-lx106-elf/4.8.5/libgcc.a(_floatsidf.o)
-                0x00000000402179ac                __floatunsidf
-                0x00000000402179b4                __floatsidf
- *fill*         0x00000000402179e2        0x0 
- *fill*         0x00000000402179e2        0x0 
- *fill*         0x00000000402179e2        0x0 
- *fill*         0x00000000402179e2        0x0 
- *fill*         0x00000000402179e2        0x2 
- .text          0x00000000402179e4        0x4 /media/marzipan/Expansion_1/Development/Projects/SuperHouseRTOS_2_3_17/esp-open-rtos/libc/xtensa-lx106-elf/lib/libc.a(lib_a-nano-malloptr.o)
-                0x00000000402179e4                _mallopt_r
- *fill*         0x00000000402179e8        0x0 
- *fill*         0x00000000402179e8        0x0 
- *fill*         0x00000000402179e8        0x0 
- *fill*         0x00000000402179e8        0x0 
- *fill*         0x00000000402179e8        0x0 
- *fill*         0x00000000402179e8        0x0 
- *fill*         0x00000000402179e8        0x0 
- *fill*         0x00000000402179e8        0x0 
- *fill*         0x00000000402179e8        0x0 
- *fill*         0x00000000402179e8        0x0 
- *fill*         0x00000000402179e8        0x0 
- *fill*         0x00000000402179e8        0x0 
- *fill*         0x00000000402179e8        0x0 
- *fill*         0x00000000402179e8        0x0 
- *fill*         0x00000000402179e8        0x0 
- *fill*         0x00000000402179e8        0x0 
- *fill*         0x00000000402179e8        0x0 
- .text          0x00000000402179e8       0xba /media/marzipan/Expansion_1/Development/Projects/SuperHouseRTOS_2_3_17/esp-open-rtos/libc/xtensa-lx106-elf/lib/libc.a(lib_a-fwalk.o)
-                0x00000000402179e8                _fwalk
-                0x0000000040217a40                _fwalk_reent
- *fill*         0x0000000040217aa2        0x0 
- *fill*         0x0000000040217aa2        0x0 
- *fill*         0x0000000040217aa2        0x2 
- .text          0x0000000040217aa4       0x17 /media/marzipan/Expansion_1/Development/Projects/SuperHouseRTOS_2_3_17/esp-open-rtos/libc/xtensa-lx106-elf/lib/libc.a(lib_a-memchr.o)
-                0x0000000040217aa4                memchr
- *fill*         0x0000000040217abb        0x0 
- *fill*         0x0000000040217abb        0x0 
- *fill*         0x0000000040217abb        0x0 
- *fill*         0x0000000040217abb        0x0 
- *fill*         0x0000000040217abb        0x1 
- .text          0x0000000040217abc       0x33 /media/marzipan/Expansion_1/Development/Projects/SuperHouseRTOS_2_3_17/esp-open-rtos/libc/xtensa-lx106-elf/lib/libc.a(lib_a-strncmp.o)
-                0x0000000040217abc                strncmp
- *fill*         0x0000000040217aef        0x0 
- *fill*         0x0000000040217aef        0x1 
- .text          0x0000000040217af0       0x16 /media/marzipan/Expansion_1/Development/Projects/SuperHouseRTOS_2_3_17/esp-open-rtos/libc/xtensa-lx106-elf/lib/libc.a(lib_a-nano-msizer.o)
-                0x0000000040217af0                _malloc_usable_size_r
- *fill*         0x0000000040217b06        0x0 
- *fill*         0x0000000040217b06        0x0 
- *fill*         0x0000000040217b06        0x2 
+                0x000000004021792c       0x1d ./build/lwip.a(netbuf.o)
+                0x000000004021792c                netbuf_next
+ *fill*         0x0000000040217949        0x0 
+ *fill*         0x0000000040217949        0x0 
+ *fill*         0x0000000040217949        0x0 
+ *fill*         0x0000000040217949        0x0 
+ *fill*         0x0000000040217949        0x0 
+ *fill*         0x0000000040217949        0x0 
+ *fill*         0x0000000040217949        0x0 
+ *fill*         0x0000000040217949        0x0 
+ *fill*         0x0000000040217949        0x0 
+ *fill*         0x0000000040217949        0x0 
+ *fill*         0x0000000040217949        0x0 
+ *fill*         0x0000000040217949        0x0 
+ *fill*         0x0000000040217949        0x0 
+ *fill*         0x0000000040217949        0x0 
+ *fill*         0x0000000040217949        0x0 
+ *fill*         0x0000000040217949        0x0 
+ *fill*         0x0000000040217949        0x0 
+ *fill*         0x0000000040217949        0x0 
+ *fill*         0x0000000040217949        0x0 
+ *fill*         0x0000000040217949        0x0 
+ *fill*         0x0000000040217949        0x0 
+ *fill*         0x0000000040217949        0x0 
+ *fill*         0x0000000040217949        0x0 
+ *fill*         0x0000000040217949        0x0 
+ *fill*         0x0000000040217949        0x0 
+ *fill*         0x0000000040217949        0x0 
+ *fill*         0x0000000040217949        0x0 
+ *fill*         0x0000000040217949        0x0 
+ *fill*         0x0000000040217949        0x0 
+ *fill*         0x0000000040217949        0x0 
+ *fill*         0x0000000040217949        0x0 
+ *fill*         0x0000000040217949        0x0 
+ *fill*         0x0000000040217949        0x0 
+ *fill*         0x0000000040217949        0x0 
+ *fill*         0x0000000040217949        0x3 
+ .text          0x000000004021794c       0x20 /media/marzipan/Expansion_1/Development/Projects/esp_open_sdk/esp-open-sdk/xtensa-lx106-elf/xtensa-lx106-elf/sysroot/usr/lib/libhal.a(clock.o)
+                0x000000004021794c                xthal_get_ccount
+                0x0000000040217954                xthal_set_ccompare
+                0x0000000040217960                xthal_get_ccompare
+ *fill*         0x000000004021796c        0x0 
+ .text          0x000000004021796c       0x44 /media/marzipan/Expansion_1/Development/Projects/esp_open_sdk/esp-open-sdk/xtensa-lx106-elf/lib/gcc/xtensa-lx106-elf/4.8.5/libgcc.a(_floatsisf.o)
+                0x000000004021796c                __floatunsisf
+                0x0000000040217974                __floatsisf
+ *fill*         0x00000000402179b0        0x0 
+ .text          0x00000000402179b0       0x36 /media/marzipan/Expansion_1/Development/Projects/esp_open_sdk/esp-open-sdk/xtensa-lx106-elf/lib/gcc/xtensa-lx106-elf/4.8.5/libgcc.a(_floatsidf.o)
+                0x00000000402179b0                __floatunsidf
+                0x00000000402179b8                __floatsidf
+ *fill*         0x00000000402179e6        0x0 
+ *fill*         0x00000000402179e6        0x0 
+ *fill*         0x00000000402179e6        0x0 
+ *fill*         0x00000000402179e6        0x0 
+ *fill*         0x00000000402179e6        0x2 
+ .text          0x00000000402179e8        0x4 /media/marzipan/Expansion_1/Development/Projects/SuperHouseRTOS_2_3_17/esp-open-rtos/libc/xtensa-lx106-elf/lib/libc.a(lib_a-nano-malloptr.o)
+                0x00000000402179e8                _mallopt_r
+ *fill*         0x00000000402179ec        0x0 
+ *fill*         0x00000000402179ec        0x0 
+ *fill*         0x00000000402179ec        0x0 
+ *fill*         0x00000000402179ec        0x0 
+ *fill*         0x00000000402179ec        0x0 
+ *fill*         0x00000000402179ec        0x0 
+ *fill*         0x00000000402179ec        0x0 
+ *fill*         0x00000000402179ec        0x0 
+ *fill*         0x00000000402179ec        0x0 
+ *fill*         0x00000000402179ec        0x0 
+ *fill*         0x00000000402179ec        0x0 
+ *fill*         0x00000000402179ec        0x0 
+ *fill*         0x00000000402179ec        0x0 
+ *fill*         0x00000000402179ec        0x0 
+ *fill*         0x00000000402179ec        0x0 
+ *fill*         0x00000000402179ec        0x0 
+ *fill*         0x00000000402179ec        0x0 
+ .text          0x00000000402179ec       0xba /media/marzipan/Expansion_1/Development/Projects/SuperHouseRTOS_2_3_17/esp-open-rtos/libc/xtensa-lx106-elf/lib/libc.a(lib_a-fwalk.o)
+                0x00000000402179ec                _fwalk
+                0x0000000040217a44                _fwalk_reent
+ *fill*         0x0000000040217aa6        0x0 
+ *fill*         0x0000000040217aa6        0x0 
+ *fill*         0x0000000040217aa6        0x2 
+ .text          0x0000000040217aa8       0x17 /media/marzipan/Expansion_1/Development/Projects/SuperHouseRTOS_2_3_17/esp-open-rtos/libc/xtensa-lx106-elf/lib/libc.a(lib_a-memchr.o)
+                0x0000000040217aa8                memchr
+ *fill*         0x0000000040217abf        0x0 
+ *fill*         0x0000000040217abf        0x0 
+ *fill*         0x0000000040217abf        0x0 
+ *fill*         0x0000000040217abf        0x0 
+ *fill*         0x0000000040217abf        0x1 
+ .text          0x0000000040217ac0       0x33 /media/marzipan/Expansion_1/Development/Projects/SuperHouseRTOS_2_3_17/esp-open-rtos/libc/xtensa-lx106-elf/lib/libc.a(lib_a-strncmp.o)
+                0x0000000040217ac0                strncmp
+ *fill*         0x0000000040217af3        0x0 
+ *fill*         0x0000000040217af3        0x1 
+ .text          0x0000000040217af4       0x16 /media/marzipan/Expansion_1/Development/Projects/SuperHouseRTOS_2_3_17/esp-open-rtos/libc/xtensa-lx106-elf/lib/libc.a(lib_a-nano-msizer.o)
+                0x0000000040217af4                _malloc_usable_size_r
+ *fill*         0x0000000040217b0a        0x0 
+ *fill*         0x0000000040217b0a        0x0 
+ *fill*         0x0000000040217b0a        0x2 
  .rodata.str1.4
-                0x0000000040217b08       0x7b ./build/sdklib/libmain.a(ets_timer.o)
- *fill*         0x0000000040217b83        0x1 
+                0x0000000040217b0c       0x7b ./build/sdklib/libmain.a(ets_timer.o)
+ *fill*         0x0000000040217b87        0x1 
  .rodata.str1.4
-                0x0000000040217b84       0xc6 ./build/sdklib/libmain.a(user_interface.o)
+                0x0000000040217b88       0xc6 ./build/sdklib/libmain.a(user_interface.o)
                                         0x1a2 (size before relaxing)
- *fill*         0x0000000040217c4a        0x2 
+ *fill*         0x0000000040217c4e        0x2 
  .rodata.str1.4
-                0x0000000040217c4c       0x3f ./build/sdklib/libnet80211.a(ieee80211.o)
+                0x0000000040217c50       0x3f ./build/sdklib/libnet80211.a(ieee80211.o)
                                          0x4a (size before relaxing)
- *fill*         0x0000000040217c8b        0x1 
- .rodata        0x0000000040217c8c        0x4 ./build/sdklib/libnet80211.a(ieee80211_hostap.o)
+ *fill*         0x0000000040217c8f        0x1 
+ .rodata        0x0000000040217c90        0x4 ./build/sdklib/libnet80211.a(ieee80211_hostap.o)
  .rodata.str1.4
-                0x0000000040217c90       0x19 ./build/sdklib/libnet80211.a(ieee80211_ht.o)
- *fill*         0x0000000040217ca9        0x3 
- .rodata        0x0000000040217cac        0x4 ./build/sdklib/libnet80211.a(ieee80211_output.o)
+                0x0000000040217c94       0x19 ./build/sdklib/libnet80211.a(ieee80211_ht.o)
+ *fill*         0x0000000040217cad        0x3 
+ .rodata        0x0000000040217cb0        0x4 ./build/sdklib/libnet80211.a(ieee80211_output.o)
  .rodata.str1.4
-                0x0000000040217cb0       0x27 ./build/sdklib/libnet80211.a(ieee80211_output.o)
+                0x0000000040217cb4       0x27 ./build/sdklib/libnet80211.a(ieee80211_output.o)
                                          0x2f (size before relaxing)
- *fill*         0x0000000040217cd7        0x9 
+ *fill*         0x0000000040217cdb        0x5 
  .rodata        0x0000000040217ce0       0x70 ./build/sdklib/libnet80211.a(ieee80211_proto.o)
  .rodata.str1.4
                 0x0000000040217d50       0x24 ./build/sdklib/libnet80211.a(ieee80211_scan.o)
@@ -7926,7 +7926,7 @@ OUTPUT(build/AlphaScanFirmware.out elf32-xtensa-le)
  .debug_frame   0x0000000000007234       0x34 /media/marzipan/Expansion_1/Development/Projects/SuperHouseRTOS_2_3_17/esp-open-rtos/libc/xtensa-lx106-elf/lib/libc.a(lib_a-strrchr.o)
  .debug_frame   0x0000000000007268       0x20 /media/marzipan/Expansion_1/Development/Projects/SuperHouseRTOS_2_3_17/esp-open-rtos/libc/xtensa-lx106-elf/lib/libc.a(lib_a-strchr.o)
 
-.debug_info     0x0000000000000000    0x61476
+.debug_info     0x0000000000000000    0x6148b
  .debug_info    0x0000000000000000     0x2f5e ./build/open_esplibs_libmain.a(user_interface.o)
  .debug_info    0x0000000000002f5e      0x98a ./build/open_esplibs_libmain.a(spi_flash.o)
  .debug_info    0x00000000000038e8      0x28e ./build/open_esplibs_libmain.a(os_cpu_a.o)
@@ -8046,41 +8046,41 @@ OUTPUT(build/AlphaScanFirmware.out elf32-xtensa-le)
  .debug_info    0x000000000005052e      0x88e /media/marzipan/Expansion_1/Development/Projects/SuperHouseRTOS_2_3_17/esp-open-rtos/libc/xtensa-lx106-elf/lib/libc.a(lib_a-nano-msizer.o)
  .debug_info    0x0000000000050dbc      0x959 /media/marzipan/Expansion_1/Development/Projects/SuperHouseRTOS_2_3_17/esp-open-rtos/libc/xtensa-lx106-elf/lib/libc.a(lib_a-wcrtomb.o)
  .debug_info    0x0000000000051715      0x936 /media/marzipan/Expansion_1/Development/Projects/SuperHouseRTOS_2_3_17/esp-open-rtos/libc/xtensa-lx106-elf/lib/libc.a(lib_a-wctomb_r.o)
- .debug_info    0x000000000005204b     0x5ab5 ./build/program.a(main.o)
- .debug_info    0x0000000000057b00     0x1982 ./build/rboot-ota.a(ota-tftp.o)
- .debug_info    0x0000000000059482      0xd40 ./build/rboot-ota.a(rboot-api.o)
- .debug_info    0x000000000005a1c2      0xbdb ./build/mbedtls.a(sha256.o)
- .debug_info    0x000000000005ad9d     0x1413 ./build/core.a(esp_spi.o)
- .debug_info    0x000000000005c1b0      0x242 ./build/core.a(sdk_compat.o)
- .debug_info    0x000000000005c3f2      0x8cb ./build/core.a(esp_gpio.o)
- .debug_info    0x000000000005ccbd      0xe04 ./build/core.a(newlib_syscalls.o)
- .debug_info    0x000000000005dac1      0x120 ./build/core.a(esp_iomux.o)
- .debug_info    0x000000000005dbe1      0x9d5 ./build/core.a(esp_timer.o)
- .debug_info    0x000000000005e5b6      0x199 ./build/core.a(cplusplus_operators.o)
- .debug_info    0x000000000005e74f      0x157 /media/marzipan/Expansion_1/Development/Projects/esp_open_sdk/esp-open-sdk/xtensa-lx106-elf/lib/gcc/xtensa-lx106-elf/4.8.5/libgcc.a(_modsi3.o)
- .debug_info    0x000000000005e8a6      0x157 /media/marzipan/Expansion_1/Development/Projects/esp_open_sdk/esp-open-sdk/xtensa-lx106-elf/lib/gcc/xtensa-lx106-elf/4.8.5/libgcc.a(_ashrdi3.o)
- .debug_info    0x000000000005e9fd      0x158 /media/marzipan/Expansion_1/Development/Projects/esp_open_sdk/esp-open-sdk/xtensa-lx106-elf/lib/gcc/xtensa-lx106-elf/4.8.5/libgcc.a(_addsubsf3.o)
- .debug_info    0x000000000005eb55      0x158 /media/marzipan/Expansion_1/Development/Projects/esp_open_sdk/esp-open-sdk/xtensa-lx106-elf/lib/gcc/xtensa-lx106-elf/4.8.5/libgcc.a(_mulsf3.o)
- .debug_info    0x000000000005ecad      0x158 /media/marzipan/Expansion_1/Development/Projects/esp_open_sdk/esp-open-sdk/xtensa-lx106-elf/lib/gcc/xtensa-lx106-elf/4.8.5/libgcc.a(_fixsfsi.o)
- .debug_info    0x000000000005ee05      0x158 /media/marzipan/Expansion_1/Development/Projects/esp_open_sdk/esp-open-sdk/xtensa-lx106-elf/lib/gcc/xtensa-lx106-elf/4.8.5/libgcc.a(_fixunssfsi.o)
- .debug_info    0x000000000005ef5d      0x158 /media/marzipan/Expansion_1/Development/Projects/esp_open_sdk/esp-open-sdk/xtensa-lx106-elf/lib/gcc/xtensa-lx106-elf/4.8.5/libgcc.a(_addsubdf3.o)
- .debug_info    0x000000000005f0b5      0x158 /media/marzipan/Expansion_1/Development/Projects/esp_open_sdk/esp-open-sdk/xtensa-lx106-elf/lib/gcc/xtensa-lx106-elf/4.8.5/libgcc.a(_divdf3.o)
- .debug_info    0x000000000005f20d      0x158 /media/marzipan/Expansion_1/Development/Projects/esp_open_sdk/esp-open-sdk/xtensa-lx106-elf/lib/gcc/xtensa-lx106-elf/4.8.5/libgcc.a(_cmpdf2.o)
- .debug_info    0x000000000005f365      0x158 /media/marzipan/Expansion_1/Development/Projects/esp_open_sdk/esp-open-sdk/xtensa-lx106-elf/lib/gcc/xtensa-lx106-elf/4.8.5/libgcc.a(_fixdfsi.o)
- .debug_info    0x000000000005f4bd      0x158 /media/marzipan/Expansion_1/Development/Projects/esp_open_sdk/esp-open-sdk/xtensa-lx106-elf/lib/gcc/xtensa-lx106-elf/4.8.5/libgcc.a(_fixunsdfsi.o)
- .debug_info    0x000000000005f615      0x158 /media/marzipan/Expansion_1/Development/Projects/esp_open_sdk/esp-open-sdk/xtensa-lx106-elf/lib/gcc/xtensa-lx106-elf/4.8.5/libgcc.a(_truncdfsf2.o)
- .debug_info    0x000000000005f76d      0x174 /media/marzipan/Expansion_1/Development/Projects/esp_open_sdk/esp-open-sdk/xtensa-lx106-elf/lib/gcc/xtensa-lx106-elf/4.8.5/libgcc.a(_muldi3.o)
- .debug_info    0x000000000005f8e1       0xff /media/marzipan/Expansion_1/Development/Projects/esp_open_sdk/esp-open-sdk/xtensa-lx106-elf/lib/gcc/xtensa-lx106-elf/4.8.5/libgcc.a(_popcountsi2.o)
- .debug_info    0x000000000005f9e0      0x60c /media/marzipan/Expansion_1/Development/Projects/esp_open_sdk/esp-open-sdk/xtensa-lx106-elf/lib/gcc/xtensa-lx106-elf/4.8.5/libgcc.a(_divdi3.o)
- .debug_info    0x000000000005ffec      0x61d /media/marzipan/Expansion_1/Development/Projects/esp_open_sdk/esp-open-sdk/xtensa-lx106-elf/lib/gcc/xtensa-lx106-elf/4.8.5/libgcc.a(_umoddi3.o)
- .debug_info    0x0000000000060609      0x157 /media/marzipan/Expansion_1/Development/Projects/esp_open_sdk/esp-open-sdk/xtensa-lx106-elf/lib/gcc/xtensa-lx106-elf/4.8.5/libgcc.a(_umulsidi3.o)
- .debug_info    0x0000000000060760       0xab /media/marzipan/Expansion_1/Development/Projects/esp_open_sdk/esp-open-sdk/xtensa-lx106-elf/lib/gcc/xtensa-lx106-elf/4.8.5/libgcc.a(_popcount_tab.o)
- .debug_info    0x000000000006080b       0xca /media/marzipan/Expansion_1/Development/Projects/SuperHouseRTOS_2_3_17/esp-open-rtos/libc/xtensa-lx106-elf/lib/libc.a(lib_a-bzero.o)
- .debug_info    0x00000000000608d5      0x864 /media/marzipan/Expansion_1/Development/Projects/SuperHouseRTOS_2_3_17/esp-open-rtos/libc/xtensa-lx106-elf/lib/libc.a(lib_a-calloc.o)
- .debug_info    0x0000000000061139       0xac /media/marzipan/Expansion_1/Development/Projects/SuperHouseRTOS_2_3_17/esp-open-rtos/libc/xtensa-lx106-elf/lib/libc.a(lib_a-strcpy.o)
- .debug_info    0x00000000000611e5       0xad /media/marzipan/Expansion_1/Development/Projects/SuperHouseRTOS_2_3_17/esp-open-rtos/libc/xtensa-lx106-elf/lib/libc.a(lib_a-strncpy.o)
- .debug_info    0x0000000000061292      0x101 /media/marzipan/Expansion_1/Development/Projects/SuperHouseRTOS_2_3_17/esp-open-rtos/libc/xtensa-lx106-elf/lib/libc.a(lib_a-strrchr.o)
- .debug_info    0x0000000000061393       0xe3 /media/marzipan/Expansion_1/Development/Projects/SuperHouseRTOS_2_3_17/esp-open-rtos/libc/xtensa-lx106-elf/lib/libc.a(lib_a-strchr.o)
+ .debug_info    0x000000000005204b     0x5aca ./build/program.a(main.o)
+ .debug_info    0x0000000000057b15     0x1982 ./build/rboot-ota.a(ota-tftp.o)
+ .debug_info    0x0000000000059497      0xd40 ./build/rboot-ota.a(rboot-api.o)
+ .debug_info    0x000000000005a1d7      0xbdb ./build/mbedtls.a(sha256.o)
+ .debug_info    0x000000000005adb2     0x1413 ./build/core.a(esp_spi.o)
+ .debug_info    0x000000000005c1c5      0x242 ./build/core.a(sdk_compat.o)
+ .debug_info    0x000000000005c407      0x8cb ./build/core.a(esp_gpio.o)
+ .debug_info    0x000000000005ccd2      0xe04 ./build/core.a(newlib_syscalls.o)
+ .debug_info    0x000000000005dad6      0x120 ./build/core.a(esp_iomux.o)
+ .debug_info    0x000000000005dbf6      0x9d5 ./build/core.a(esp_timer.o)
+ .debug_info    0x000000000005e5cb      0x199 ./build/core.a(cplusplus_operators.o)
+ .debug_info    0x000000000005e764      0x157 /media/marzipan/Expansion_1/Development/Projects/esp_open_sdk/esp-open-sdk/xtensa-lx106-elf/lib/gcc/xtensa-lx106-elf/4.8.5/libgcc.a(_modsi3.o)
+ .debug_info    0x000000000005e8bb      0x157 /media/marzipan/Expansion_1/Development/Projects/esp_open_sdk/esp-open-sdk/xtensa-lx106-elf/lib/gcc/xtensa-lx106-elf/4.8.5/libgcc.a(_ashrdi3.o)
+ .debug_info    0x000000000005ea12      0x158 /media/marzipan/Expansion_1/Development/Projects/esp_open_sdk/esp-open-sdk/xtensa-lx106-elf/lib/gcc/xtensa-lx106-elf/4.8.5/libgcc.a(_addsubsf3.o)
+ .debug_info    0x000000000005eb6a      0x158 /media/marzipan/Expansion_1/Development/Projects/esp_open_sdk/esp-open-sdk/xtensa-lx106-elf/lib/gcc/xtensa-lx106-elf/4.8.5/libgcc.a(_mulsf3.o)
+ .debug_info    0x000000000005ecc2      0x158 /media/marzipan/Expansion_1/Development/Projects/esp_open_sdk/esp-open-sdk/xtensa-lx106-elf/lib/gcc/xtensa-lx106-elf/4.8.5/libgcc.a(_fixsfsi.o)
+ .debug_info    0x000000000005ee1a      0x158 /media/marzipan/Expansion_1/Development/Projects/esp_open_sdk/esp-open-sdk/xtensa-lx106-elf/lib/gcc/xtensa-lx106-elf/4.8.5/libgcc.a(_fixunssfsi.o)
+ .debug_info    0x000000000005ef72      0x158 /media/marzipan/Expansion_1/Development/Projects/esp_open_sdk/esp-open-sdk/xtensa-lx106-elf/lib/gcc/xtensa-lx106-elf/4.8.5/libgcc.a(_addsubdf3.o)
+ .debug_info    0x000000000005f0ca      0x158 /media/marzipan/Expansion_1/Development/Projects/esp_open_sdk/esp-open-sdk/xtensa-lx106-elf/lib/gcc/xtensa-lx106-elf/4.8.5/libgcc.a(_divdf3.o)
+ .debug_info    0x000000000005f222      0x158 /media/marzipan/Expansion_1/Development/Projects/esp_open_sdk/esp-open-sdk/xtensa-lx106-elf/lib/gcc/xtensa-lx106-elf/4.8.5/libgcc.a(_cmpdf2.o)
+ .debug_info    0x000000000005f37a      0x158 /media/marzipan/Expansion_1/Development/Projects/esp_open_sdk/esp-open-sdk/xtensa-lx106-elf/lib/gcc/xtensa-lx106-elf/4.8.5/libgcc.a(_fixdfsi.o)
+ .debug_info    0x000000000005f4d2      0x158 /media/marzipan/Expansion_1/Development/Projects/esp_open_sdk/esp-open-sdk/xtensa-lx106-elf/lib/gcc/xtensa-lx106-elf/4.8.5/libgcc.a(_fixunsdfsi.o)
+ .debug_info    0x000000000005f62a      0x158 /media/marzipan/Expansion_1/Development/Projects/esp_open_sdk/esp-open-sdk/xtensa-lx106-elf/lib/gcc/xtensa-lx106-elf/4.8.5/libgcc.a(_truncdfsf2.o)
+ .debug_info    0x000000000005f782      0x174 /media/marzipan/Expansion_1/Development/Projects/esp_open_sdk/esp-open-sdk/xtensa-lx106-elf/lib/gcc/xtensa-lx106-elf/4.8.5/libgcc.a(_muldi3.o)
+ .debug_info    0x000000000005f8f6       0xff /media/marzipan/Expansion_1/Development/Projects/esp_open_sdk/esp-open-sdk/xtensa-lx106-elf/lib/gcc/xtensa-lx106-elf/4.8.5/libgcc.a(_popcountsi2.o)
+ .debug_info    0x000000000005f9f5      0x60c /media/marzipan/Expansion_1/Development/Projects/esp_open_sdk/esp-open-sdk/xtensa-lx106-elf/lib/gcc/xtensa-lx106-elf/4.8.5/libgcc.a(_divdi3.o)
+ .debug_info    0x0000000000060001      0x61d /media/marzipan/Expansion_1/Development/Projects/esp_open_sdk/esp-open-sdk/xtensa-lx106-elf/lib/gcc/xtensa-lx106-elf/4.8.5/libgcc.a(_umoddi3.o)
+ .debug_info    0x000000000006061e      0x157 /media/marzipan/Expansion_1/Development/Projects/esp_open_sdk/esp-open-sdk/xtensa-lx106-elf/lib/gcc/xtensa-lx106-elf/4.8.5/libgcc.a(_umulsidi3.o)
+ .debug_info    0x0000000000060775       0xab /media/marzipan/Expansion_1/Development/Projects/esp_open_sdk/esp-open-sdk/xtensa-lx106-elf/lib/gcc/xtensa-lx106-elf/4.8.5/libgcc.a(_popcount_tab.o)
+ .debug_info    0x0000000000060820       0xca /media/marzipan/Expansion_1/Development/Projects/SuperHouseRTOS_2_3_17/esp-open-rtos/libc/xtensa-lx106-elf/lib/libc.a(lib_a-bzero.o)
+ .debug_info    0x00000000000608ea      0x864 /media/marzipan/Expansion_1/Development/Projects/SuperHouseRTOS_2_3_17/esp-open-rtos/libc/xtensa-lx106-elf/lib/libc.a(lib_a-calloc.o)
+ .debug_info    0x000000000006114e       0xac /media/marzipan/Expansion_1/Development/Projects/SuperHouseRTOS_2_3_17/esp-open-rtos/libc/xtensa-lx106-elf/lib/libc.a(lib_a-strcpy.o)
+ .debug_info    0x00000000000611fa       0xad /media/marzipan/Expansion_1/Development/Projects/SuperHouseRTOS_2_3_17/esp-open-rtos/libc/xtensa-lx106-elf/lib/libc.a(lib_a-strncpy.o)
+ .debug_info    0x00000000000612a7      0x101 /media/marzipan/Expansion_1/Development/Projects/SuperHouseRTOS_2_3_17/esp-open-rtos/libc/xtensa-lx106-elf/lib/libc.a(lib_a-strrchr.o)
+ .debug_info    0x00000000000613a8       0xe3 /media/marzipan/Expansion_1/Development/Projects/SuperHouseRTOS_2_3_17/esp-open-rtos/libc/xtensa-lx106-elf/lib/libc.a(lib_a-strchr.o)
 
 .debug_abbrev   0x0000000000000000    0x10e5f
  .debug_abbrev  0x0000000000000000      0x563 ./build/open_esplibs_libmain.a(user_interface.o)
@@ -8741,7 +8741,7 @@ OUTPUT(build/AlphaScanFirmware.out elf32-xtensa-le)
  .debug_ranges  0x00000000000034c8       0x60 /media/marzipan/Expansion_1/Development/Projects/esp_open_sdk/esp-open-sdk/xtensa-lx106-elf/lib/gcc/xtensa-lx106-elf/4.8.5/libgcc.a(_divdi3.o)
  .debug_ranges  0x0000000000003528       0x98 /media/marzipan/Expansion_1/Development/Projects/esp_open_sdk/esp-open-sdk/xtensa-lx106-elf/lib/gcc/xtensa-lx106-elf/4.8.5/libgcc.a(_umoddi3.o)
 
-.debug_line     0x0000000000000000    0x36e70
+.debug_line     0x0000000000000000    0x36e76
  .debug_line    0x0000000000000000     0x18e4 ./build/open_esplibs_libmain.a(user_interface.o)
  .debug_line    0x00000000000018e4      0x6cf ./build/open_esplibs_libmain.a(spi_flash.o)
  .debug_line    0x0000000000001fb3      0x428 ./build/open_esplibs_libmain.a(os_cpu_a.o)
@@ -8872,41 +8872,41 @@ OUTPUT(build/AlphaScanFirmware.out elf32-xtensa-le)
  .debug_line    0x000000000002cc4b      0x183 /media/marzipan/Expansion_1/Development/Projects/SuperHouseRTOS_2_3_17/esp-open-rtos/libc/xtensa-lx106-elf/lib/libc.a(lib_a-nano-msizer.o)
  .debug_line    0x000000000002cdce      0x221 /media/marzipan/Expansion_1/Development/Projects/SuperHouseRTOS_2_3_17/esp-open-rtos/libc/xtensa-lx106-elf/lib/libc.a(lib_a-wcrtomb.o)
  .debug_line    0x000000000002cfef      0x22e /media/marzipan/Expansion_1/Development/Projects/SuperHouseRTOS_2_3_17/esp-open-rtos/libc/xtensa-lx106-elf/lib/libc.a(lib_a-wctomb_r.o)
- .debug_line    0x000000000002d21d     0x2453 ./build/program.a(main.o)
- .debug_line    0x000000000002f670      0xe4e ./build/rboot-ota.a(ota-tftp.o)
- .debug_line    0x00000000000304be      0xa2d ./build/rboot-ota.a(rboot-api.o)
- .debug_line    0x0000000000030eeb      0x856 ./build/mbedtls.a(sha256.o)
- .debug_line    0x0000000000031741      0xcbf ./build/core.a(esp_spi.o)
- .debug_line    0x0000000000032400      0x32f ./build/core.a(sdk_compat.o)
- .debug_line    0x000000000003272f      0x4b0 ./build/core.a(esp_gpio.o)
- .debug_line    0x0000000000032bdf      0x603 ./build/core.a(newlib_syscalls.o)
- .debug_line    0x00000000000331e2      0x1da ./build/core.a(esp_iomux.o)
- .debug_line    0x00000000000333bc      0x53b ./build/core.a(esp_timer.o)
- .debug_line    0x00000000000338f7      0x20e ./build/core.a(cplusplus_operators.o)
- .debug_line    0x0000000000033b05      0x149 /media/marzipan/Expansion_1/Development/Projects/esp_open_sdk/esp-open-sdk/xtensa-lx106-elf/lib/gcc/xtensa-lx106-elf/4.8.5/libgcc.a(_modsi3.o)
- .debug_line    0x0000000000033c4e       0xe9 /media/marzipan/Expansion_1/Development/Projects/esp_open_sdk/esp-open-sdk/xtensa-lx106-elf/lib/gcc/xtensa-lx106-elf/4.8.5/libgcc.a(_ashrdi3.o)
- .debug_line    0x0000000000033d37      0x4ec /media/marzipan/Expansion_1/Development/Projects/esp_open_sdk/esp-open-sdk/xtensa-lx106-elf/lib/gcc/xtensa-lx106-elf/4.8.5/libgcc.a(_addsubsf3.o)
- .debug_line    0x0000000000034223      0x3ae /media/marzipan/Expansion_1/Development/Projects/esp_open_sdk/esp-open-sdk/xtensa-lx106-elf/lib/gcc/xtensa-lx106-elf/4.8.5/libgcc.a(_mulsf3.o)
- .debug_line    0x00000000000345d1      0x144 /media/marzipan/Expansion_1/Development/Projects/esp_open_sdk/esp-open-sdk/xtensa-lx106-elf/lib/gcc/xtensa-lx106-elf/4.8.5/libgcc.a(_fixsfsi.o)
- .debug_line    0x0000000000034715      0x174 /media/marzipan/Expansion_1/Development/Projects/esp_open_sdk/esp-open-sdk/xtensa-lx106-elf/lib/gcc/xtensa-lx106-elf/4.8.5/libgcc.a(_fixunssfsi.o)
- .debug_line    0x0000000000034889      0x6ea /media/marzipan/Expansion_1/Development/Projects/esp_open_sdk/esp-open-sdk/xtensa-lx106-elf/lib/gcc/xtensa-lx106-elf/4.8.5/libgcc.a(_addsubdf3.o)
- .debug_line    0x0000000000034f73      0x504 /media/marzipan/Expansion_1/Development/Projects/esp_open_sdk/esp-open-sdk/xtensa-lx106-elf/lib/gcc/xtensa-lx106-elf/4.8.5/libgcc.a(_divdf3.o)
- .debug_line    0x0000000000035477      0x3c0 /media/marzipan/Expansion_1/Development/Projects/esp_open_sdk/esp-open-sdk/xtensa-lx106-elf/lib/gcc/xtensa-lx106-elf/4.8.5/libgcc.a(_cmpdf2.o)
- .debug_line    0x0000000000035837      0x156 /media/marzipan/Expansion_1/Development/Projects/esp_open_sdk/esp-open-sdk/xtensa-lx106-elf/lib/gcc/xtensa-lx106-elf/4.8.5/libgcc.a(_fixdfsi.o)
- .debug_line    0x000000000003598d      0x186 /media/marzipan/Expansion_1/Development/Projects/esp_open_sdk/esp-open-sdk/xtensa-lx106-elf/lib/gcc/xtensa-lx106-elf/4.8.5/libgcc.a(_fixunsdfsi.o)
- .debug_line    0x0000000000035b13      0x204 /media/marzipan/Expansion_1/Development/Projects/esp_open_sdk/esp-open-sdk/xtensa-lx106-elf/lib/gcc/xtensa-lx106-elf/4.8.5/libgcc.a(_truncdfsf2.o)
- .debug_line    0x0000000000035d17       0xfa /media/marzipan/Expansion_1/Development/Projects/esp_open_sdk/esp-open-sdk/xtensa-lx106-elf/lib/gcc/xtensa-lx106-elf/4.8.5/libgcc.a(_muldi3.o)
- .debug_line    0x0000000000035e11       0xf6 /media/marzipan/Expansion_1/Development/Projects/esp_open_sdk/esp-open-sdk/xtensa-lx106-elf/lib/gcc/xtensa-lx106-elf/4.8.5/libgcc.a(_popcountsi2.o)
- .debug_line    0x0000000000035f07      0x241 /media/marzipan/Expansion_1/Development/Projects/esp_open_sdk/esp-open-sdk/xtensa-lx106-elf/lib/gcc/xtensa-lx106-elf/4.8.5/libgcc.a(_divdi3.o)
- .debug_line    0x0000000000036148      0x264 /media/marzipan/Expansion_1/Development/Projects/esp_open_sdk/esp-open-sdk/xtensa-lx106-elf/lib/gcc/xtensa-lx106-elf/4.8.5/libgcc.a(_umoddi3.o)
- .debug_line    0x00000000000363ac      0x167 /media/marzipan/Expansion_1/Development/Projects/esp_open_sdk/esp-open-sdk/xtensa-lx106-elf/lib/gcc/xtensa-lx106-elf/4.8.5/libgcc.a(_umulsidi3.o)
- .debug_line    0x0000000000036513       0xab /media/marzipan/Expansion_1/Development/Projects/esp_open_sdk/esp-open-sdk/xtensa-lx106-elf/lib/gcc/xtensa-lx106-elf/4.8.5/libgcc.a(_popcount_tab.o)
- .debug_line    0x00000000000365be      0x128 /media/marzipan/Expansion_1/Development/Projects/SuperHouseRTOS_2_3_17/esp-open-rtos/libc/xtensa-lx106-elf/lib/libc.a(lib_a-bzero.o)
- .debug_line    0x00000000000366e6      0x1da /media/marzipan/Expansion_1/Development/Projects/SuperHouseRTOS_2_3_17/esp-open-rtos/libc/xtensa-lx106-elf/lib/libc.a(lib_a-calloc.o)
- .debug_line    0x00000000000368c0      0x180 /media/marzipan/Expansion_1/Development/Projects/SuperHouseRTOS_2_3_17/esp-open-rtos/libc/xtensa-lx106-elf/lib/libc.a(lib_a-strcpy.o)
- .debug_line    0x0000000000036a40      0x29b /media/marzipan/Expansion_1/Development/Projects/SuperHouseRTOS_2_3_17/esp-open-rtos/libc/xtensa-lx106-elf/lib/libc.a(lib_a-strncpy.o)
- .debug_line    0x0000000000036cdb       0xc2 /media/marzipan/Expansion_1/Development/Projects/SuperHouseRTOS_2_3_17/esp-open-rtos/libc/xtensa-lx106-elf/lib/libc.a(lib_a-strrchr.o)
- .debug_line    0x0000000000036d9d       0xd3 /media/marzipan/Expansion_1/Development/Projects/SuperHouseRTOS_2_3_17/esp-open-rtos/libc/xtensa-lx106-elf/lib/libc.a(lib_a-strchr.o)
+ .debug_line    0x000000000002d21d     0x2459 ./build/program.a(main.o)
+ .debug_line    0x000000000002f676      0xe4e ./build/rboot-ota.a(ota-tftp.o)
+ .debug_line    0x00000000000304c4      0xa2d ./build/rboot-ota.a(rboot-api.o)
+ .debug_line    0x0000000000030ef1      0x856 ./build/mbedtls.a(sha256.o)
+ .debug_line    0x0000000000031747      0xcbf ./build/core.a(esp_spi.o)
+ .debug_line    0x0000000000032406      0x32f ./build/core.a(sdk_compat.o)
+ .debug_line    0x0000000000032735      0x4b0 ./build/core.a(esp_gpio.o)
+ .debug_line    0x0000000000032be5      0x603 ./build/core.a(newlib_syscalls.o)
+ .debug_line    0x00000000000331e8      0x1da ./build/core.a(esp_iomux.o)
+ .debug_line    0x00000000000333c2      0x53b ./build/core.a(esp_timer.o)
+ .debug_line    0x00000000000338fd      0x20e ./build/core.a(cplusplus_operators.o)
+ .debug_line    0x0000000000033b0b      0x149 /media/marzipan/Expansion_1/Development/Projects/esp_open_sdk/esp-open-sdk/xtensa-lx106-elf/lib/gcc/xtensa-lx106-elf/4.8.5/libgcc.a(_modsi3.o)
+ .debug_line    0x0000000000033c54       0xe9 /media/marzipan/Expansion_1/Development/Projects/esp_open_sdk/esp-open-sdk/xtensa-lx106-elf/lib/gcc/xtensa-lx106-elf/4.8.5/libgcc.a(_ashrdi3.o)
+ .debug_line    0x0000000000033d3d      0x4ec /media/marzipan/Expansion_1/Development/Projects/esp_open_sdk/esp-open-sdk/xtensa-lx106-elf/lib/gcc/xtensa-lx106-elf/4.8.5/libgcc.a(_addsubsf3.o)
+ .debug_line    0x0000000000034229      0x3ae /media/marzipan/Expansion_1/Development/Projects/esp_open_sdk/esp-open-sdk/xtensa-lx106-elf/lib/gcc/xtensa-lx106-elf/4.8.5/libgcc.a(_mulsf3.o)
+ .debug_line    0x00000000000345d7      0x144 /media/marzipan/Expansion_1/Development/Projects/esp_open_sdk/esp-open-sdk/xtensa-lx106-elf/lib/gcc/xtensa-lx106-elf/4.8.5/libgcc.a(_fixsfsi.o)
+ .debug_line    0x000000000003471b      0x174 /media/marzipan/Expansion_1/Development/Projects/esp_open_sdk/esp-open-sdk/xtensa-lx106-elf/lib/gcc/xtensa-lx106-elf/4.8.5/libgcc.a(_fixunssfsi.o)
+ .debug_line    0x000000000003488f      0x6ea /media/marzipan/Expansion_1/Development/Projects/esp_open_sdk/esp-open-sdk/xtensa-lx106-elf/lib/gcc/xtensa-lx106-elf/4.8.5/libgcc.a(_addsubdf3.o)
+ .debug_line    0x0000000000034f79      0x504 /media/marzipan/Expansion_1/Development/Projects/esp_open_sdk/esp-open-sdk/xtensa-lx106-elf/lib/gcc/xtensa-lx106-elf/4.8.5/libgcc.a(_divdf3.o)
+ .debug_line    0x000000000003547d      0x3c0 /media/marzipan/Expansion_1/Development/Projects/esp_open_sdk/esp-open-sdk/xtensa-lx106-elf/lib/gcc/xtensa-lx106-elf/4.8.5/libgcc.a(_cmpdf2.o)
+ .debug_line    0x000000000003583d      0x156 /media/marzipan/Expansion_1/Development/Projects/esp_open_sdk/esp-open-sdk/xtensa-lx106-elf/lib/gcc/xtensa-lx106-elf/4.8.5/libgcc.a(_fixdfsi.o)
+ .debug_line    0x0000000000035993      0x186 /media/marzipan/Expansion_1/Development/Projects/esp_open_sdk/esp-open-sdk/xtensa-lx106-elf/lib/gcc/xtensa-lx106-elf/4.8.5/libgcc.a(_fixunsdfsi.o)
+ .debug_line    0x0000000000035b19      0x204 /media/marzipan/Expansion_1/Development/Projects/esp_open_sdk/esp-open-sdk/xtensa-lx106-elf/lib/gcc/xtensa-lx106-elf/4.8.5/libgcc.a(_truncdfsf2.o)
+ .debug_line    0x0000000000035d1d       0xfa /media/marzipan/Expansion_1/Development/Projects/esp_open_sdk/esp-open-sdk/xtensa-lx106-elf/lib/gcc/xtensa-lx106-elf/4.8.5/libgcc.a(_muldi3.o)
+ .debug_line    0x0000000000035e17       0xf6 /media/marzipan/Expansion_1/Development/Projects/esp_open_sdk/esp-open-sdk/xtensa-lx106-elf/lib/gcc/xtensa-lx106-elf/4.8.5/libgcc.a(_popcountsi2.o)
+ .debug_line    0x0000000000035f0d      0x241 /media/marzipan/Expansion_1/Development/Projects/esp_open_sdk/esp-open-sdk/xtensa-lx106-elf/lib/gcc/xtensa-lx106-elf/4.8.5/libgcc.a(_divdi3.o)
+ .debug_line    0x000000000003614e      0x264 /media/marzipan/Expansion_1/Development/Projects/esp_open_sdk/esp-open-sdk/xtensa-lx106-elf/lib/gcc/xtensa-lx106-elf/4.8.5/libgcc.a(_umoddi3.o)
+ .debug_line    0x00000000000363b2      0x167 /media/marzipan/Expansion_1/Development/Projects/esp_open_sdk/esp-open-sdk/xtensa-lx106-elf/lib/gcc/xtensa-lx106-elf/4.8.5/libgcc.a(_umulsidi3.o)
+ .debug_line    0x0000000000036519       0xab /media/marzipan/Expansion_1/Development/Projects/esp_open_sdk/esp-open-sdk/xtensa-lx106-elf/lib/gcc/xtensa-lx106-elf/4.8.5/libgcc.a(_popcount_tab.o)
+ .debug_line    0x00000000000365c4      0x128 /media/marzipan/Expansion_1/Development/Projects/SuperHouseRTOS_2_3_17/esp-open-rtos/libc/xtensa-lx106-elf/lib/libc.a(lib_a-bzero.o)
+ .debug_line    0x00000000000366ec      0x1da /media/marzipan/Expansion_1/Development/Projects/SuperHouseRTOS_2_3_17/esp-open-rtos/libc/xtensa-lx106-elf/lib/libc.a(lib_a-calloc.o)
+ .debug_line    0x00000000000368c6      0x180 /media/marzipan/Expansion_1/Development/Projects/SuperHouseRTOS_2_3_17/esp-open-rtos/libc/xtensa-lx106-elf/lib/libc.a(lib_a-strcpy.o)
+ .debug_line    0x0000000000036a46      0x29b /media/marzipan/Expansion_1/Development/Projects/SuperHouseRTOS_2_3_17/esp-open-rtos/libc/xtensa-lx106-elf/lib/libc.a(lib_a-strncpy.o)
+ .debug_line    0x0000000000036ce1       0xc2 /media/marzipan/Expansion_1/Development/Projects/SuperHouseRTOS_2_3_17/esp-open-rtos/libc/xtensa-lx106-elf/lib/libc.a(lib_a-strrchr.o)
+ .debug_line    0x0000000000036da3       0xd3 /media/marzipan/Expansion_1/Development/Projects/SuperHouseRTOS_2_3_17/esp-open-rtos/libc/xtensa-lx106-elf/lib/libc.a(lib_a-strchr.o)
 
 .debug_str      0x0000000000000000     0xc6ce
  .debug_str     0x0000000000000000     0x1915 ./build/open_esplibs_libmain.a(user_interface.o)

@@ -809,6 +809,7 @@ stats_display();
                     else  {
                         if (inbuf[2] == 0xff){
                             ads->stopStreaming();
+                            close(s);
                             printf("Received TERMINATE command\n");
                             return;
                         }
