@@ -131,7 +131,7 @@ for i in range(num_trials):
                 print("-------------------------")
         
         dl = dl[1:] # discard first value
-        if True:        
+        if False:        
             print("sleep:     ",sleep)
             print("skip:      ",skip)
             print("miss:      ",miss)

@@ -106,7 +106,7 @@ class GeneralTab(QWidget):
         self.Button_RefreshAdcStatus.clicked.connect(self.update_adc_status)
         
         self.Button_AdcBeginStream.clicked.connect(self.begin_streaming_tcp)
-        self.Button_AdcStopStream.clicked.connect(self.stop_streaming_tcp_X)
+        self.Button_AdcStopStream.clicked.connect(self.stop_streaming)
         
         #######################################################################
         # General Message Area ################################################

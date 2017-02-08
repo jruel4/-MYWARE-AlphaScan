@@ -489,25 +489,12 @@ class AlphaScanDevice:
         ###############################################################################
         
         #TODO NEED terminatino ACK, if NACK then resend termination command        
-        
-        try:
-            self.sock.sendto(('ttt'.encode('utf-8')), (self.UDP_IP, self.UDP_PORT))
-            
-        except: #Make specific to error: [Errno 9] Bad file descriptor
-            self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-            #self.sock.setsockopt(socket.SOL_SOCKET,socket.SO_RCVBUF,8192)
-            self.sock.bind(('',self.UDP_PORT))
-            self.sock.settimeout(0)
-            self.sock.sendto(('ttt'.encode('utf-8')), (self.UDP_IP, self.UDP_PORT))
         self.end = time.time()
         self.DEV_streamActive.clear()
-        time.sleep(0.01)
-        self.sock.close()
-        drops = self.get_drop_rate()
-        if not drops: avail = 0
-        else: avail = ((1.0 - ((drops * 1.0) / len(self.inbuf)))*100.0)
-        pckt_rate = len(self.inbuf)/(self.end-self.begin)
-        return "Not Streaming", str(pckt_rate),  str(avail), str(len(self.inbuf)), str(drops)
+        time.sleep(0.200) # Give stream thread time to send terminate command
+        #self.sock.close() #TODO Confirm its done streaming before closing
+        pckt_rate = self.getPdataSize()/(self.end-self.begin)
+        return "Not Streaming", str(pckt_rate),  "TODO", str(len(self.inbuf)), "TODO"
         
     def terminate_TCP_stream(self):
         ###############################################################################
@@ -525,11 +512,8 @@ class AlphaScanDevice:
         self.end = time.time()
         self.DEV_streamActive.clear()
         time.sleep(0.01)
-        drops = self.get_drop_rate()
-        if not drops: avail = 0
-        else: avail = ((1.0 - ((drops * 1.0) / len(self.inbuf)))*100.0)
         pckt_rate = len(self.inbuf)/(self.end-self.begin)
-        return "Not Streaming", str(pckt_rate),  str(avail), str(len(self.inbuf)), str(drops)
+        return "Not Streaming", str(pckt_rate),  "TODO", str(len(self.inbuf)), "TODO"
     
     
     def flush_TCP(self):
@@ -1019,12 +1003,14 @@ class AlphaScanDevice:
         return len(self.t_pdata)
         
     def udp_ack_1_thread(self):
+        global socket
         UDP_IP = "192.168.1.227"
         UDP_PORT = 50007
         sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         sock.setsockopt(socket.SOL_SOCKET,socket.SO_RCVBUF,8192)
         sock.bind(('',UDP_PORT))
-        def msg(c):
+        self.sock = sock
+        def msg(c,token=0x00):
             return chr(c)+'_'.encode('utf-8')+chr(0x00)     
         def get_newest_ctr(sock):
             valid = 0
@@ -1100,9 +1086,23 @@ class AlphaScanDevice:
             elif nctr != (ctr+1)%256: ctr=nctr;skip+=1
             else: ctr=nctr;totrx+=valid;rc=time.time();dl+=[rc-rp];rp=rc;t_data+=[d];t_q+=[get_queue_size(d)];\
                   t_heap+=[get_heap_size(d)];self.t_pdata+=parse_and_push(d)
+        
+        # Try to close connection (3x for reliability)
+        time.sleep(0.300)
+        for i in range(3):
+            sock.sendto(chr(0xff)*3, (UDP_IP, UDP_PORT))  
+        sock.close()
+        # Share sock in case needed to close later
+        
             
-                
-                
+    def close_udp_solo(self):
+        UDP_IP = "192.168.1.227"
+        UDP_PORT = 50007
+        sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        sock.setsockopt(socket.SOL_SOCKET,socket.SO_RCVBUF,8192)
+        sock.bind(('',UDP_PORT))
+        sock.sendto(chr(0xff)*3,(UDP_IP,UDP_PORT))
+        sock.close()
             
             
             
