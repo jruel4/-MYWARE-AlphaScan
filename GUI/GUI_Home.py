@@ -106,7 +106,7 @@ class AlphaScanGui(QWidget):
         
     def closeEvent(self, event):
         self._Device.close_TCP()
-        self._Device.close_UDP()
+        self._Device.close_udp_solo()
         event.accept()
         
     def run(self):

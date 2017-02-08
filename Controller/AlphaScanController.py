@@ -80,7 +80,7 @@ class AlphaScanDevice:
             self.debug_sock.settimeout(0)
             self.debug_port_open = True
             return True
-        except:
+        except socket.timeout:
             return False
     
     def close_debug_port(self):
@@ -88,7 +88,7 @@ class AlphaScanDevice:
             self.debug_sock.close()
             self.debug_port_open = False
             return True
-        except:
+        except socket.timeout:
             return False
     
     def read_debug_port(self):
@@ -97,7 +97,7 @@ class AlphaScanDevice:
             r = self.debug_sock.recv(1024)
             if len(r) > 0:
                 return r
-        except:
+        except socket.timeout:
             return False
         
     def init_TCP(self):
@@ -118,7 +118,7 @@ class AlphaScanDevice:
             self.UDP_IP = addr[0] # TODO this should say TCP_IP
             self.IS_CONNECTED = True
             return True
-        except:
+        except socket.timeout as e:
             self.IS_CONNECTED = False
             self.close_TCP(); # cleanup socket
             return False
@@ -131,8 +131,10 @@ class AlphaScanDevice:
             self.conn.close() #conn might not exist yet
             self.s.close()
             self.IS_CONNECTED = False
-        except:
-            pass        
+        except socket.timeout as e:
+            print(e)       
+        except AttributeError:
+            pass
         
     def close_UDP(self):
         ################################################################################
@@ -140,7 +142,9 @@ class AlphaScanDevice:
         ################################################################################
         try:
             self.sock.close() 
-        except:
+        except socket.timeout as e:
+            print(e) 
+        except AttributeError as e:
             pass
     
     def DEV_printStream(self):
@@ -177,7 +181,7 @@ class AlphaScanDevice:
                     self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
                     self.sock.bind(('',self.UDP_PORT))
                     self.sock.settimeout(0)
-            except:
+            except socket.timeout:
                 self.unknown_stream_errors += 1
                 
     def DEV_printTCPStream_OLD(self):
@@ -359,20 +363,6 @@ class AlphaScanDevice:
             except socket.timeout:
                 self.timeout_count += 1
                 
-    
-                
-           
-                
-#==============================================================================
-#             except socket.error as e:
-#                 self.error_array += [e]
-#==============================================================================
-                
-#==============================================================================
-#             except:
-#                 self.unknown_stream_errors += 1
-#==============================================================================
-                
         
     def generic_tcp_command_BYTE(self, cmd, extra = ''):
         ###############################################################################
@@ -385,8 +375,8 @@ class AlphaScanDevice:
             self.conn.send((chr(TCP_COMMAND[cmd]) + extra + chr(127)).encode('utf-8'))
             time.sleep(0.05)
             r_string = self.conn.recv(64)
-        except:
-            r_string = 'no_response'
+        except socket.timeout:
+            r_string = 'socket.timeout'
         return r_string
         
     def generic_tcp_command_OPCODE(self, opcode, extra = ''):
@@ -399,8 +389,8 @@ class AlphaScanDevice:
         time.sleep(0.05)
         try:
             r_string = self.conn.recv(72)
-        except:
-            r_string = 'no_response'
+        except socket.timeout:
+            r_string = 'socket.timeout'
         return r_string
         
     def generic_tcp_command_STRING(self, txt):
@@ -413,15 +403,15 @@ class AlphaScanDevice:
         time.sleep(0.05)
         try:
             r_string = self.conn.recv(64)
-        except:
-            r_string = 'no_response'
+        except socket.timeout:
+            r_string = 'socket.timeout'
         return r_string
         
     def read_tcp(self, num_bytes=64):
         try:
             r_string = self.conn.recv(num_bytes)
-        except:
-            r_string = 'no_response'
+        except socket.timeout:
+            r_string = 'socket.timeout'
         return r_string
     
     def sync_adc_registers(self):
@@ -506,8 +496,8 @@ class AlphaScanDevice:
         try:
             self.generic_tcp_command_OPCODE(0xf)
             
-        except: #Make specific to error: [Errno 9] Bad file descriptor
-            print("Exception occured upon attempting stream termination")
+        except socket.timeout:
+            print("Socket.timeout")
             
         self.end = time.time()
         self.DEV_streamActive.clear()
@@ -522,8 +512,8 @@ class AlphaScanDevice:
         ###############################################################################
         try:
             self.conn.recv(self.conn.getsockopt(socket.SOL_SOCKET,socket.SO_RCVBUF))
-        except:
-            pass
+        except socket.timeout:
+            print("socket.timeout")
     
     def flush_UDP(self):
         ###############################################################################
@@ -531,7 +521,7 @@ class AlphaScanDevice:
         ###############################################################################
         try:
             self.sock.recv(65535)
-        except:
+        except socket.timeout:
             pass
     
     def update_adc_registers(self,reg_to_update):
@@ -550,8 +540,8 @@ class AlphaScanDevice:
         time.sleep(0.01)
         try:
             r_string = self.conn.recv(64)
-        except:
-            r_string = 'no_response'
+        except socket.timeout:
+            r_string = 'timeout'
         return r_string
         
     def get_drop_rate(self):
@@ -587,12 +577,12 @@ class AlphaScanDevice:
             s.close()
             if "I_AM_ALPHA_SCAN" in data:
                 return True
-        except:
-            pass
+        except socket.timeout:
+            print("socket.timeout")
         return False
         
     def connect_to_device(self):
-        self.broadcast_disco_beacon()
+        #self.broadcast_disco_beacon() #TODO reimplement
         return self.init_TCP()
         
     def set_udp_delay(self, delay):
@@ -623,8 +613,8 @@ class AlphaScanDevice:
         try:        
             if (self.inbuf[-1] == (self.inbuf[-2] + 1)):
                 self.time_intervals += [self.time_beta - self.time_alpha]
-        except:
-            pass
+        except socket.timeout:
+            primt("socket.timeout")
         self.time_alpha = self.time_beta
             
                 
@@ -677,257 +667,6 @@ class AlphaScanDevice:
             chx += [d[chan]]
         plt.plot(chx)
         plt.show
-    
-    
-    def DEV_printTCPStream_TEST_0(self):
-
-        self.s = socket.socket(socket.AF_INET,socket.SOCK_STREAM) 
-        self.s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-        self.s.bind((self.TCP_IP,self.TCP_PORT)) 
-        # error: [Errno 10048] Only one usage of each socket address (protocol/network address/port) is normally permitted
-        
-        self.s.settimeout(10)
-        self.s.listen(1)        
-        try:
-            self.conn,addr = self.s.accept()
-            self.conn.settimeout(.001) # TODO maybe want to make this smaller
-
-            self.UDP_IP = addr[0] # TODO this should say TCP_IP
-            self.IS_CONNECTED = True
-            
-        except:
-            self.IS_CONNECTED = False
-            self.close_TCP(); # cleanup socket
-            return False        
-            
-        self.generic_tcp_command_OPCODE(0x3)
-        
-        global sqwave
-        ###############################################################################
-        # UDP Stream thread target
-        ###############################################################################
-
-        self.reads = 0
-        self.unknown_stream_errors = 0
-        self.time_interval_count = 0
-        self.rx_count = 0
-        self.pre_rx = 0
-        self.timeout_count = 0
-        self.invalid_start = 0
-        self.skipped_rx = 0
-        self.test_inbuf = list()
-        self.inbuf = list()
-        self.time_intervals = list()
-        self.DEV_streamActive.set()
-        self.error_array = list()
-        self.total_rx = 0
-        self.total_buf = ''
-        
-        deviceData = [0 for i in range(8)]
-        
-        # clear tcp inbuf
-        #self.conn.recv(2048) # this is not a proper flush, rx size should be set to match
-        self.flush_TCP()
-        self.conn.setblocking(0)
-        diff = 3
-        
-        self.begin = time.time()
-        
-        while self.DEV_streamActive.is_set():
-
-            if (self.rx_count % 100) == 0:
-                elapsed = (time.time() - self.begin)
-                if elapsed > 0:
-                    bytes_per_sec = self.total_rx / elapsed
-                    print("Bytes per second: ",(bytes_per_sec))
-                
-#==============================================================================
-#             try:
-#==============================================================================
-            self.pre_rx += 1
-            # TODO Receive and unpack sample from TCP connection
-
-            ready = select.select([self.conn], [], [] , 0)
-            if (ready[0]):
-                self.data = self.conn.recv(2048)
-                self.total_buf += str(self.data)
-                self.rx_count += 1     
-                self.total_rx += len(self.data)
-            else:
-                self.skipped_rx += 1
-
-
-    def DEV_printTCPStream_TEST_1(self):
-
-        self.s = socket.socket(socket.AF_INET,socket.SOCK_STREAM) 
-        self.s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-        self.s.bind((self.TCP_IP,self.TCP_PORT)) 
-        # error: [Errno 10048] Only one usage of each socket address (protocol/network address/port) is normally permitted
-        
-        self.s.settimeout(10)
-        self.s.listen(1)        
-        try:
-            self.conn,addr = self.s.accept()
-            self.conn.settimeout(.001) # TODO maybe want to make this smaller
-
-            self.UDP_IP = addr[0] # TODO this should say TCP_IP
-            self.IS_CONNECTED = True
-            
-        except:
-            self.IS_CONNECTED = False
-            self.close_TCP(); # cleanup socket
-            return False        
-            
-        #self.generic_tcp_command_OPCODE(0x3)
-        
-        global sqwave
-        ###############################################################################
-        # UDP Stream thread target
-        ###############################################################################
-
-        self.reads = 0
-        self.unknown_stream_errors = 0
-        self.time_interval_count = 0
-        self.rx_count = 0
-        self.pre_rx = 0
-        self.timeout_count = 0
-        self.invalid_start = 0
-        self.skipped_rx = 0
-        self.test_inbuf = list()
-        self.read_size_list = list()
-        self.inbuf = list()
-        self.time_intervals = list()
-        self.DEV_streamActive.set()
-        self.error_array = list()
-        self.total_rx = 0
-        self.total_buf = ''
-        
-        # clear tcp inbuf
-        #self.conn.recv(2048) # this is not a proper flush, rx size should be set to match
-        self.flush_TCP()
-        self.conn.setblocking(0)
-       
-        self.begin = time.time()
-        
-        while self.DEV_streamActive.is_set():
-
-            if ((self.rx_count % 5000) == 0) and (self.rx_count > 0):
-                elapsed = (time.time() - self.begin) #in seconds
-                if elapsed > 0:
-                    bytes_per_sec = self.total_rx / elapsed
-                    print("Bytes per second: ",(bytes_per_sec))
-                
-#==============================================================================
-#             try:
-#==============================================================================
-            self.pre_rx += 1
-            # TODO Receive and unpack sample from TCP connection
-
-            ready = select.select([self.conn], [], [] , 0)
-            if (ready[0]):
-                self.data = self.conn.recv(1460)
-                self.read_size_list += [len(self.data)]
-                self.total_buf += str(self.data)
-                self.rx_count += 1     
-                self.total_rx += len(self.data)
-            else:
-                self.skipped_rx += 1
-                
-    def DEV_printTCPStream_TEST_2(self):
-
-        self.s = socket.socket(socket.AF_INET,socket.SOCK_STREAM) 
-        self.s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-        self.s.bind((self.TCP_IP,self.TCP_PORT)) 
-        # error: [Errno 10048] Only one usage of each socket address (protocol/network address/port) is normally permitted
-        
-        self.s.settimeout(10)
-        self.s.listen(1)        
-        try:
-            self.conn,addr = self.s.accept()
-            self.conn.settimeout(.001) # TODO maybe want to make this smaller
-
-            self.UDP_IP = addr[0] # TODO this should say TCP_IP
-            self.IS_CONNECTED = True
-            
-        except:
-            self.IS_CONNECTED = False
-            self.close_TCP(); # cleanup socket
-            return False        
-            
-        #self.generic_tcp_command_OPCODE(0x3)
-        
-        global sqwave
-        ###############################################################################
-        # UDP Stream thread target
-        ###############################################################################
-
-        self.reads = 0
-        self.unknown_stream_errors = 0
-        self.time_interval_count = 0
-        self.rx_count = 0
-        self.pre_rx = 0
-        self.timeout_count = 0
-        self.invalid_start = 0
-        self.skipped_rx = 0
-        self.test_inbuf = list()
-        self.read_size_list = list()
-        self.inbuf = list()
-        self.time_intervals = list()
-        self.DEV_streamActive.set()
-        self.error_array = list()
-        self.Bps_list = list()
-        self.total_rx = 0
-        self.total_buf = ''
-        
-        # clear tcp inbuf
-        #self.conn.recv(2048) # this is not a proper flush, rx size should be set to match
-        self.flush_TCP()
-        
-       
-        self.begin = time.time()
-        
-#==============================================================================
-#         self.conn.setblocking(0)
-#         while(True):
-#             ready = select.select([self.conn], [], [] , 0)
-#             if (ready[0]):
-#                 self.conn.recv(1400)
-#==============================================================================
-                
-            
-        
-        while self.DEV_streamActive.is_set():
-
-            if ((self.rx_count % 100) == 0) and (self.rx_count > 0):
-
-                #TODO add in a sleep to explicitely test recovery                 
-                
-                elapsed = (time.time() - self.begin) #in seconds
-                if elapsed > 0:
-                    bytes_per_sec = self.total_rx / elapsed
-                    #print("Bytes per second: ",(bytes_per_sec))
-                    self.Bps_list += [bytes_per_sec]
-                    
-                
-#==============================================================================
-#             try:
-#==============================================================================
-            self.pre_rx += 1
-            # TODO Receive and unpack sample from TCP connection
-
-#==============================================================================
-#             ready = select.select([self.conn], [], [] , 0)
-#             if (ready[0]):
-#==============================================================================
-            try:
-                #TODO add timer for measuring interval between read attempts
-                self.data = self.conn.recv(1400)
-                self.read_size_list += [(time.time(),len(self.data))]
-                self.total_buf += str(self.data)
-                self.rx_count += 1     
-                self.total_rx += len(self.data)
-            except:
-                self.skipped_rx += 1
                 
     def gen_throughput_over_time(self):
         '''
@@ -1031,6 +770,9 @@ class AlphaScanDevice:
                         break
                     elif e.errno == 10054:
                         pass #TODO This is not debugged - thrown if UDP on device not ready
+                    elif e.errno == 9: #bad file descriptor
+                        print("Please stop streaming before exiting GUI")
+                        return
                     else:
                         raise e  
             return nctr,valid,sndr_rc,data
@@ -1088,7 +830,7 @@ class AlphaScanDevice:
                   t_heap+=[get_heap_size(d)];self.t_pdata+=parse_and_push(d)
         
         # Try to close connection (3x for reliability)
-        time.sleep(0.300)
+        time.sleep(0.100)
         for i in range(3):
             sock.sendto(chr(0xff)*3, (UDP_IP, UDP_PORT))  
         sock.close()
@@ -1098,11 +840,16 @@ class AlphaScanDevice:
     def close_udp_solo(self):
         UDP_IP = "192.168.1.227"
         UDP_PORT = 50007
-        sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        sock.setsockopt(socket.SOL_SOCKET,socket.SO_RCVBUF,8192)
-        sock.bind(('',UDP_PORT))
-        sock.sendto(chr(0xff)*3,(UDP_IP,UDP_PORT))
-        sock.close()
+        try:
+            self.sock.sendto(chr(0xff)*3,(UDP_IP,UDP_PORT))
+            self.sock.close()
+        except AttributeError: # TODO handle sock not exist exception and create as below
+            sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+            sock.setsockopt(socket.SOL_SOCKET,socket.SO_RCVBUF,8192)
+            sock.bind(('',UDP_PORT))
+            for i in range(3):
+                sock.sendto(chr(0xff)*3,(UDP_IP,UDP_PORT))
+            sock.close()
             
             
             
