@@ -106,7 +106,7 @@ class GeneralTab(QWidget):
         self.Button_RefreshAdcStatus.clicked.connect(self.update_adc_status)
         
         self.Button_AdcBeginStream.clicked.connect(self.begin_streaming_tcp)
-        self.Button_AdcStopStream.clicked.connect(self.stop_streaming_tcp)
+        self.Button_AdcStopStream.clicked.connect(self.stop_streaming_tcp_X)
         
         #######################################################################
         # General Message Area ################################################
@@ -330,7 +330,7 @@ class GeneralTab(QWidget):
         if not self.Connected:
             self.Text_GeneralMessage.setText("ILLEGAL: Connected must be true")
             return
-        begin_stream_string = self._Device.initiate_UDP_stream()
+        begin_stream_string = self._Device.initiate_TCP_stream()
         self.Streaming = True # TODO validate
         self.Text_AdcStreamStatus.setText(begin_stream_string)
         
@@ -341,6 +341,11 @@ class GeneralTab(QWidget):
             return
         begin_stream_string = self._Device.initiate_TCP_stream()
         self.Streaming = True # TODO validate
+        self.Text_AdcStreamStatus.setText(begin_stream_string)
+        
+    @Slot()
+    def begin_streaming_tcpX(self):
+        begin_stream_string = self._Device.initiate_TCP_streamX()
         self.Text_AdcStreamStatus.setText(begin_stream_string)
     
     @Slot()
@@ -364,6 +369,11 @@ class GeneralTab(QWidget):
         self._Device.terminate_TCP_stream()
         self.Streaming = False # TODO validate
         self.Text_AdcStreamStatus.setText("Stopped streaming")
+        
+    @Slot()
+    def stop_streaming_tcp_X(self):
+        r = self._Device.getPdataSize()
+        self.Text_AdcStreamStatus.setText("Size pData: "+str(r))
   
         
     @Slot()

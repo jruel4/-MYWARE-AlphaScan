@@ -48,7 +48,7 @@ class AlphaScanDevice:
         self.sqwave = list()
         
         
-        self.info = StreamInfo('AlphaScan', 'EEG', 8, 100, 'float32', 'uid_18')
+        self.info = StreamInfo('AS_'+time.strftime("%d_%m_%Y_%H_%M_%S"), 'EEG', 8, 100, 'float32', 'AS_'+time.strftime("%d_%m_%Y_%H_%M_%S"))
         self.outlet = StreamOutlet(self.info)
         self.mysample = [random.random(), random.random(), random.random(),
             random.random(), random.random(), random.random(),
@@ -448,14 +448,29 @@ class AlphaScanDevice:
         ###############################################################################
         # Begin TCP adc stream
         ###############################################################################
-
+        
+        self.generic_tcp_command_OPCODE(0x03) # begins streaming TCP
+        time.sleep(0.100)
         # Start TCP rcv thread
-        self.LSL_Thread = Thread(target=self.DEV_printTCPStream)
+        self.LSL_Thread = Thread(target=self.udp_ack_1_thread)
         self.LSL_Thread.start()
         self.DEV_streamActive.set()  
         # Send command to being 
         self.begin = time.time()
-        return self.generic_tcp_command_OPCODE(0x03) # begins streaming TCP
+        return "Success"
+        
+    def initiate_TCP_streamX(self):
+        ###############################################################################
+        # Begin TCP adc stream
+        ###############################################################################
+
+        # Start TCP rcv thread
+        self.LSL_Thread = Thread(target=self.udp_ack_1_thread)
+        self.LSL_Thread.start()
+        self.DEV_streamActive.set()  
+        # Send command to being 
+        self.begin = time.time()
+        return "SUCCESS"
         
     def initiate_TCP_stream_direct(self):
         ###############################################################################
@@ -999,10 +1014,95 @@ class AlphaScanDevice:
         else:
             print("block miss count: ",len(errs))
         self.plot_square_wave(0)
+
+    def getPdataSize(self):
+        return len(self.t_pdata)
+        
+    def udp_ack_1_thread(self):
+        UDP_IP = "192.168.1.227"
+        UDP_PORT = 50007
+        sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        sock.setsockopt(socket.SOL_SOCKET,socket.SO_RCVBUF,8192)
+        sock.bind(('',UDP_PORT))
+        def msg(c):
+            return chr(c)+'_'.encode('utf-8')+chr(0x00)     
+        def get_newest_ctr(sock):
+            valid = 0
+            nctr = -1
+            sndr_rc = -1
+            data = ''
+            while 1:
+                try:
+                    data = sock.recv(1400)
+                    nctr = ord(data[0])
+                    sndr_rc = ord(data[2])
+                    valid = len(data)
+                except socket.timeout:
+                    break
+                except socket.error as e:
+                # A non-blocking socket operation could not be completed immediately
+                    if e.errno == 10035: 
+                        break
+                    elif e.errno == 10054:
+                        pass #TODO This is not debugged - thrown if UDP on device not ready
+                    else:
+                        raise e  
+            return nctr,valid,sndr_rc,data
+        def get_queue_size(data):
+            msb = ord(data[1])
+            lsb = ord(data[2])
+            return ((msb << 8) | lsb)
+        def get_heap_size(data):
+            msb = ord(data[3])
+            csb = ord(data[4])    
+            lsb = ord(data[5])
+            return ((msb << 16) | (csb << 8) | lsb)
+        def parse_and_push(data):
+            deviceData = [list() for i in range(8)]
+            mysamples = [[0 for i in range(8)] for j in range(57)]
+            for i in range(57):
+                for j in xrange(8):
+                    deviceData[j] = [data[(24+24*i)+(j*3):(24+24*i)+(j*3+3)]] 
+                    val = 0
+                    for s,n in list(enumerate(deviceData[j][0])):
+                        try:
+                            val ^= ord(n) << ((2-s)*8)
+                        except ValueError as e:
+                            print("value error",e)
+                        except TypeError as e:
+                            print("value error",e)
+                    val = twos_comp(val)
+                    mysamples[i][j] = val
+                self.outlet.push_sample(mysamples[i])
+            return mysamples
+        
+        # Stat vars
+        dl = list() # delay list
+        rp = time.time() # rx previous
+        t_data = list() # raw data
+        t_q = list() # queue
+        t_heap = list() # heap
+        self.t_pdata = list() # parsed data
+        
+        # Core vars
+        self.DEV_streamActive.set()
+        sleep = 0.033
+        sock.settimeout(0)
+        totrx = 0
+        skip = -1
+        miss = 0
+        ctr = 0x00
+        while self.DEV_streamActive.is_set():
+            sock.sendto(msg(ctr), (UDP_IP, UDP_PORT))    
+            time.sleep(sleep) 
+            nctr,valid,x,d = get_newest_ctr(sock)   
+            if not valid: miss+=1;
+            elif nctr != (ctr+1)%256: ctr=nctr;skip+=1
+            else: ctr=nctr;totrx+=valid;rc=time.time();dl+=[rc-rp];rp=rc;t_data+=[d];t_q+=[get_queue_size(d)];\
+                  t_heap+=[get_heap_size(d)];self.t_pdata+=parse_and_push(d)
             
-            
-            
-            
+                
+                
             
             
             
