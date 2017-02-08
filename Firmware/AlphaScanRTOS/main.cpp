@@ -59,7 +59,7 @@ class AlphaScanManager : public esp_open_rtos::thread::task_t
                         }
                     case RUN_MODE:
                         {
-                            if (mDebugSerial && (mMainLoopCounter++ % (int)10E7 == 0)) {
+                            if (mDebugSerial && (mMainLoopCounter++ % (int)10E5 == 0)) {
                                 printf("mSystemState == RUN_MODE\n");
                             }
 
@@ -119,10 +119,7 @@ class AlphaScanManager : public esp_open_rtos::thread::task_t
             else if (rcode == 0x03){
                 printf("running test signal stream code\n");
 
-                //TODO Setup ADS
-
                 // Receive new data from ADS - send to host
-                // Check TCP read for terminate command
                 c_HostComm.stream_ads(c_Ads);
 
                 printf("test signal stream completed\n");
