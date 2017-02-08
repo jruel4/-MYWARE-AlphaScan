@@ -382,7 +382,7 @@ class AlphaScanDevice:
             return "ILLEGAL: Must be connected and not streaming"
         try:
             self.flush_TCP()
-            self.conn.send((chr(TCP_COMMAND[cmd]) + extra + chr(127)).encode('utf-8'))
+            self.conn.send((chr(TCP_COMMAND[cmd]) + extra).encode('utf-8'))
             time.sleep(0.05)
             r_string = self.conn.recv(64)
         except:
@@ -424,6 +424,60 @@ class AlphaScanDevice:
             r_string = 'no_response'
         return r_string
     
+	
+	#JCR_C_02-08
+	def pull_adc_registers(self): 
+         ###############################################################################
+         # Get all registers and return as list of lists
+         ###############################################################################
+         # send generic command to retrieve adc registers
+         self.generic_tcp_command_BYTE("ADC_get_register")
+         # wait for response, loop a few times to account for possible delay then timeout
+         for i in range(4):
+             time.sleep(0.5)
+             r = self.read_tcp(num_bytes=2048) # ensure this is enough to get whole map
+             if (len(r) > 24) and ("bbb" in r) and ("eee" in r):
+ 
+                 self.raw_map = r[r.find("bbb")+len("bbb"):r.find("eee")]
+                 assert(len(self.raw_map) == 24)               
+                 for i in range(len(self.raw_map)):
+                     for j in range(8):
+                         if (ord(self.raw_map[i]) & (0x1 << j) ):
+                             self.reg_map[i][j] = True
+                         else:
+                             self.reg_map[i][j] = False
+                 return self.reg_map              
+                 
+                 # return map
+             else:
+                 continue
+         
+         print("RETURNING FALSE")
+         return False # Create better error message here, or use proper exception handling...
+         
+    def push_adc_registers(self, RegMap):
+         #TODO push real register map to device
+         
+         #Build byte characters from reg map
+         byte_list = [0 for i in range(24)]
+         for i in range(24):
+             for j in range(8):
+                 if RegMap[i][j]:
+                     byte_list[i] |= (0x1 << j)
+         
+         self.chr_map = ''
+         for n in byte_list:
+             self.chr_map += chr(n)
+
+
+         self.flush_TCP()
+         self.conn.send((chr(0x0e) + 'bbb'+self.chr_map+'eee' + chr(127)))
+         time.sleep(0.05)
+         #r = self.generic_tcp_command_BYTE('ADC_set_register', 'bbbhi_there my name is stream shady and i like to cream ladies eee')
+         
+         return self.chr_map
+	
+	
     def sync_adc_registers(self):
         ###############################################################################
         # Get all registers and return as list of lists
