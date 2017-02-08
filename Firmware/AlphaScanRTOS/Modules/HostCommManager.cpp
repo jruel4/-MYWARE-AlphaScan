@@ -73,7 +73,8 @@ class HostCommManager {
 		}
 
 		void stream_ads(ADS* ads){
-			_stream_ads(ads);
+			//_stream_ads(ads);
+            _stream_task(ads);
 		}
 
 	private:
@@ -91,7 +92,7 @@ class HostCommManager {
 
 			struct addrinfo res;
 			struct ip_addr my_host_ip;
-			IP4_ADDR(&my_host_ip, 192, 168, 1, 175);
+			IP4_ADDR(&my_host_ip, 192, 168, 1, 168);
 
 			struct sockaddr_in my_sockaddr_in;
 			my_sockaddr_in.sin_addr.s_addr = my_host_ip.addr;
@@ -113,7 +114,7 @@ class HostCommManager {
 			int optval = 1;
 			while(1) {
 
-				get_pool_sizes();
+				//get_pool_sizes();
 				printf("heap size: %d\n", xPortGetFreeHeapSize());
 
 				mSocket = socket(res.ai_family, res.ai_socktype, 0);
@@ -645,7 +646,7 @@ stats_display();
 							break;
 						}
 
-						get_pool_sizes();
+						//get_pool_sizes();
 						printf("--------------\n");
 						char wbuf[400] = {0};
 						vTaskList(wbuf);
@@ -752,6 +753,12 @@ stats_display();
                 uint8_t drop_count = 0;
                 bool local_buf_acked = true;
 
+
+                printf("Seting up ADS\n");
+                ads->configureTestSignal();
+                printf("Begin streaming\n");
+                ads->startStreaming();
+
                 /******************************** 
                   Main stream loop
                  *********************************/
@@ -773,7 +780,6 @@ stats_display();
                             // Fill local buffer with new data
                             if (ads->getDataPacket(outbuf)){ 
                                 local_buf_acked = false;
-                                outbuf[0] = pkt_cnt;
                             }
                             else{
                                 printf("Failed to load outbuf, file: %s, line: %d\n",__FILE__,__LINE__);
@@ -788,11 +794,12 @@ stats_display();
                     if (inbuf[0] == outbuf[0])
                     {
                         // It's a proper ACK, move to next packet
-                        outbuf[0] = pkt_cnt++;
+                        outbuf[0] = ++pkt_cnt;
                         local_buf_acked = true;
                     }
                     else  {
-                        if (inbuf[3] == 0xff){
+                        if (inbuf[2] == 0xff){
+                            ads->stopStreaming();
                             printf("Received TERMINATE command\n");
                             return;
                         }
