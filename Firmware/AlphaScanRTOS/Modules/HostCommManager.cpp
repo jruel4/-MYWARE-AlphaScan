@@ -752,6 +752,8 @@ stats_display();
                 uint8_t pkt_cnt = 0;
                 uint8_t drop_count = 0;
                 bool local_buf_acked = true;
+                int inWaiting = 0;
+                int heapSize = 0;
 
 
                 printf("Seting up ADS\n");
@@ -776,7 +778,8 @@ stats_display();
 
                     // If local buf is free, check queue for new packet's worth of data
                     if (local_buf_acked){
-                        if (ads->getQueueSize() >= 57){
+                        inWaiting = ads->getQueueSize();
+                        if (inWaiting >= 57){
                             // Fill local buffer with new data
                             if (ads->getDataPacket(outbuf)){ 
                                 local_buf_acked = false;
@@ -788,14 +791,20 @@ stats_display();
                     }
 
                     // Blocking read for ACK on currently buffered packet
-                    // TODO ADS interrupt should be running during this time, "blocking" read needs to allow gpio interrupt to take priority
-                    // TODO if this is a problem, we can use non-blocking read with a select() check, taskYIELD(), and read flash which only sends packet if we've received another ack
                     recvfrom(s, inbuf, inbuf_size, 0, res.ai_addr, &(res.ai_addrlen)); 
                     if (inbuf[0] == outbuf[0])
                     {
                         // It's a proper ACK, move to next packet
                         outbuf[0] = ++pkt_cnt;
                         local_buf_acked = true;
+
+                        // Get status data
+                        outbuf[1] = (inWaiting >> 8) & 0xff;
+                        outbuf[2] = inWaiting & 0xff;
+                        heapSize = xPortGetFreeHeapSize();
+                        outbuf[3] = (heapSize >> 16) & 0xff;
+                        outbuf[4] = (heapSize >> 8)  & 0xff;
+                        outbuf[5] = (heapSize >> 0)  & 0xff;
                     }
                     else  {
                         if (inbuf[2] == 0xff){
