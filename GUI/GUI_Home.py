@@ -105,6 +105,7 @@ class AlphaScanGui(QWidget):
             self.ConnectionStatus.setText("Not Connected")
         
     def closeEvent(self, event):
+        self._Device.DEV_streamActive.clear()
         self._Device.close_TCP()
         self._Device.close_udp_solo()
         event.accept()

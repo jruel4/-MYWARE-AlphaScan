@@ -826,7 +826,8 @@ class AlphaScanDevice:
                         pass #TODO This is not debugged - thrown if UDP on device not ready
                     elif e.errno == 9: #bad file descriptor
                         print("Please stop streaming before exiting GUI")
-                        return
+                        self.DEV_streamActive.clear()
+                        return 0,0,0,0
                     else:
                         raise e  
             return nctr,valid,sndr_rc,data
@@ -885,10 +886,19 @@ class AlphaScanDevice:
         
         # Try to close connection (3x for reliability)
         time.sleep(0.100)
-        for i in range(3):
-            sock.sendto(chr(0xff)*3, (UDP_IP, UDP_PORT))  
-        sock.close()
-        # Share sock in case needed to close later
+        try:
+            for i in range(3):
+                sock.sendto(chr(0xff)*3, (UDP_IP, UDP_PORT))  
+            sock.close()
+        except socket.error as e:
+            if e.errno == 9:
+                print("UDP sock closed before sending terminate...")
+            else:
+                raise e
+        # Share stats
+        self.t_q = list(t_q)
+        self.t_heap = list(t_heap)
+        
         
             
     def close_udp_solo(self):
@@ -904,6 +914,11 @@ class AlphaScanDevice:
             for i in range(3):
                 sock.sendto(chr(0xff)*3,(UDP_IP,UDP_PORT))
             sock.close()
+        except socket.error as e:
+            if e.errno == 9: #bad file descriptor, I.e. was already closed...
+                pass
+            else:
+                raise e
             
             
             
