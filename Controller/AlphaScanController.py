@@ -8,6 +8,7 @@ from CommandDefinitions import *
 from BitPacking import twos_comp
 import select
 from matplotlib import pyplot as plt
+import Queue
 
 class AlphaScanDevice:
     
@@ -44,11 +45,13 @@ class AlphaScanDevice:
         self.time_beta = 0
         self.time_intervals = list()
         self.time_interval_count = 0
+        self.fifo_queue = Queue.Queue()
+        self.reg_map = [[False for i in range(8)] for j in range(24)]
         
         self.sqwave = list()
         
         
-        self.info = StreamInfo('AS_'+time.strftime("%d_%m_%Y_%H_%M_%S"), 'EEG', 8, 100, 'float32', 'AS_'+time.strftime("%d_%m_%Y_%H_%M_%S"))
+        self.info = StreamInfo('AS_'+time.strftime("%d_%m_%Y_%H_%M_%S"), 'EEG', 8, 250, 'float32', 'AS_'+time.strftime("%d_%m_%Y_%H_%M_%S"))
         self.outlet = StreamOutlet(self.info)
         self.mysample = [random.random(), random.random(), random.random(),
             random.random(), random.random(), random.random(),
@@ -107,6 +110,7 @@ class AlphaScanDevice:
         self.s = socket.socket(socket.AF_INET,socket.SOCK_STREAM) 
         self.s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         self.s.bind((self.TCP_IP,self.TCP_PORT)) 
+        #TODO error: deal with this exception: [Errno 10013] An attempt was made to access a socket in a way forbidden by its access permissions
         # error: [Errno 10048] Only one usage of each socket address (protocol/network address/port) is normally permitted
         
         self.s.settimeout(10)
@@ -374,7 +378,7 @@ class AlphaScanDevice:
             self.flush_TCP()
             self.conn.send((chr(TCP_COMMAND[cmd]) + extra).encode('utf-8'))
             time.sleep(0.05)
-            r_string = self.conn.recv(64)
+            r_string = self.conn.recv(64) #TODO error: [Errno 10054] An existing connection was forcibly closed by the remote host
         except socket.timeout:
             r_string = 'socket.timeout'
         return r_string
@@ -388,7 +392,7 @@ class AlphaScanDevice:
         self.conn.send((chr(opcode) + extra + chr(127)).encode('utf-8'))
         time.sleep(0.05)
         try:
-            r_string = self.conn.recv(72)
+            r_string = self.conn.recv(72) #TODO error: [Errno 10054] An existing connection was forcibly closed by the remote host
         except socket.timeout:
             r_string = 'socket.timeout'
         return r_string
@@ -415,35 +419,32 @@ class AlphaScanDevice:
         return r_string
     
 	
-	#JCR_C_02-08
-	def pull_adc_registers(self): 
-         ###############################################################################
-         # Get all registers and return as list of lists
-         ###############################################################################
-         # send generic command to retrieve adc registers
-         self.generic_tcp_command_BYTE("ADC_get_register")
-         # wait for response, loop a few times to account for possible delay then timeout
-         for i in range(4):
-             time.sleep(0.5)
-             r = self.read_tcp(num_bytes=2048) # ensure this is enough to get whole map
-             if (len(r) > 24) and ("bbb" in r) and ("eee" in r):
- 
-                 self.raw_map = r[r.find("bbb")+len("bbb"):r.find("eee")]
-                 assert(len(self.raw_map) == 24)               
-                 for i in range(len(self.raw_map)):
-                     for j in range(8):
-                         if (ord(self.raw_map[i]) & (0x1 << j) ):
-                             self.reg_map[i][j] = True
-                         else:
-                             self.reg_map[i][j] = False
-                 return self.reg_map              
-                 
-                 # return map
-             else:
-                 continue
-         
-         print("RETURNING FALSE")
-         return False # Create better error message here, or use proper exception handling...
+
+    def pull_adc_registers(self): 
+     ###############################################################################
+     # Get all registers and return as list of lists
+     ###############################################################################
+     # send generic command to retrieve adc registers
+        self.generic_tcp_command_BYTE("ADC_get_register")
+        # wait for response, loop a few times to account for possible delay then timeout
+        for i in range(4):
+            time.sleep(0.5)
+            r = self.read_tcp(num_bytes=2048) # ensure this is enough to get whole map
+            if (len(r) > 24) and ("bbb" in r) and ("eee" in r):
+                self.raw_map = r[r.find("bbb")+len("bbb"):r.find("eee")]
+                assert(len(self.raw_map) == 24)               
+                for i in range(len(self.raw_map)):
+                    for j in range(8):
+                        if (ord(self.raw_map[i]) & (0x1 << j) ):
+                            self.reg_map[i][j] = True
+                        else:
+                            self.reg_map[i][j] = False
+                return self.reg_map                           
+             # return map
+            else:
+                continue 
+        print("RETURNING FALSE")
+        return False # Create better error message here, or use proper exception handling...
          
     def push_adc_registers(self, RegMap):
          #TODO push real register map to device
@@ -461,7 +462,9 @@ class AlphaScanDevice:
 
 
          self.flush_TCP()
-         self.conn.send((chr(0x0e) + 'bbb'+self.chr_map+'eee' + chr(127)))
+         self.conn.send((chr(0x0e)))
+         time.sleep(0.010)
+         self.conn.send('bbb'+self.chr_map+'eee' + chr(127))
          time.sleep(0.05)
          #r = self.generic_tcp_command_BYTE('ADC_set_register', 'bbbhi_there my name is stream shady and i like to cream ladies eee')
          
@@ -499,6 +502,8 @@ class AlphaScanDevice:
         self.LSL_Thread = Thread(target=self.udp_ack_1_thread)
         self.LSL_Thread.start()
         self.DEV_streamActive.set()  
+        self.FEEDER_THREAD = Thread(target=self.lsl_feeder_thread)
+        self.FEEDER_THREAD.start()
         # Send command to being 
         self.begin = time.time()
         return "Success"
@@ -797,7 +802,7 @@ class AlphaScanDevice:
         
     def udp_ack_1_thread(self):
         global socket
-        UDP_IP = "192.168.1.227"
+        UDP_IP = "192.168.1.105"
         UDP_PORT = 50007
         sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         sock.setsockopt(socket.SOL_SOCKET,socket.SO_RCVBUF,8192)
@@ -856,7 +861,7 @@ class AlphaScanDevice:
                             print("value error",e)
                     val = twos_comp(val)
                     mysamples[i][j] = val
-                self.outlet.push_sample(mysamples[i])
+                self.fifo_queue.put(list(mysamples[i]))
             return mysamples
         
         # Stat vars
@@ -866,10 +871,11 @@ class AlphaScanDevice:
         t_q = list() # queue
         t_heap = list() # heap
         self.t_pdata = list() # parsed data
+        self.local_qsize = list()
         
         # Core vars
         self.DEV_streamActive.set()
-        sleep = 0.033
+        sleep = 0.033 #TODO may want to tune this down for queue population
         sock.settimeout(0)
         totrx = 0
         skip = -1
@@ -902,7 +908,7 @@ class AlphaScanDevice:
         
             
     def close_udp_solo(self):
-        UDP_IP = "192.168.1.227"
+        UDP_IP = "192.168.1.105"
         UDP_PORT = 50007
         try:
             self.sock.sendto(chr(0xff)*3,(UDP_IP,UDP_PORT))
@@ -920,7 +926,12 @@ class AlphaScanDevice:
             else:
                 raise e
             
-            
+    def lsl_feeder_thread(self):
+        time.sleep(0.300)
+        while self.DEV_streamActive.is_set():    
+            self.outlet.push_sample(self.fifo_queue.get())
+            self.local_qsize += [self.fifo_queue.qsize()]
+            time.sleep(0.004)
             
             
             
