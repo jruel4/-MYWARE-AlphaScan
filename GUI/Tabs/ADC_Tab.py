@@ -114,6 +114,18 @@ class ADC_REG_TAB( QWidget):
         mainLayout.addWidget(self.Button_LoadRegMap, nextRow, 1)
         self.Button_LoadRegMap.clicked.connect(self.load_reg_map)
         
+        nextRow = mainLayout.rowCount() + 1
+        
+        # Save reg_map button Impedance
+        self.Button_SaveRegMap_Imp = QPushButton("Save Imp Map")
+        mainLayout.addWidget(self.Button_SaveRegMap_Imp, nextRow, 0)
+        self.Button_SaveRegMap_Imp.clicked.connect(self.save_reg_map_impedance)
+        
+        # Load reg_map button Impedance
+        self.Button_LoadRegMap_Imp = QPushButton("Load Imp Map")
+        mainLayout.addWidget(self.Button_LoadRegMap_Imp, nextRow, 1)
+        self.Button_LoadRegMap_Imp.clicked.connect(self.load_reg_map_impedance)
+        
         # Send Hex command button
         self.Line_HexCommand = QLineEdit("0")
         self.Button_HexCommand = QPushButton("Send Hex command")
@@ -196,10 +208,24 @@ class ADC_REG_TAB( QWidget):
         msg = QMessageBox()
         msg.setText("Map Saved")
         msg.exec_()
+        
+    @Slot()
+    def save_reg_map_impedance(self):
+        self.sync_reg_map_to_check()
+        #TODO make these paths unbreakable (local relative?)
+        pickle.dump(self.ADC_RegMap, open("..\\Controller\\Data\\impedance_profile.p", "wb"))
+        msg = QMessageBox()
+        msg.setText("Map Saved")
+        msg.exec_()
     
     @Slot()
     def load_reg_map(self):
         self.ADC_RegMap = pickle.load( open("..\\Controller\\Data\\test_profile.p", "rb"))
+        self.sync_check_to_reg_map()
+        
+    @Slot()
+    def load_reg_map_impedance(self):
+        self.ADC_RegMap = pickle.load( open("..\\Controller\\Data\\impedance_profile.p", "rb"))
         self.sync_check_to_reg_map()
         
     def sync_check_to_reg_map(self):

@@ -1,14 +1,17 @@
 # Server code for streaming tcp connection
 import socket
+from collections import deque
 import time
 from threading import Thread, Event
 from pylsl import StreamInfo, StreamOutlet
 import random
 from CommandDefinitions import *
+from stats import get_imp
 from BitPacking import twos_comp
 import select
 from matplotlib import pyplot as plt
 import Queue
+import numpy as np
 
 class AlphaScanDevice:
     
@@ -26,6 +29,8 @@ class AlphaScanDevice:
         # UDP Settings
         ###############################################################################
         self.UDP_IP = "192.168.1.17"      #This gets over written dynamically
+        #self.UDP_IP_UNI = "192.168.1.109"
+        self.UDP_IP_UNI = "192.168.1.105"
         self.UDP_PORT = 2390              #CONFIGURABLE
         
         self.num = 10
@@ -46,6 +51,7 @@ class AlphaScanDevice:
         self.time_intervals = list()
         self.time_interval_count = 0
         self.fifo_queue = Queue.Queue()
+        self.fifo_queue_imp = Queue.Queue()
         self.reg_map = [[False for i in range(8)] for j in range(24)]
         
         self.sqwave = list()
@@ -56,6 +62,10 @@ class AlphaScanDevice:
         self.mysample = [random.random(), random.random(), random.random(),
             random.random(), random.random(), random.random(),
             random.random(), random.random()]
+            
+        # Impedance outlet
+        self.imp_info = StreamInfo('IMP_'+time.strftime("%d_%m_%Y_%H_%M_%S"), 'EEG', 8, 250, 'float32', 'IMP_'+time.strftime("%d_%m_%Y_%H_%M_%S"))
+        self.imp_outlet = StreamOutlet(self.imp_info)
             
         self.SysParams = {'vcc':None,
                           'free_heap':None,
@@ -504,6 +514,9 @@ class AlphaScanDevice:
         self.DEV_streamActive.set()  
         self.FEEDER_THREAD = Thread(target=self.lsl_feeder_thread)
         self.FEEDER_THREAD.start()
+        if True: #TODO add imp calc var
+            self.IMP_THREAD = Thread(target=self.imp_thread)
+            self.IMP_THREAD.start()
         # Send command to being 
         self.begin = time.time()
         return "Success"
@@ -802,7 +815,7 @@ class AlphaScanDevice:
         
     def udp_ack_1_thread(self):
         global socket
-        UDP_IP = "192.168.1.105"
+        UDP_IP = self.UDP_IP_UNI
         UDP_PORT = 50007
         sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         sock.setsockopt(socket.SOL_SOCKET,socket.SO_RCVBUF,8192)
@@ -908,7 +921,7 @@ class AlphaScanDevice:
         
             
     def close_udp_solo(self):
-        UDP_IP = "192.168.1.105"
+        UDP_IP = self.UDP_IP_UNI
         UDP_PORT = 50007
         try:
             self.sock.sendto(chr(0xff)*3,(UDP_IP,UDP_PORT))
@@ -927,17 +940,68 @@ class AlphaScanDevice:
                 raise e
             
     def lsl_feeder_thread(self):
+        self.t_data = list()
         time.sleep(0.300)
         while self.DEV_streamActive.is_set():    
-            self.outlet.push_sample(self.fifo_queue.get())
+            d = self.fifo_queue.get()
+            self.fifo_queue_imp.put(list(d)) # for imp thread
+            self.outlet.push_sample(d)
+            self.t_data += [d]
             self.local_qsize += [self.fifo_queue.qsize()]
             time.sleep(0.004)
             
+    def get_ch_impedance(self,ch=4):
+        # data to np
+        data = np.asarray(self.t_data) # this is not thread-safe
+        chdata = data[:,ch]            
+        ivt = list()
+        win_len = 250
+        for i in range(len(chdata)-win_len):
+            frame = chdata[i:i+win_len]
+            ivt += [get_imp(frame)]
+        plt.plot(ivt)
+        plt.show()
+        return np.mean(ivt)
+        
+    def get_ch_impedance_threadsafe(self,buf): # buf is list of lists
+        imps = [0 for i in range(8)]
+        data = np.asarray(buf) # this is not thread-safe
+        for ch in range(8):
+            chdata = data[:,ch]   
+            imps[ch] = get_imp(chdata)
+        return imps
+        
+        
+        
+    def imp_thread(self):
+        window_size = 250
+        update_rate = 30.0 #Hz
+        buf = deque([[0 for i in range(8)]], window_size)
+        # calculate impedances based on slices of the timer series - pull via lsl
+        idx = 0
+        while self.DEV_streamActive.is_set(): 
+            while idx < (window_size/update_rate) and self.DEV_streamActive.is_set():
+                buf.append(self.fifo_queue_imp.get())
+                idx += 1
+            # calculate ch imp and push
+            self.imp_outlet.push_sample(self.get_ch_impedance_threadsafe(buf))
+            idx = 0
             
             
             
             
             
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
             
             
 
