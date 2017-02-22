@@ -1,0 +1,30 @@
+build/spiffs//spiffs/src/spiffs_hydrogen.o: \
+ /media/marzipan/Expansion_1/Development/Projects/SuperHouseRTOS_2_3_17/esp-open-rtos/extras/spiffs/spiffs/src/spiffs_hydrogen.c \
+ /media/marzipan/Expansion_1/Development/Projects/SuperHouseRTOS_2_3_17/esp-open-rtos/extras/spiffs/spiffs/src/spiffs.h \
+ /media/marzipan/Expansion_1/Development/Projects/SuperHouseRTOS_2_3_17/esp-open-rtos/extras/spiffs/spiffs_config.h \
+ /media/marzipan/Expansion_1/Development/Projects/SuperHouseRTOS_2_3_17/esp-open-rtos/libc/xtensa-lx106-elf/include/stdio.h \
+ /media/marzipan/Expansion_1/Development/Projects/SuperHouseRTOS_2_3_17/esp-open-rtos/libc/xtensa-lx106-elf/include/_ansi.h \
+ /media/marzipan/Expansion_1/Development/Projects/SuperHouseRTOS_2_3_17/esp-open-rtos/libc/xtensa-lx106-elf/include/newlib.h \
+ /media/marzipan/Expansion_1/Development/Projects/SuperHouseRTOS_2_3_17/esp-open-rtos/libc/xtensa-lx106-elf/include/sys/config.h \
+ /media/marzipan/Expansion_1/Development/Projects/SuperHouseRTOS_2_3_17/esp-open-rtos/libc/xtensa-lx106-elf/include/machine/ieeefp.h \
+ /media/marzipan/Expansion_1/Development/Projects/SuperHouseRTOS_2_3_17/esp-open-rtos/libc/xtensa-lx106-elf/include/sys/features.h \
+ /media/marzipan/Expansion_1/Development/Projects/SuperHouseRTOS_2_3_17/esp-open-rtos/libc/xtensa-lx106-elf/include/xtensa/config/core-isa.h \
+ /media/marzipan/Expansion_1/Development/Projects/SuperHouseRTOS_2_3_17/esp-open-rtos/libc/xtensa-lx106-elf/include/sys/cdefs.h \
+ /media/marzipan/Expansion_1/Development/Projects/SuperHouseRTOS_2_3_17/esp-open-rtos/libc/xtensa-lx106-elf/include/machine/_default_types.h \
+ /media/marzipan/Expansion_1/Development/Projects/SuperHouseRTOS_2_3_17/esp-open-rtos/libc/xtensa-lx106-elf/include/sys/reent.h \
+ /media/marzipan/Expansion_1/Development/Projects/SuperHouseRTOS_2_3_17/esp-open-rtos/libc/xtensa-lx106-elf/include/_ansi.h \
+ /media/marzipan/Expansion_1/Development/Projects/SuperHouseRTOS_2_3_17/esp-open-rtos/libc/xtensa-lx106-elf/include/sys/_types.h \
+ /media/marzipan/Expansion_1/Development/Projects/SuperHouseRTOS_2_3_17/esp-open-rtos/libc/xtensa-lx106-elf/include/machine/_types.h \
+ /media/marzipan/Expansion_1/Development/Projects/SuperHouseRTOS_2_3_17/esp-open-rtos/libc/xtensa-lx106-elf/include/sys/lock.h \
+ /media/marzipan/Expansion_1/Development/Projects/SuperHouseRTOS_2_3_17/esp-open-rtos/libc/xtensa-lx106-elf/include/sys/types.h \
+ /media/marzipan/Expansion_1/Development/Projects/SuperHouseRTOS_2_3_17/esp-open-rtos/libc/xtensa-lx106-elf/include/machine/types.h \
+ /media/marzipan/Expansion_1/Development/Projects/SuperHouseRTOS_2_3_17/esp-open-rtos/libc/xtensa-lx106-elf/include/sys/stdio.h \
+ /media/marzipan/Expansion_1/Development/Projects/SuperHouseRTOS_2_3_17/esp-open-rtos/libc/xtensa-lx106-elf/include/stdlib.h \
+ /media/marzipan/Expansion_1/Development/Projects/SuperHouseRTOS_2_3_17/esp-open-rtos/libc/xtensa-lx106-elf/include/machine/stdlib.h \
+ /media/marzipan/Expansion_1/Development/Projects/SuperHouseRTOS_2_3_17/esp-open-rtos/libc/xtensa-lx106-elf/include/alloca.h \
+ /media/marzipan/Expansion_1/Development/Projects/SuperHouseRTOS_2_3_17/esp-open-rtos/libc/xtensa-lx106-elf/include/string.h \
+ /media/marzipan/Expansion_1/Development/Projects/SuperHouseRTOS_2_3_17/esp-open-rtos/libc/xtensa-lx106-elf/include/sys/string.h \
+ /media/marzipan/Expansion_1/Development/Projects/SuperHouseRTOS_2_3_17/esp-open-rtos/libc/xtensa-lx106-elf/include/stdint.h \
+ /media/marzipan/Expansion_1/Development/Projects/SuperHouseRTOS_2_3_17/esp-open-rtos/libc/xtensa-lx106-elf/include/sys/_intsup.h \
+ /media/marzipan/Expansion_1/Development/Projects/SuperHouseRTOS_2_3_17/esp-open-rtos/libc/xtensa-lx106-elf/include/ctype.h \
+ /media/marzipan/Expansion_1/Development/Projects/SuperHouseRTOS_2_3_17/esp-open-rtos/extras/spiffs/spiffs/src/spiffs_nucleus.h

@@ -120,6 +120,9 @@
 #define ADSTESTSIG_DCSIG (0b00000011)
 #define ADSTESTSIG_NOCHANGE (0b11111111)
 
+#define SRB1_OPEN (0b00000000)
+#define SRB1_CLOSED (0b00100000)
+
 //Lead-off signal choices
 #define LOFF_MAG_6NA (0b00000000)
 #define LOFF_MAG_24NA (0b00000100)
@@ -196,6 +199,7 @@ public:
 
     // Setup
     void setupADS();
+    void setupDefaultRegisters();
     void configureTestSignal();
     void startStreaming();
     void stopStreaming();
@@ -312,6 +316,7 @@ ADS::ADS(uint32_t FREQ_DIVIDER)
     //    xMaxBlockTime = pdMS_TO_TICKS( 5 );
     setupSPI(FREQ_DIVIDER);
     setupADS();
+    setupDefaultRegisters();
     STANDBY();
     return;
 }
@@ -751,6 +756,23 @@ void ADS::setupADS()
     STANDBY();
     return;
 }
+
+void ADS::setupDefaultRegisters()
+{
+    killStandby();
+    killStreaming();
+    WREG(CONFIG1, 0, 0b10010000 | DR_250SPS);
+    //CONFIG2 is exclusively test signals; don't need unless using them
+    //WREG(CONFIG2, 0, 0b11010001); //Test sig driven internally(4), decrease pulse frequency(1,0)
+    WREG(CONFIG3, 0, 0b11101101); //Internal reference buffer enabled(7), bias ref signal generated internally(3), bias buffer enabled(2), bias sense diasbled(1), bias LOFF disconnected(0)
+    WREG(BIAS_SENSN, 0, 0b00000000); //Turn off all connections to bias on N side (not used)
+    WREG(BIAS_SENSP, 0, 0b00000000); //Turn off all connections to bias on N side (not used)
+    WREG(CH1SET, 7, ADSINPUT_ENABLED | ADSINPUT_GAIN24 | ADSINPUT_NORMAL | ADSINPUT_SRB2_OPEN); //Write all eight channels to reasonable defaults
+    WREG(MISC1, SRB1_CLOSED); //Our system uses SRB1; SRB2 not used
+    STANDBY();
+
+}
+
 
 void ADS::configureTestSignal()
 {

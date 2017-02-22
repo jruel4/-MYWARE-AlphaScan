@@ -8,7 +8,10 @@
 #include "Modules/SoftApManager.cpp"
 #include "Modules/OtaManager.cpp"
 #include "Modules/HostCommManager.cpp"
+#include "Modules/StorageManager.cpp"
 #include "Modules/ads_ctrl.cpp"
+#include "esp_spiffs.h"
+#include "spiffs.h"
 
 #define FIRMARE_VERSION "0.0.15"
 
@@ -30,6 +33,7 @@ class AlphaScanManager : public esp_open_rtos::thread::task_t
         HostCommManager c_HostComm;
         OtaManager c_Ota; 
         ADS* c_Ads = new ADS(SPI_FREQ_DIV_10M);
+        StorageManager* c_StorageManager = new StorageManager();
         
         // Variables
         bool mDebugSerial;
@@ -63,14 +67,26 @@ class AlphaScanManager : public esp_open_rtos::thread::task_t
                                 printf("mSystemState == RUN_MODE\n");
                             }
 
-                            int rcode = c_HostComm.update();
+                            //TODO int rcode = c_HostComm.update();
+                            int rcode = 0;
                             if (rcode > 0){
                                 if (mDebugSerial){
                                     printf("Triggering task: %d\n",rcode);
                                 }
                                 // Trigger corresponding task
                                 _trigger_task(rcode);
+
                             }
+
+                            //char buf[] = "shitstorm!";
+                            //char obuf[0xff] = {0};
+                            //const char file[] = "ass.txt";
+
+                            //c_StorageManager.spiffs_write_file(file, buf);
+                            //c_StorageManager.read_file_spiffs(file, obuf, 0xff);
+                            //c_StorageManager.example_fs_info();
+
+                            vTaskDelay(1000 / portTICK_PERIOD_MS);
 
                             break;
                         }
@@ -97,8 +113,9 @@ class AlphaScanManager : public esp_open_rtos::thread::task_t
                 printf("Fimare Version %s\n", FIRMARE_VERSION);
             }
 
-            //c_SoftAp.initialize();
-            c_HostComm.initialize();
+            c_StorageManager->initialize();
+            c_SoftAp.initialize(c_StorageManager);
+            //c_HostComm.initialize();
             mMainLoopCounter = 0;
             mSystemState = RUN_MODE;
         }
@@ -124,7 +141,18 @@ class AlphaScanManager : public esp_open_rtos::thread::task_t
 
                 printf("test signal stream completed\n");
             }
+            else if (rcode == 0x0d){
+                //Send ADS registers
+                printf("Sending ADS registers to host.\n");
+                c_HostComm.send_ads_registers(c_Ads);
+            }
+            else if (rcode == 0x0e){
+                //Send ADS registers
+                printf("Receiving ADS registers from host.\n");
+                c_HostComm.receive_ads_registers(c_Ads);
+            }
             // ... complete command responses
+
         }
 };
 
@@ -137,8 +165,7 @@ extern "C" void user_init(void)
 {
     vTaskDelay(15 / portTICK_PERIOD_MS);
     t_Manager.setDebugSerial(true);
-
-    t_Manager.task_create("main_loop", 2048);//TODO increase task stack depth to avoid overflow
+    t_Manager.task_create("main_loop", 2048);
 }
 
 /**

@@ -6,17 +6,41 @@
 #include <dhcpserver.h>
 #include <lwip/api.h>
 #include <cstring>
+#include "lwip/err.h"
+#include "ipv4/lwip/ip_addr.h"
+#include "lwip/api.h"
+#include <algorithm>
+#include "lwip/sys.h"
+#include "lwip/dns.h"
+#include "lwip/memp.h"
+#include "lwip/stats.h"
+#include "lwip/tcp.h"
+#include "lwip/netdb.h"
+#include "lwip/sockets.h"
+#include "StorageManager.cpp"
 
 #define TELNET_PORT 23
-const char* AP_SSID = "esp-open-rtos AP";
+#define WEB_PORT 50007
+
+//#define pkt_size 256
+
+const char* AP_SSID = "esp-open-rtos AP 1";
 char AP_PSK[11] = "hello-moto";
 
 class SoftAP {
 
     public:  
 
-        void initialize(void)
+    StorageManager* storageManager = NULL;
+
+        void initialize(StorageManager* sm)
         {
+            
+            storageManager = sm;
+
+            printf("testing sm object\n");
+            sm->test_object();
+
             printf("initializing SoftAP");
 
             sdk_wifi_set_opmode(SOFTAP_MODE);
@@ -37,14 +61,6 @@ class SoftAP {
 
             memcpy(ap_config.ssid, AP_SSID, strlen((const char*) AP_SSID));
             memcpy(ap_config.password, AP_PSK, 11);
-            //memcpy(ap_config.password, "password_fartman", strlen("password_fartman"));
-
-            //strncpy(ap_config.ssid, reinterpret_cast<char*>(AP_SSID), sizeof(AP_SSID));
-            //strncpy(ap_config.password, reinterpret_cast<char*>(AP_PSK),  sizeof(AP_PSK));
-    //        strcpy(ap_config.ssid, "fart_haus");
-      //      strcpy(ap_config.password, "stooooopid");
-//            strncpy(ap_config.ssid, AP_SSID, sizeof(AP_SSID));
-//            strncpy(ap_config.password, AP_PSK,  sizeof(AP_PSK));
 
             printf("Completed reinterpret cast");
 
@@ -67,51 +83,148 @@ class SoftAP {
 
             printf("Init complete... initializing telnet task");
 
-            //           xTaskCreate(telnetTask, (const char *)"telnetTask", 512, NULL, 2, NULL);
-            //telnetTask(NULL);
+            //xTaskCreate((void(*)(void*))&SoftAP::http_get_task, "http_get_task", 4096, NULL, 2, NULL);
+            http_get_task(NULL);
         }
 
-        /* Telnet task listens on port 23, returns some status information and then closes
-           the connection if you connect to it.
-         */
-        static void telnetTask(void *pvParameters)
-        {
-
-            printf("inside telnet task");
-
-            struct netconn *nc = netconn_new (NETCONN_TCP);
-            if(!nc) {
-                printf("Status monitor: Failed to allocate socket.\r\n");
-                return;
-            }
-            netconn_bind(nc, IP_ADDR_ANY, TELNET_PORT);
-            netconn_listen(nc);
-
-            while(1) {
-                struct netconn *client = NULL;
-                err_t err = netconn_accept(nc, &client);
-
-                if ( err != ERR_OK ) {
-                    if(client)
-                        netconn_delete(client);
-                    continue;
+        bool extract_value(const char* token, char* buf, char* val){
+            int b,j;
+            for (int i = 0; i < strlen(buf); i++){
+                b = 0;
+                j = i;
+                while (buf[j] == token[b]){
+                    if (b == (strlen(token)-1)){
+                        goto EXTRACT_VAL;
+                    }
+                    b++;
+                    j++;
                 }
 
-                ip_addr_t client_addr;
-                uint16_t port_ignore;
-                netconn_peer(client, &client_addr, &port_ignore);
+            }
 
-                char buf[80];
-                snprintf(buf, sizeof(buf), "Uptime %d seconds\r\n",
-                        xTaskGetTickCount()*portTICK_PERIOD_MS/1000);
-                netconn_write(client, buf, strlen(buf), NETCONN_COPY);
-                snprintf(buf, sizeof(buf), "Free heap %d bytes\r\n", (int)xPortGetFreeHeapSize());
-                netconn_write(client, buf, strlen(buf), NETCONN_COPY);
-                snprintf(buf, sizeof(buf), "Your address is %d.%d.%d.%d\r\n\r\n",
-                        ip4_addr1(&client_addr), ip4_addr2(&client_addr),
-                        ip4_addr3(&client_addr), ip4_addr4(&client_addr));
-                netconn_write(client, buf, strlen(buf), NETCONN_COPY);
-                netconn_delete(client);
+            printf("token not found in recieved data\n");
+            return false;
+
+EXTRACT_VAL:
+            b = 0;
+            for (int i = j+1; (i < strlen(buf)) && (buf[i] != ','); i++){
+                val[b++] = buf[i]; 
+                j = i-1;
+            }
+            val[b] = '\0';
+            printf("Extracted %s: %s\n",token, val);
+            return true;
+        }
+
+        bool parse_config(char* outbuf){
+            // extract and save vals
+            char buf[30];
+            if (!extract_value("ssid_key::",outbuf,buf)){
+                return false;
+            }
+            else{
+               storageManager->store_ssid(buf);                 
+               storageManager->retrieve_ssid(buf);
+            }
+            if (!extract_value("pass_key::",outbuf,buf)){
+                return false;
+            }
+            else{
+               storageManager->store_ssid(buf);                 
+               storageManager->retrieve_ssid(buf);
+            }
+            if (!extract_value("ip_key::",outbuf,buf)){
+                return false;
+            }
+            else{
+               storageManager->store_ssid(buf);                 
+               storageManager->retrieve_ssid(buf);
+            }
+            if (!extract_value("port_key::",outbuf,buf)){
+                return false;
+            }
+            else{
+               storageManager->store_ssid(buf);                 
+               storageManager->retrieve_ssid(buf);
+            }
+            return true;
+        }
+
+        void http_get_task(void *pvParameters)
+        {
+
+            const int pkt_size = 256;
+
+            // Setup socket resources
+            struct ip_addr my_host_ip;
+            IP4_ADDR(&my_host_ip, 172, 16, 0, 2);
+
+
+            struct sockaddr_in my_sockaddr_in;
+            my_sockaddr_in.sin_addr.s_addr = my_host_ip.addr;
+            my_sockaddr_in.sin_len = sizeof(struct sockaddr_in);
+            my_sockaddr_in.sin_family = AF_INET;
+            my_sockaddr_in.sin_port = htons(WEB_PORT);
+            std::fill_n(my_sockaddr_in.sin_zero, 8, (char)0x0);
+
+
+            struct addrinfo res;
+            res.ai_addr = (struct sockaddr*) (void*)(&my_sockaddr_in);
+            res.ai_addrlen = sizeof(struct sockaddr_in);
+            res.ai_family = AF_INET;
+            res.ai_socktype = SOCK_STREAM;
+
+            struct in_addr *addr = &((struct sockaddr_in *)res.ai_addr)->sin_addr;
+            printf("DNS lookup succeeded. IP=%s\r\n", inet_ntoa(*addr));
+
+            while(1) {
+                //dump_heapinfo();
+                int s = socket(res.ai_family, res.ai_socktype, 0);
+                if(s < 0) {
+                    printf("... Failed to allocate socket.\r\n");
+                    vTaskDelay(1000 / portTICK_PERIOD_MS);
+                    continue;
+                }
+                printf("... allocated socket\r\n");
+
+                // Connect to host
+                if(connect(s, res.ai_addr, res.ai_addrlen) != 0) {
+                    close(s);
+                    printf("... socket connect failed.\r\n");
+                    vTaskDelay(1000 / portTICK_PERIOD_MS);
+                    continue;
+                }
+                printf("... connected\r\n");
+
+                char outbuf[pkt_size] = {0};
+
+                uint32_t pkt_cnt = 0;
+
+                //Send over WiFi
+                while(1) {
+
+                    // Read for Wifi network data
+                    int r = read(s, outbuf, pkt_size);
+                    if (r > 10){
+
+                        parse_config(outbuf);
+
+                    }
+                    else if (r < 0){
+                        printf("restarting loop\n");
+                        close(s);
+                        break;
+                    }
+
+                    else {
+                        printf("Received only %d bytes\n",r);
+                    }
+
+
+
+                    vTaskDelay((int)(1000/(float)portTICK_PERIOD_MS));
+                    pkt_cnt++;
+                }
             }
         }
 };

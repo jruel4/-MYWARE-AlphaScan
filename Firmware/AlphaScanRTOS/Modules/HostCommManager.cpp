@@ -18,34 +18,6 @@
 #include <algorithm>
 #include "ads_ctrl.cpp"
 #include "lwip/api.h"
-//JCR
-//extern struct lwip_sock;
-//extern struct netconn;
-
-//extern struct lwip_sock {
-  /** sockets currently are built on netconns, each socket has one netconn */
-  //struct netconn *conn;
-  /** data that was left from the previous read */
-  //void *lastdata;
-  /** offset in the data that was left from the previous read */
-  //u16_t lastoffset;
-  /** number of times data was received, set by event_callback(),
-      tested by the receive and select functions */
-  //s16_t rcvevent;
-  /** number of times data was ACKed (free send buffer), set by event_callback(),
-      tested by select */
-  //u16_t sendevent;
-  /** error happened for this socket, set by event_callback(), tested by select */
-  //u16_t errevent; 
-  /** last error that occurred on this socket */
-  //int err;
-  /** counter of how many threads are waiting for this socket using select */
-  //int select_waiting;
-//};
-
-
-//extern static struct lwip_sock * get_socket(int s);
-//extern err_t tcp_output(struct tcp_pcb *pcb);
 
 
 #define WEB_SERVER "marzipan-Lenovo-ideapad-Y700-15ISK"
@@ -53,6 +25,14 @@
 #define SAMPLE_SIZE (29)
 #define SAMPLES_PER_PACKET (4*7)
 #define PACKET_SIZE (SAMPLE_SIZE * SAMPLES_PER_PACKET)
+
+//JCR LAZINESS
+unsigned int old_nbset = 0, nbset = 0;
+#define NB_ON 1
+#define NB_OFF 0
+#define TCP_NB_SET(x) {old_nbset = nbset; nbset = x; lwip_ioctl(mSocket, FIONBIO, &nbset); }
+#define TCP_NB_UNSET() {nbset = old_nbset; lwip_ioctl(mSocket, FIONBIO, &nbset); }
+
 
 class HostCommManager {
 
@@ -76,6 +56,49 @@ class HostCommManager {
 			//_stream_ads(ads);
             _stream_task(ads);
 		}
+
+
+        void send_ads_registers(ADS* ads) {
+            int nbset = 0;
+            vTaskDelay((TickType_t)8); //Delay so that we send to correct function
+            memcpy(mOutbuf, "bbb", 3);
+            memcpy((mOutbuf + 27), "eee", 3);       
+            ads->receiveRegisterMapFromADS();
+            ads->copyRegisterMapToArray(mOutbuf+3);
+            TCP_NB_SET(NB_OFF);
+            write(mSocket, mOutbuf, 30);
+            TCP_NB_UNSET();
+            ads->printSerialRegistersFromADS();
+        }
+
+        void receive_ads_registers(ADS* ads) {
+            int nbset = 0;
+            printf("In E\n");
+            TCP_NB_SET(NB_OFF);
+            int r = read(mSocket, mInbuf, 30); //TODO - blocking or non-blocking?
+            TCP_NB_UNSET();
+            printf("r=%d in E\n", r);
+            for(int jj = 0; jj < r; ++jj) printf("%c ", mInbuf[jj]);
+            //TODO More robust checking here
+            if (r >= 30)
+            {
+                int a = 0;
+                for(int i = 0; i < 3; ++i)
+                {                                                       
+                    while(a != 1 && i+30 < r) { if(mInbuf[i] == 'e') {a=1; break;} else ++i;}
+                    if(mInbuf[i] != 'b' || mInbuf[i+27] != 'e')
+                    {
+                        printf("Error, invalid received data.\n");
+                        for(int j = 0; j < r; ++j) printf("%c ", mInbuf[j]);
+                        return;
+                    }
+                }
+                ads->printSerialRegistersFromADS();
+                ads->receiveRegisterMapFromArray(mInbuf+3);
+                ads->flushRegisterMapToADS();                                           
+                ads->printSerialRegistersFromADS();
+            }
+        }
 
 	private:
 
@@ -240,6 +263,21 @@ class HostCommManager {
 				else if (mInbuf[0] == 0x7){
 
 				}
+
+                //JCR
+
+                //////////////////////////////////////////////////////////
+                // ADC_send_registers
+                //////////////////////////////////////////////////////////
+                else if (mInbuf[0] == 0xd){
+					return mInbuf[0];
+                }
+                //////////////////////////////////////////////////////////
+                // ADC_rcv_registers
+                //////////////////////////////////////////////////////////
+                else if (mInbuf[0] == 0xe){
+                    return mInbuf[0];
+                }
 				return 0;
 			}
 			else if (r==0){
@@ -317,7 +355,7 @@ class HostCommManager {
 
             // Setup remote address
             struct ip_addr my_host_ip;
-            IP4_ADDR(&my_host_ip, 192, 168, 1, 168);
+            IP4_ADDR(&my_host_ip, 192, 168, 1, 202);
 
             struct sockaddr_in my_sockaddr_in;
             my_sockaddr_in.sin_addr.s_addr = my_host_ip.addr;
@@ -377,7 +415,7 @@ class HostCommManager {
 
 
                 printf("Seting up ADS\n");
-                ads->configureTestSignal();
+                //ads->configureTestSignal();
                 printf("Begin streaming\n");
                 ads->startStreaming();
 

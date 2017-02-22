@@ -109,12 +109,29 @@ build/program//main.o: \
  /media/marzipan/Expansion_1/Development/Projects/SuperHouseRTOS_2_3_17/esp-open-rtos/lwip/include/arch/sys_arch.h \
  /media/marzipan/Expansion_1/Development/Projects/SuperHouseRTOS_2_3_17/esp-open-rtos/FreeRTOS/Source/include/semphr.h \
  /media/marzipan/Expansion_1/Development/Projects/SuperHouseRTOS_2_3_17/esp-open-rtos/FreeRTOS/Source/include/queue.h \
- /media/marzipan/Expansion_1/Development/Projects/AlphaScan/Firmware/AlphaScanRTOS/Modules/OtaManager.cpp \
- /media/marzipan/Expansion_1/Development/Projects/SuperHouseRTOS_2_3_17/esp-open-rtos/lwip/lwip/src/include/lwip/sockets.h \
- /media/marzipan/Expansion_1/Development/Projects/SuperHouseRTOS_2_3_17/esp-open-rtos/lwip/lwip/src/include/ipv4/lwip/inet.h \
- /media/marzipan/Expansion_1/Development/Projects/SuperHouseRTOS_2_3_17/esp-open-rtos/lwip/lwip/src/include/lwip/netdb.h \
- /media/marzipan/Expansion_1/Development/Projects/SuperHouseRTOS_2_3_17/esp-open-rtos/lwip/lwip/src/include/lwip/dns.h \
  /media/marzipan/Expansion_1/Development/Projects/SuperHouseRTOS_2_3_17/esp-open-rtos/lwip/lwip/src/include/ipv4/lwip/ip_addr.h \
+ /media/marzipan/Expansion_1/Development/Projects/SuperHouseRTOS_2_3_17/esp-open-rtos/lwip/lwip/src/include/lwip/dns.h \
+ /media/marzipan/Expansion_1/Development/Projects/SuperHouseRTOS_2_3_17/esp-open-rtos/lwip/lwip/src/include/lwip/tcp.h \
+ /media/marzipan/Expansion_1/Development/Projects/SuperHouseRTOS_2_3_17/esp-open-rtos/lwip/lwip/src/include/ipv4/lwip/ip.h \
+ /media/marzipan/Expansion_1/Development/Projects/SuperHouseRTOS_2_3_17/esp-open-rtos/lwip/lwip/src/include/lwip/netif.h \
+ /media/marzipan/Expansion_1/Development/Projects/SuperHouseRTOS_2_3_17/esp-open-rtos/lwip/lwip/src/include/ipv4/lwip/icmp.h \
+ /media/marzipan/Expansion_1/Development/Projects/SuperHouseRTOS_2_3_17/esp-open-rtos/lwip/lwip/src/include/lwip/netdb.h \
+ /media/marzipan/Expansion_1/Development/Projects/SuperHouseRTOS_2_3_17/esp-open-rtos/lwip/lwip/src/include/ipv4/lwip/inet.h \
+ /media/marzipan/Expansion_1/Development/Projects/SuperHouseRTOS_2_3_17/esp-open-rtos/lwip/lwip/src/include/lwip/sockets.h \
+ /media/marzipan/Expansion_1/Development/Projects/AlphaScan/Firmware/AlphaScanRTOS/Modules/StorageManager.cpp \
+ /media/marzipan/Expansion_1/Development/Projects/SuperHouseRTOS_2_3_17/esp-open-rtos/libc/xtensa-lx106-elf/include/fcntl.h \
+ /media/marzipan/Expansion_1/Development/Projects/SuperHouseRTOS_2_3_17/esp-open-rtos/libc/xtensa-lx106-elf/include/sys/fcntl.h \
+ /media/marzipan/Expansion_1/Development/Projects/SuperHouseRTOS_2_3_17/esp-open-rtos/libc/xtensa-lx106-elf/include/sys/_default_fcntl.h \
+ /media/marzipan/Expansion_1/Development/Projects/SuperHouseRTOS_2_3_17/esp-open-rtos/libc/xtensa-lx106-elf/include/sys/stat.h \
+ /media/marzipan/Expansion_1/Development/Projects/SuperHouseRTOS_2_3_17/esp-open-rtos/libc/xtensa-lx106-elf/include/time.h \
+ /media/marzipan/Expansion_1/Development/Projects/SuperHouseRTOS_2_3_17/esp-open-rtos/libc/xtensa-lx106-elf/include/machine/time.h \
+ /media/marzipan/Expansion_1/Development/Projects/SuperHouseRTOS_2_3_17/esp-open-rtos/libc/xtensa-lx106-elf/include/unistd.h \
+ /media/marzipan/Expansion_1/Development/Projects/SuperHouseRTOS_2_3_17/esp-open-rtos/libc/xtensa-lx106-elf/include/sys/unistd.h \
+ /media/marzipan/Expansion_1/Development/Projects/SuperHouseRTOS_2_3_17/esp-open-rtos/extras/spiffs/spiffs/src/spiffs.h \
+ /media/marzipan/Expansion_1/Development/Projects/SuperHouseRTOS_2_3_17/esp-open-rtos/extras/spiffs/spiffs_config.h \
+ /media/marzipan/Expansion_1/Development/Projects/SuperHouseRTOS_2_3_17/esp-open-rtos/libc/xtensa-lx106-elf/include/ctype.h \
+ /media/marzipan/Expansion_1/Development/Projects/SuperHouseRTOS_2_3_17/esp-open-rtos/extras/spiffs/esp_spiffs.h \
+ /media/marzipan/Expansion_1/Development/Projects/AlphaScan/Firmware/AlphaScanRTOS/Modules/OtaManager.cpp \
  /media/marzipan/Expansion_1/Development/Projects/SuperHouseRTOS_2_3_17/esp-open-rtos/include/ssid_config.h \
  /media/marzipan/Expansion_1/Development/Projects/SuperHouseRTOS_2_3_17/esp-open-rtos/extras/mbedtls/mbedtls/include/mbedtls/sha256.h \
  /media/marzipan/Expansion_1/Development/Projects/SuperHouseRTOS_2_3_17/esp-open-rtos/extras/mbedtls/mbedtls/include/mbedtls/config.h \
@@ -128,9 +145,6 @@ build/program//main.o: \
  /media/marzipan/Expansion_1/Development/Projects/SuperHouseRTOS_2_3_17/esp-open-rtos/bootloader/rboot.h \
  /media/marzipan/Expansion_1/Development/Projects/SuperHouseRTOS_2_3_17/esp-open-rtos/bootloader/rboot/rboot.h \
  /media/marzipan/Expansion_1/Development/Projects/AlphaScan/Firmware/AlphaScanRTOS/Modules/HostCommManager.cpp \
- /media/marzipan/Expansion_1/Development/Projects/SuperHouseRTOS_2_3_17/esp-open-rtos/lwip/lwip/src/include/lwip/tcp.h \
- /media/marzipan/Expansion_1/Development/Projects/SuperHouseRTOS_2_3_17/esp-open-rtos/lwip/lwip/src/include/ipv4/lwip/ip.h \
- /media/marzipan/Expansion_1/Development/Projects/SuperHouseRTOS_2_3_17/esp-open-rtos/lwip/lwip/src/include/lwip/netif.h \
- /media/marzipan/Expansion_1/Development/Projects/SuperHouseRTOS_2_3_17/esp-open-rtos/lwip/lwip/src/include/ipv4/lwip/icmp.h \
  /media/marzipan/Expansion_1/Development/Projects/AlphaScan/Firmware/AlphaScanRTOS/Modules/ads_ctrl.cpp \
+ /media/marzipan/Expansion_1/Development/Projects/AlphaScan/Firmware/AlphaScanRTOS/Modules/StorageManager.cpp \
  /media/marzipan/Expansion_1/Development/Projects/AlphaScan/Firmware/AlphaScanRTOS/Modules/ads_ctrl.cpp
