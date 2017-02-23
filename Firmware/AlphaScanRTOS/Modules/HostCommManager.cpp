@@ -16,6 +16,7 @@
 #include "ipv4/lwip/ip_addr.h"
 #include <algorithm>
 #include "ads_ctrl.cpp"
+#include <cstdlib>
 #include "lwip/api.h"
 #include "StorageManager.cpp"
 
@@ -110,39 +111,96 @@ class HostCommManager {
 		char test_outbuf[TEST_BUF_LEN] = {0};
         static const int pkt_size = 1400;
         static const int inbuf_size = 3;
+        struct ip_addr mHostIp;
+        int mHostPort;
+        StorageManager* storageManager = NULL;
 
-		// Connect to host
-		void _establish_host_connection(){
+        bool parse_quartet(char* ipstring, int* ipq){
+            int j = 0;
+            for (int i = 0; i < 4; i++){
+                char tmp[6];
+                int n = 0;
+                while((ipstring[j] != '.') && (j < strlen(ipstring)) ){
+                    tmp[n++] = ipstring[j++];
+                }
+                j++;
+                tmp[n] = '\0';
+                ipq[i] = atoi(tmp);
+                printf("Quartet idx: %d, val: %d\n",i,atoi(tmp));
+            }
+            return true;
+        }
 
-			struct addrinfo res;
-			struct ip_addr my_host_ip;
-            
-			IP4_ADDR(&my_host_ip, 192, 168, 1, 168);
+        int retrieveHostParams(){
+            char host_ip[30];
+            int ip_len = storageManager->retrieve_ip(host_ip);
+            if (ip_len > 3){
+                // part ip quartet out of string
+                int ipq[4];
+                if (!parse_quartet(host_ip, ipq)){
+                    printf("Failed to extract valid ip quartet\n");
+                }
+                IP4_ADDR(&mHostIp, ipq[0], ipq[1], ipq[2], ipq[3]);
+            }
+            else {
+                printf("No valid ip key found in memory\n");
+                return -1;
+            }
 
-			struct sockaddr_in my_sockaddr_in;
-			my_sockaddr_in.sin_addr.s_addr = my_host_ip.addr;
-			my_sockaddr_in.sin_len = sizeof(struct sockaddr_in);
-			my_sockaddr_in.sin_family = AF_INET;
-			my_sockaddr_in.sin_port = htons(WEB_PORT);
-			std::fill_n(my_sockaddr_in.sin_zero, 8, (char)0x0);
+            char host_port[30];
+            int port_len = storageManager->retrieve_port(host_port);
+            if (port_len > 3){
+                printf("Converted port string to %d\n", atoi(host_port));
+                mHostPort = atoi(host_port);
+            }
+            else {
+                printf("No valid ip key found in memory\n");
+                return -1;
+            }
+            return 0;
+        }
 
-			res.ai_addr = (struct sockaddr*) (void*)(&my_sockaddr_in);
-			res.ai_addrlen = sizeof(struct sockaddr_in);
-			res.ai_family = AF_INET;
-			res.ai_socktype = SOCK_STREAM;
 
-			struct in_addr *addr = &((struct sockaddr_in *)res.ai_addr)->sin_addr;
-			printf("DNS lookup succeeded. IP=%s\r\n", inet_ntoa(*addr));
 
-			int nbset = 1;
-			int ctlr = -2;
-			int optval = 1;
+        // Connect to host
+        void _establish_host_connection(){
+
+            // run check on output
+            if (retrieveHostParams() < 0){
+                printf("Failed to retrieve valid host params\n");
+                return;
+            }
+
+            struct addrinfo res;
+            //struct ip_addr my_host_ip;
+
+            //IP4_ADDR(&my_host_ip, 192, 168, 1, 168);
+
+            struct sockaddr_in my_sockaddr_in;
+            //my_sockaddr_in.sin_addr.s_addr = my_host_ip.addr;
+            my_sockaddr_in.sin_addr.s_addr = mHostIp.addr;
+            my_sockaddr_in.sin_len = sizeof(struct sockaddr_in);
+            my_sockaddr_in.sin_family = AF_INET;
+            my_sockaddr_in.sin_port = htons(mHostPort);
+            std::fill_n(my_sockaddr_in.sin_zero, 8, (char)0x0);
+
+            res.ai_addr = (struct sockaddr*) (void*)(&my_sockaddr_in);
+            res.ai_addrlen = sizeof(struct sockaddr_in);
+            res.ai_family = AF_INET;
+            res.ai_socktype = SOCK_STREAM;
+
+            struct in_addr *addr = &((struct sockaddr_in *)res.ai_addr)->sin_addr;
+            printf("DNS lookup succeeded. IP=%s\r\n", inet_ntoa(*addr));
+
+            int nbset = 1;
+            int ctlr = -2;
+            int optval = 1;
             // Only attempt for 10 seconds, otherwise restart...
             int retry_max = (int)(30.0/0.300);
             int retry_ctr = 0;
 
             printf("Attempting to establish host connection\n");
-			while(1) {
+            while(1) {
 
                 if (retry_ctr++ > retry_max){
                     retry_ctr = 0;
@@ -151,118 +209,118 @@ class HostCommManager {
                     //sdk_system_restart();
                 }
 
-				//get_pool_sizes();
-				//printf("heap size: %d\n", xPortGetFreeHeapSize());
+                //get_pool_sizes();
+                //printf("heap size: %d\n", xPortGetFreeHeapSize());
 
-				mSocket = socket(res.ai_family, res.ai_socktype, 0);
-				//TODO maybe put this back in: lwip_setsockopt(mSocket, IPPROTO_TCP, TCP_NODELAY, (void*)&optval, sizeof(optval));
+                mSocket = socket(res.ai_family, res.ai_socktype, 0);
+                //TODO maybe put this back in: lwip_setsockopt(mSocket, IPPROTO_TCP, TCP_NODELAY, (void*)&optval, sizeof(optval));
 
-				//printf("mSocket = %d\n",mSocket);
+                //printf("mSocket = %d\n",mSocket);
 
-				if(mSocket < 0) {
-					//printf("... Failed to allocate socket.\r\n");
-					//freeaddrinfo(res);
-					vTaskDelay(400 / portTICK_PERIOD_MS);
-					continue;
-				}
+                if(mSocket < 0) {
+                    //printf("... Failed to allocate socket.\r\n");
+                    //freeaddrinfo(res);
+                    vTaskDelay(400 / portTICK_PERIOD_MS);
+                    continue;
+                }
 
-				//printf("... allocated socket\r\n");
+                //printf("... allocated socket\r\n");
 
-				nbset = 0;
-				ctlr = lwip_ioctl(mSocket, FIONBIO, &nbset);
+                nbset = 0;
+                ctlr = lwip_ioctl(mSocket, FIONBIO, &nbset);
 
-				if(connect(mSocket, res.ai_addr, res.ai_addrlen) != 0) {
-					//printf("Closing socket: %d\n",mSocket);
-					close(mSocket);
-					//freeaddrinfo(res);
-					//printf("... socket connect failed.\r\n");
-					vTaskDelay(400 / portTICK_PERIOD_MS);
-					continue;
-				}
+                if(connect(mSocket, res.ai_addr, res.ai_addrlen) != 0) {
+                    //printf("Closing socket: %d\n",mSocket);
+                    close(mSocket);
+                    //freeaddrinfo(res);
+                    //printf("... socket connect failed.\r\n");
+                    vTaskDelay(400 / portTICK_PERIOD_MS);
+                    continue;
+                }
 
-				nbset = 1;
-				ctlr = lwip_ioctl(mSocket, FIONBIO, &nbset);
+                nbset = 1;
+                ctlr = lwip_ioctl(mSocket, FIONBIO, &nbset);
 
-				printf("... connected\r\n");
-				break;
-			}
-		}
+                printf("... connected\r\n");
+                break;
+            }
+        }
 
-		// Process tcp command
-		int _process_tcp_command(){
+        // Process tcp command
+        int _process_tcp_command(){
 
-			int rready = _read_ready(true);
-			if (rready < 0){
-				printf("closing socket: %d",mSocket);
-				close(mSocket);
-				return rready;
-			}
-			else if ( rready == 0){
-				return rready;
-			}
-			else {
-				//proceed with read
-			}
+            int rready = _read_ready(true);
+            if (rready < 0){
+                printf("closing socket: %d",mSocket);
+                close(mSocket);
+                return rready;
+            }
+            else if ( rready == 0){
+                return rready;
+            }
+            else {
+                //proceed with read
+            }
 
-			int r = read(mSocket, mInbuf, PACKET_SIZE);
-			if (r > 0){
-				printf("received: %s", mInbuf);
+            int r = read(mSocket, mInbuf, PACKET_SIZE);
+            if (r > 0){
+                printf("received: %s", mInbuf);
 
-				//////////////////////////////////////////////////////////
-				// OTA
-				//////////////////////////////////////////////////////////
-				if (mInbuf[0] == 0x1){
-					printf("Received OTA Command");
-					if (write(mSocket, "OTA", 3) < 0){
-						printf("closing socket: %d\n",mSocket);
-						close(mSocket);
-						printf("failed to send ACK");
-					}
-					else {
-						printf("ACK sent");
-						return mInbuf[0];
-					}
-				}
-				//////////////////////////////////////////////////////////
-				// Dump ADS Register to Serial
-				//////////////////////////////////////////////////////////
-				else if (mInbuf[0] == 0x2){
-					// print reg map
-					printf("Received reg map dump command");
-					return mInbuf[0];
-				}
-				//////////////////////////////////////////////////////////
-				// Begin Test Signal Streaming
-				//////////////////////////////////////////////////////////
-				else if (mInbuf[0] == 0x3){
-					printf("Received ADS Test Signal Stream command \n");
-					return mInbuf[0];
+                //////////////////////////////////////////////////////////
+                // OTA
+                //////////////////////////////////////////////////////////
+                if (mInbuf[0] == 0x1){
+                    printf("Received OTA Command");
+                    if (write(mSocket, "OTA", 3) < 0){
+                        printf("closing socket: %d\n",mSocket);
+                        close(mSocket);
+                        printf("failed to send ACK");
+                    }
+                    else {
+                        printf("ACK sent");
+                        return mInbuf[0];
+                    }
+                }
+                //////////////////////////////////////////////////////////
+                // Dump ADS Register to Serial
+                //////////////////////////////////////////////////////////
+                else if (mInbuf[0] == 0x2){
+                    // print reg map
+                    printf("Received reg map dump command");
+                    return mInbuf[0];
+                }
+                //////////////////////////////////////////////////////////
+                // Begin Test Signal Streaming
+                //////////////////////////////////////////////////////////
+                else if (mInbuf[0] == 0x3){
+                    printf("Received ADS Test Signal Stream command \n");
+                    return mInbuf[0];
 
-				}
-				//////////////////////////////////////////////////////////
-				// Restart Device
-				//////////////////////////////////////////////////////////
-				else if (mInbuf[0] == 0x4){
+                }
+                //////////////////////////////////////////////////////////
+                // Restart Device
+                //////////////////////////////////////////////////////////
+                else if (mInbuf[0] == 0x4){
                     sdk_system_restart();
-				}
-				//////////////////////////////////////////////////////////
-				// 
-				//////////////////////////////////////////////////////////
-				else if (mInbuf[0] == 0x5){
+                }
+                //////////////////////////////////////////////////////////
+                // 
+                //////////////////////////////////////////////////////////
+                else if (mInbuf[0] == 0x5){
 
-				}
-				//////////////////////////////////////////////////////////
-				// 
-				//////////////////////////////////////////////////////////
-				else if (mInbuf[0] == 0x6){
+                }
+                //////////////////////////////////////////////////////////
+                // 
+                //////////////////////////////////////////////////////////
+                else if (mInbuf[0] == 0x6){
 
-				}
-				//////////////////////////////////////////////////////////
-				// 
-				//////////////////////////////////////////////////////////
-				else if (mInbuf[0] == 0x7){
+                }
+                //////////////////////////////////////////////////////////
+                // 
+                //////////////////////////////////////////////////////////
+                else if (mInbuf[0] == 0x7){
 
-				}
+                }
 
                 //JCR
 
@@ -270,7 +328,7 @@ class HostCommManager {
                 // ADC_send_registers
                 //////////////////////////////////////////////////////////
                 else if (mInbuf[0] == 0xd){
-					return mInbuf[0];
+                    return mInbuf[0];
                 }
                 //////////////////////////////////////////////////////////
                 // ADC_rcv_registers
@@ -278,32 +336,34 @@ class HostCommManager {
                 else if (mInbuf[0] == 0xe){
                     return mInbuf[0];
                 }
-				return 0;
-			}
-			else if (r==0){
-				return 0;
-			}
-			else {
-				// TODO Handle Error
-				printf("_tcp_handle_command r=%d\n",r);
-				printf("closing socket: %d\n",mSocket);
-				close(mSocket);
-				//printf("rsel = %d\n",rsel);
-				//printf("mSocket=%d\n", mSocket);
-				//for (int i = 0 ; i < sizeof((long int)fds.fds_bits); i++){
-				//    printf("fd_bits[%d] = %d\n", i, fds.fds_bits[i]);
-				//}
-				return -1;
-			}
-		}
+                return 0;
+            }
+            else if (r==0){
+                return 0;
+            }
+            else {
+                // TODO Handle Error
+                printf("_tcp_handle_command r=%d\n",r);
+                printf("closing socket: %d\n",mSocket);
+                close(mSocket);
+                //printf("rsel = %d\n",rsel);
+                //printf("mSocket=%d\n", mSocket);
+                //for (int i = 0 ; i < sizeof((long int)fds.fds_bits); i++){
+                //    printf("fd_bits[%d] = %d\n", i, fds.fds_bits[i]);
+                //}
+                return -1;
+            }
+        }
 
-		int _initialize(StorageManager* sm)
-		{
+        int _initialize(StorageManager* sm)
+        {
+
+            storageManager = sm;
             // Get network params from spiffs
             char ssid[30];
             int ssid_len = sm->retrieve_ssid(ssid);
             if (ssid_len > 3){
-                
+
             }
             else {
                 printf("No valid ssid found in memory\n");
@@ -379,14 +439,15 @@ class HostCommManager {
         void _stream_task(ADS* ads) {
 
             // Setup remote address
-            struct ip_addr my_host_ip;
-            IP4_ADDR(&my_host_ip, 192, 168, 1, 202);
+            //struct ip_addr my_host_ip;
+            //IP4_ADDR(&my_host_ip, 192, 168, 1, 202);
 
             struct sockaddr_in my_sockaddr_in;
-            my_sockaddr_in.sin_addr.s_addr = my_host_ip.addr;
+            //my_sockaddr_in.sin_addr.s_addr = my_host_ip.addr;
+            my_sockaddr_in.sin_addr.s_addr = mHostIp.addr;
             my_sockaddr_in.sin_len = sizeof(struct sockaddr_in);
             my_sockaddr_in.sin_family = AF_INET;
-            my_sockaddr_in.sin_port = htons(WEB_PORT);
+            my_sockaddr_in.sin_port = htons(mHostPort);
             std::fill_n(my_sockaddr_in.sin_zero, 8, (char)0x0);
 
             struct addrinfo res;
@@ -400,7 +461,7 @@ class HostCommManager {
             my_sock_addr_x.sin_addr.s_addr = htonl(INADDR_ANY);
             my_sock_addr_x.sin_len = sizeof(struct sockaddr_in);
             my_sock_addr_x.sin_family = AF_INET;
-            my_sock_addr_x.sin_port = htons(WEB_PORT);
+            my_sock_addr_x.sin_port = htons(mHostPort);
             std::fill_n(my_sock_addr_x.sin_zero, 8, (char)0x0);
 
             struct addrinfo res_x;

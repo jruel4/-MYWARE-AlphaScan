@@ -62,8 +62,8 @@ class StorageManager {
             printf("Storing ip: %s\n",key);
             spiffs_write_file(ip_file, key);
         }
-        void retrieve_ip(char* val){
-            read_file_spiffs(ip_file,val,30); 
+        int retrieve_ip(char* val){
+            return read_file_spiffs(ip_file,val,30); 
         }
 
         ///////////////////////////////////////////////////
@@ -74,8 +74,8 @@ class StorageManager {
             printf("Storing port: %s\n",key);
             spiffs_write_file(port_file, key);
         }
-        void retrieve_key(char* val){
-            read_file_spiffs(port_file,val,30); 
+        int retrieve_port(char* val){
+            return read_file_spiffs(port_file,val,30); 
         }
 
 

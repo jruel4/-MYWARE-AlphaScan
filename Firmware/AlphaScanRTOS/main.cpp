@@ -69,8 +69,6 @@ class AlphaScanManager : public esp_open_rtos::thread::task_t
                             }
 
                             int status = sdk_wifi_station_get_connect_status();
-                            printf("Wifi status: %d\n");
-
                             if (status == STATION_GOT_IP){
                                 int rcode = c_HostComm.update();
                                 if (rcode > 0){
@@ -85,6 +83,7 @@ class AlphaScanManager : public esp_open_rtos::thread::task_t
                             else {
                                 // increment trials counter and enter soft ap mode
                                 vTaskDelay(1000/portTICK_PERIOD_MS);
+                                printf("Wifi status: %d\n");
                                 mWifiRetryCounter++;
                                 if (mWifiRetryCounter > 20){
                                     printf("Entering SoftAP Mode\n");
