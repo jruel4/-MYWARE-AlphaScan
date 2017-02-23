@@ -47,7 +47,7 @@ class HostCommManager {
 		int update(){
 			int rcode = _process_tcp_command();
 			if (rcode < 0){
-				_establish_host_connection();
+				 return _establish_host_connection();
 			}
 			return rcode;
 		}
@@ -114,6 +114,7 @@ class HostCommManager {
         struct ip_addr mHostIp;
         int mHostPort;
         StorageManager* storageManager = NULL;
+        bool mFirstConnectAttempt = true;
 
         bool parse_quartet(char* ipstring, int* ipq){
             int j = 0;
@@ -163,12 +164,12 @@ class HostCommManager {
 
 
         // Connect to host
-        void _establish_host_connection(){
+        int _establish_host_connection(){
 
             // run check on output
             if (retrieveHostParams() < 0){
                 printf("Failed to retrieve valid host params\n");
-                return;
+                return 0;
             }
 
             struct addrinfo res;
@@ -202,10 +203,11 @@ class HostCommManager {
             printf("Attempting to establish host connection\n");
             while(1) {
 
-                if (retry_ctr++ > retry_max){
+                if (retry_ctr++ > retry_max && mFirstConnectAttempt){
                     retry_ctr = 0;
-                    printf("Resetting device (host connect timed out\n");
+                    printf("Switching to AP Mode (host connect timed out\n");
                     printf("heap size: %d\n", xPortGetFreeHeapSize());
+                    return -2; // Tell main controller class to enter AP mode
                     //sdk_system_restart();
                 }
 
@@ -242,8 +244,10 @@ class HostCommManager {
                 ctlr = lwip_ioctl(mSocket, FIONBIO, &nbset);
 
                 printf("... connected\r\n");
+                mFirstConnectAttempt = false;
                 break;
             }
+            return 0;
         }
 
         // Process tcp command

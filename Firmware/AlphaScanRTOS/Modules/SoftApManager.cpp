@@ -118,6 +118,7 @@ EXTRACT_VAL:
 
         bool parse_config(char* outbuf){
             // extract and save vals
+            storageManager->format_fs(); // switch to a 2 file system in which previous set is formatted only after new set is confirmed
             char buf[30];
             if (!extract_value("ssid_key::",outbuf,buf)){
                 return false;

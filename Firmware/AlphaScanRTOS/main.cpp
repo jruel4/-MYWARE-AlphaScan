@@ -79,6 +79,10 @@ class AlphaScanManager : public esp_open_rtos::thread::task_t
                                     _trigger_task(rcode);
 
                                 }
+                                else if (rcode == -2) { // switch into soft ap mode b/c timeout
+                                    sdk_wifi_station_disconnect();
+                                    mWifiRetryCounter = 21;
+                                }
                             }
                             else {
                                 // increment trials counter and enter soft ap mode
@@ -87,7 +91,6 @@ class AlphaScanManager : public esp_open_rtos::thread::task_t
                                 mWifiRetryCounter++;
                                 if (mWifiRetryCounter > 20){
                                     printf("Entering SoftAP Mode\n");
-                                    c_StorageManager->format_fs();
                                     mWifiRetryCounter = 0;
                                     sdk_wifi_station_disconnect();
                                     c_SoftAp.initialize(c_StorageManager);
