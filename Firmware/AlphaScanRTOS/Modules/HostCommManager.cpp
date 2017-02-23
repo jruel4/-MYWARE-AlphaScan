@@ -14,17 +14,20 @@
 #include "lwip/memp.h"
 #include "lwip/stats.h"
 #include "ipv4/lwip/ip_addr.h"
-#include "ssid_config.h"
 #include <algorithm>
 #include "ads_ctrl.cpp"
 #include "lwip/api.h"
+#include "StorageManager.cpp"
 
 
 #define WEB_SERVER "marzipan-Lenovo-ideapad-Y700-15ISK"
-#define WEB_PORT 50007
+//#define WEB_PORT 50007
 #define SAMPLE_SIZE (29)
 #define SAMPLES_PER_PACKET (4*7)
 #define PACKET_SIZE (SAMPLE_SIZE * SAMPLES_PER_PACKET)
+
+#define WIFI_SSID "AptNoSix"
+#define WIFI_PASS "ElectricalBioChem4JCR&EJS"
 
 //JCR LAZINESS
 unsigned int old_nbset = 0, nbset = 0;
@@ -39,9 +42,8 @@ class HostCommManager {
 
 	public:
 
-		int initialize(){
-			_initialize();
-			return 0;
+		int initialize(StorageManager* sm){
+			return _initialize(sm);
 		}
 
 		int update(){
@@ -117,6 +119,7 @@ class HostCommManager {
 
 			struct addrinfo res;
 			struct ip_addr my_host_ip;
+            
 			IP4_ADDR(&my_host_ip, 192, 168, 1, 168);
 
 			struct sockaddr_in my_sockaddr_in;
@@ -297,24 +300,55 @@ class HostCommManager {
 			}
 		}
 
-		void _initialize(void)
+		int _initialize(StorageManager* sm)
 		{
-			printf("Initializing WiFi config");
+            // Get network params from spiffs
+            char ssid[30];
+            int ssid_len = sm->retrieve_ssid(ssid);
+            if (ssid_len > 3){
+                
+            }
+            else {
+                printf("No valid ssid found in memory\n");
+                return -1;
+            }
 
-			struct sdk_station_config config;
-			memcpy(config.ssid, WIFI_SSID, strlen((const char*) WIFI_SSID)+1);
-			memcpy(config.password, WIFI_PASS, strlen((const char*) WIFI_PASS)+1);
+            char pass[30];
+            int pass_len = sm->retrieve_pass(pass);
+            if (pass_len > 3){
 
-			/* required to call wifi_set_opmode before station_set_config */
-			sdk_wifi_set_opmode(STATION_MODE);
-			sdk_wifi_station_set_config(&config);
-		}
+            }
+            else {
+                printf("No valid pass key found in memory\n");
+                return -1;
+            }
 
-		int _read_ready(bool check_alive){
+            printf("Initializing WiFi config");
 
-			// Periodically check connection
-			if (check_alive && (mKeepAliveCounter++ > 5E3)){
-				mKeepAliveCounter = 0;
+            struct sdk_station_config config;
+
+            //ssid_len = strlen((const char*)WIFI_SSID);
+            //pass_len = strlen((const char*)WIFI_PASS);
+
+            //memcpy(config.ssid, WIFI_SSID, ssid_len+1);
+            //memcpy(config.password, WIFI_PASS, pass_len+1);
+
+            memcpy(config.ssid, ssid, ssid_len+1);
+            memcpy(config.password, pass, pass_len+1);
+
+            /* required to call wifi_set_opmode before station_set_config */
+            printf("Attempting to connect with ssid: %s, sz: %d, pass: %s, sz: %d\n", config.ssid, ssid_len, config.password, pass_len);
+            sdk_wifi_set_opmode(STATION_MODE);
+            sdk_wifi_station_set_config(&config);
+            sdk_wifi_station_connect();
+            return 0;
+        }
+
+        int _read_ready(bool check_alive){
+
+            // Periodically check connection
+            if (check_alive && (mKeepAliveCounter++ > 5E3)){
+                mKeepAliveCounter = 0;
                 int retry_counter = 0;
                 int result = -1;
                 while (result = write(mSocket, "ACK", 3), result < 0){

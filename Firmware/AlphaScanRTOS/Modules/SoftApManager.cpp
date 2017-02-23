@@ -130,22 +130,22 @@ EXTRACT_VAL:
                 return false;
             }
             else{
-               storageManager->store_ssid(buf);                 
-               storageManager->retrieve_ssid(buf);
+               storageManager->store_pass(buf);                 
+               storageManager->retrieve_pass(buf);
             }
             if (!extract_value("ip_key::",outbuf,buf)){
                 return false;
             }
             else{
-               storageManager->store_ssid(buf);                 
-               storageManager->retrieve_ssid(buf);
+               storageManager->store_ip(buf);                 
+               storageManager->retrieve_ip(buf);
             }
             if (!extract_value("port_key::",outbuf,buf)){
                 return false;
             }
             else{
-               storageManager->store_ssid(buf);                 
-               storageManager->retrieve_ssid(buf);
+               storageManager->store_port(buf);                 
+               storageManager->retrieve_pass(buf);
             }
             return true;
         }

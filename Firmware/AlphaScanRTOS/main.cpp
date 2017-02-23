@@ -1,4 +1,4 @@
-#define LWIP_DEBUG
+//#define LWIP_DEBUG
 #include "task.hpp"
 #include "esp/timer.h"
 #include "espressif/esp_common.h"
@@ -13,7 +13,7 @@
 #include "esp_spiffs.h"
 #include "spiffs.h"
 
-#define FIRMARE_VERSION "0.0.15"
+#define FIRMARE_VERSION "0.0.16"
 
 class AlphaScanManager : public esp_open_rtos::thread::task_t
 {
@@ -34,6 +34,7 @@ class AlphaScanManager : public esp_open_rtos::thread::task_t
         OtaManager c_Ota; 
         ADS* c_Ads = new ADS(SPI_FREQ_DIV_10M);
         StorageManager* c_StorageManager = new StorageManager();
+        int mWifiRetryCounter = 0;
         
         // Variables
         bool mDebugSerial;
@@ -67,27 +68,32 @@ class AlphaScanManager : public esp_open_rtos::thread::task_t
                                 printf("mSystemState == RUN_MODE\n");
                             }
 
-                            //TODO int rcode = c_HostComm.update();
-                            int rcode = 0;
-                            if (rcode > 0){
-                                if (mDebugSerial){
-                                    printf("Triggering task: %d\n",rcode);
+                            int status = sdk_wifi_station_get_connect_status();
+                            printf("Wifi status: %d\n");
+
+                            if (status == STATION_GOT_IP){
+                                int rcode = c_HostComm.update();
+                                if (rcode > 0){
+                                    if (mDebugSerial){
+                                        printf("Triggering task: %d\n",rcode);
+                                    }
+                                    // Trigger corresponding task
+                                    _trigger_task(rcode);
+
                                 }
-                                // Trigger corresponding task
-                                _trigger_task(rcode);
-
                             }
-
-                            //char buf[] = "shitstorm!";
-                            //char obuf[0xff] = {0};
-                            //const char file[] = "ass.txt";
-
-                            //c_StorageManager.spiffs_write_file(file, buf);
-                            //c_StorageManager.read_file_spiffs(file, obuf, 0xff);
-                            //c_StorageManager.example_fs_info();
-
-                            vTaskDelay(1000 / portTICK_PERIOD_MS);
-
+                            else {
+                                // increment trials counter and enter soft ap mode
+                                vTaskDelay(1000/portTICK_PERIOD_MS);
+                                mWifiRetryCounter++;
+                                if (mWifiRetryCounter > 20){
+                                    printf("Entering SoftAP Mode\n");
+                                    c_StorageManager->format_fs();
+                                    mWifiRetryCounter = 0;
+                                    sdk_wifi_station_disconnect();
+                                    c_SoftAp.initialize(c_StorageManager);
+                                }
+                            }
                             break;
                         }
                     case OTA_MODE:
@@ -114,8 +120,7 @@ class AlphaScanManager : public esp_open_rtos::thread::task_t
             }
 
             c_StorageManager->initialize();
-            c_SoftAp.initialize(c_StorageManager);
-            //c_HostComm.initialize();
+            if (c_HostComm.initialize(c_StorageManager) < 0) mWifiRetryCounter = 21;
             mMainLoopCounter = 0;
             mSystemState = RUN_MODE;
         }

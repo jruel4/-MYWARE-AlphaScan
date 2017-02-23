@@ -28,7 +28,6 @@ class StorageManager {
         void initialize(void)
         {
             _inititalize(NULL);
-            format_fs();
         }
 
         ///////////////////////////////////////////////////
@@ -39,8 +38,8 @@ class StorageManager {
             printf("Storing ssid: %s\n",ssid);
             spiffs_write_file(ssid_file, ssid);
         }
-        void retrieve_ssid(char* val){
-            read_file_spiffs(ssid_file,val,30); 
+        int retrieve_ssid(char* val){
+            return read_file_spiffs(ssid_file,val,30); 
         }       
 
         ///////////////////////////////////////////////////
@@ -51,8 +50,8 @@ class StorageManager {
             printf("Storing pass: %s\n",key);
             spiffs_write_file(key_file, key);
         }
-        void retrieve_pass(char* val){
-            read_file_spiffs(key_file,val,30); 
+        int retrieve_pass(char* val){
+            return read_file_spiffs(key_file,val,30); 
         }
 
         ///////////////////////////////////////////////////
@@ -60,23 +59,23 @@ class StorageManager {
         ///////////////////////////////////////////////////
         char* ip_file = "ip.txt";
         void store_ip(char* key){
-            printf("Storing key: %s\n",key);
+            printf("Storing ip: %s\n",key);
             spiffs_write_file(ip_file, key);
         }
         void retrieve_ip(char* val){
-            read_file_spiffs(key_file,val,30); 
+            read_file_spiffs(ip_file,val,30); 
         }
 
         ///////////////////////////////////////////////////
         // port 
         ///////////////////////////////////////////////////
-        char* key_port = "port.txt";
+        char* port_file = "port.txt";
         void store_port(char* key){
-            printf("Storing key: %s\n",key);
-            spiffs_write_file(key_file, key);
+            printf("Storing port: %s\n",key);
+            spiffs_write_file(port_file, key);
         }
         void retrieve_key(char* val){
-            read_file_spiffs(key_file,val,30); 
+            read_file_spiffs(port_file,val,30); 
         }
 
 
@@ -109,14 +108,14 @@ class StorageManager {
             SPIFFS_close(&fs, fd);
         }
 
-        void read_file_spiffs(char* file, char* bufx, int buf_size)
+        int read_file_spiffs(char* file, char* bufx, int buf_size)
         {
             spiffs_file fd = SPIFFS_open(&fs, file, SPIFFS_RDONLY, 0);
             if (fd < 0) {
                 printf("Error opening file\n");
                 int xerrno = SPIFFS_errno(&fs);
                 printf("errno: %d\n",xerrno);
-                return;
+                return -1;
             }
 
             int read_bytes = SPIFFS_read(&fs, fd, bufx, buf_size);
@@ -126,6 +125,8 @@ class StorageManager {
             printf("Data: %s\n", bufx);
 
             SPIFFS_close(&fs, fd);
+
+            return read_bytes;
         }
 
         void spiffs_write_file(const char* file, char* buf)
