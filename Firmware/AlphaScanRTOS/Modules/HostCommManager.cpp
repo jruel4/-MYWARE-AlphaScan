@@ -26,9 +26,6 @@
 #define SAMPLES_PER_PACKET (4*7)
 #define PACKET_SIZE (SAMPLE_SIZE * SAMPLES_PER_PACKET)
 
-#define WIFI_SSID "AptNoSix"
-#define WIFI_PASS "ElectricalBioChem4JCR&EJS"
-
 //JCR LAZINESS
 unsigned int old_nbset = 0, nbset = 0;
 #define NB_ON 1
@@ -326,12 +323,6 @@ class HostCommManager {
             printf("Initializing WiFi config");
 
             struct sdk_station_config config;
-
-            //ssid_len = strlen((const char*)WIFI_SSID);
-            //pass_len = strlen((const char*)WIFI_PASS);
-
-            //memcpy(config.ssid, WIFI_SSID, ssid_len+1);
-            //memcpy(config.password, WIFI_PASS, pass_len+1);
 
             memcpy(config.ssid, ssid, ssid_len+1);
             memcpy(config.password, pass, pass_len+1);

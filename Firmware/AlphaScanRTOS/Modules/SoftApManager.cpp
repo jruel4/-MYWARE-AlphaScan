@@ -207,7 +207,9 @@ EXTRACT_VAL:
                     int r = read(s, outbuf, pkt_size);
                     if (r > 10){
 
-                        parse_config(outbuf);
+                        if(parse_config(outbuf)){
+                            return;
+                        }
 
                     }
                     else if (r < 0){

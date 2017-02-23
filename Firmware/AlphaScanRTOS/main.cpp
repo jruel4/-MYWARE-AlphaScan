@@ -92,6 +92,8 @@ class AlphaScanManager : public esp_open_rtos::thread::task_t
                                     mWifiRetryCounter = 0;
                                     sdk_wifi_station_disconnect();
                                     c_SoftAp.initialize(c_StorageManager);
+                                    // Try newl acquired params
+                                    if (c_HostComm.initialize(c_StorageManager) < 0) mWifiRetryCounter = 21;
                                 }
                             }
                             break;
