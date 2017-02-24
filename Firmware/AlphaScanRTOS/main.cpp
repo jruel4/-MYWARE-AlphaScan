@@ -94,8 +94,9 @@ class AlphaScanManager : public esp_open_rtos::thread::task_t
                                     mWifiRetryCounter = 0;
                                     sdk_wifi_station_disconnect();
                                     c_SoftAp.initialize(c_StorageManager);
-                                    // Try newl acquired params
-                                    if (c_HostComm.initialize(c_StorageManager) < 0) mWifiRetryCounter = 21;
+                                    // reset device to try new params
+                                    printf("Restarting device\n");
+                                    sdk_system_restart();
                                 }
                             }
                             break;
@@ -117,6 +118,7 @@ class AlphaScanManager : public esp_open_rtos::thread::task_t
         }    
 
         void _initialize(){
+            sdk_wifi_station_set_auto_connect(false);
             if (mDebugSerial){
                 uart_set_baud(0, 74880);
                 printf("Initializing Alpha Scan with Debug Mode = true\n");
@@ -149,6 +151,13 @@ class AlphaScanManager : public esp_open_rtos::thread::task_t
                 c_HostComm.stream_ads(c_Ads);
 
                 printf("test signal stream completed\n");
+            }
+            else if (rcode == 0x04) {
+                // put device into soft ap mode
+                printf("Formatting and resetting\n");
+                c_StorageManager->format_fs();
+                sdk_system_restart();
+
             }
             else if (rcode == 0x0d){
                 //Send ADS registers

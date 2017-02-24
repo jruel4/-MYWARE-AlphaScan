@@ -305,13 +305,14 @@ class HostCommManager {
                 // Restart Device
                 //////////////////////////////////////////////////////////
                 else if (mInbuf[0] == 0x4){
-                    sdk_system_restart();
+                    printf("Received SoftAP Mode command\n");
+                    return mInbuf[0];
                 }
                 //////////////////////////////////////////////////////////
                 // 
                 //////////////////////////////////////////////////////////
                 else if (mInbuf[0] == 0x5){
-
+                    sdk_system_restart();
                 }
                 //////////////////////////////////////////////////////////
                 // 
