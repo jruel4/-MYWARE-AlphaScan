@@ -15,13 +15,14 @@ import numpy as np
 
 class AlphaScanDevice:
     
-    def __init__(self):
+    def __init__(self, portno):
 
         ###############################################################################
         # TCP Settings
         ###############################################################################
-        self.TCP_IP = ''
-        self.TCP_PORT = 50007                 #CONFIGURABLE
+        self.TCP_IP = '' 
+        self.COMM_PORT = portno
+               #CONFIGURABLE
         self.user_input = ''
         self.data = ''
         
@@ -85,6 +86,10 @@ class AlphaScanDevice:
         self.debug_port_no = 2391
         #self.open_debug_port()
         
+    def close_event(self):
+        self.DEV_streamActive.clear()
+        self.close_TCP()
+        self.close_udp_solo()
         
     def open_debug_port(self):
         try:
@@ -119,7 +124,7 @@ class AlphaScanDevice:
         ###############################################################################
         self.s = socket.socket(socket.AF_INET,socket.SOCK_STREAM) 
         self.s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-        self.s.bind((self.TCP_IP,self.TCP_PORT)) 
+        self.s.bind((self.TCP_IP,self.COMM_PORT)) 
         #TODO error: deal with this exception: [Errno 10013] An attempt was made to access a socket in a way forbidden by its access permissions
         # error: [Errno 10048] Only one usage of each socket address (protocol/network address/port) is normally permitted
         
@@ -636,7 +641,7 @@ class AlphaScanDevice:
         # send broadcast beacon for device to discover this host
         s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         s.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
-        s.sendto('alpha_scan_beacon_xbx_'+str(self.TCP_PORT)+'_xex',('255.255.255.255',self.UDP_PORT)) #TODO this subnet might not work on all LAN's (see firmware method)
+        s.sendto('alpha_scan_beacon_xbx_'+str(self.COMM_PORT)+'_xex',('255.255.255.255',self.UDP_PORT)) #TODO this subnet might not work on all LAN's (see firmware method)
         # send desired TCP port in this beacon 
         s.close();
         
@@ -816,7 +821,7 @@ class AlphaScanDevice:
     def udp_ack_1_thread(self):
         global socket
         UDP_IP = self.UDP_IP_UNI
-        UDP_PORT = 50007
+        UDP_PORT = self.COMM_PORT
         sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         sock.setsockopt(socket.SOL_SOCKET,socket.SO_RCVBUF,8192)
         sock.bind(('',UDP_PORT))
@@ -922,7 +927,7 @@ class AlphaScanDevice:
             
     def close_udp_solo(self):
         UDP_IP = self.UDP_IP_UNI
-        UDP_PORT = 50007
+        UDP_PORT = self.COMM_PORT
         try:
             self.sock.sendto(chr(0xff)*3,(UDP_IP,UDP_PORT))
             self.sock.close()

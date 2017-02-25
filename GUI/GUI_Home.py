@@ -24,7 +24,7 @@ from AP_Tab import AP_TAB
 from FS_Tab import FS_TAB
 from SYS_Tab import SYS_TAB
 
-from AlphaScanController import AlphaScanDevice
+from DeviceCluster import DeviceCluster
 
 try:
     qt_app = QApplication(sys.argv)
@@ -105,9 +105,7 @@ class AlphaScanGui(QWidget):
             self.ConnectionStatus.setText("Not Connected")
         
     def closeEvent(self, event):
-        self._Device.DEV_streamActive.clear()
-        self._Device.close_TCP()
-        self._Device.close_udp_solo()
+        self._Device.close_event()
         event.accept()
         
     def run(self):
@@ -126,7 +124,7 @@ else:
     fileName = "."
     
 # Run app     
-dev = AlphaScanDevice() 
+dev = DeviceCluster(num_devices=2) 
 app = AlphaScanGui(dev, fileName)
 time.sleep(0.01)
 app.run()

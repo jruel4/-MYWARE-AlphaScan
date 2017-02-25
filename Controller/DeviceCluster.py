@@ -8,7 +8,8 @@ class DeviceCluster:
     """
     
     def __init__(self, num_devices = 1):
-        self.dev = [AlphaScanDevice() for i in range(num_devices)]
+        self.num_devices = num_devices
+        self.dev = [AlphaScanDevice(50007+i) for i in range(num_devices)]
     
     def open_debug_port(self):
         pass
@@ -23,9 +24,13 @@ class DeviceCluster:
         pass
             
     def close_TCP(self):
-        pass
+        for d in self.dev:
+            d.close_TCP()
         
     def close_UDP(self):
+        pass
+    
+    def close_event(self):
         pass
                 
     def generic_tcp_command_BYTE(self, cmd, extra = ''):
@@ -89,7 +94,11 @@ class DeviceCluster:
         pass
         
     def connect_to_device(self):
-        pass
+        r = [False for i in range(self.num_devices)]
+        for i in range(self.num_devices):
+            r[i] = self.dev[i].connect_to_device()
+        print(r)
+        return True
         
     def set_udp_delay(self, delay):
         pass
