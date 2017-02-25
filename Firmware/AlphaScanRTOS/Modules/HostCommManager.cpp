@@ -173,12 +173,7 @@ class HostCommManager {
             }
 
             struct addrinfo res;
-            //struct ip_addr my_host_ip;
-
-            //IP4_ADDR(&my_host_ip, 192, 168, 1, 168);
-
             struct sockaddr_in my_sockaddr_in;
-            //my_sockaddr_in.sin_addr.s_addr = my_host_ip.addr;
             my_sockaddr_in.sin_addr.s_addr = mHostIp.addr;
             my_sockaddr_in.sin_len = sizeof(struct sockaddr_in);
             my_sockaddr_in.sin_family = AF_INET;
@@ -208,16 +203,10 @@ class HostCommManager {
                     printf("Switching to AP Mode (host connect timed out\n");
                     printf("heap size: %d\n", xPortGetFreeHeapSize());
                     return -2; // Tell main controller class to enter AP mode
-                    //sdk_system_restart();
                 }
-
-                //get_pool_sizes();
-                //printf("heap size: %d\n", xPortGetFreeHeapSize());
 
                 mSocket = socket(res.ai_family, res.ai_socktype, 0);
                 //TODO maybe put this back in: lwip_setsockopt(mSocket, IPPROTO_TCP, TCP_NODELAY, (void*)&optval, sizeof(optval));
-
-                //printf("mSocket = %d\n",mSocket);
 
                 if(mSocket < 0) {
                     //printf("... Failed to allocate socket.\r\n");
@@ -225,8 +214,6 @@ class HostCommManager {
                     vTaskDelay(400 / portTICK_PERIOD_MS);
                     continue;
                 }
-
-                //printf("... allocated socket\r\n");
 
                 nbset = 0;
                 ctlr = lwip_ioctl(mSocket, FIONBIO, &nbset);
@@ -318,7 +305,10 @@ class HostCommManager {
                 // 
                 //////////////////////////////////////////////////////////
                 else if (mInbuf[0] == 0x6){
-
+                    // TODO respond with basic ack
+                    printf("Sending basic ack\n");
+                    char msg[] = "I am here ___";
+                    write(mSocket, msg, sizeof(msg));
                 }
                 //////////////////////////////////////////////////////////
                 // 
@@ -349,13 +339,8 @@ class HostCommManager {
             else {
                 // TODO Handle Error
                 printf("_tcp_handle_command r=%d\n",r);
-                printf("closing socket: %d\n",mSocket);
+                printf("NOT closing socket: %d\n",mSocket);
                 close(mSocket);
-                //printf("rsel = %d\n",rsel);
-                //printf("mSocket=%d\n", mSocket);
-                //for (int i = 0 ; i < sizeof((long int)fds.fds_bits); i++){
-                //    printf("fd_bits[%d] = %d\n", i, fds.fds_bits[i]);
-                //}
                 return -1;
             }
         }
@@ -403,7 +388,7 @@ class HostCommManager {
         int _read_ready(bool check_alive){
 
             // Periodically check connection
-            if (check_alive && (mKeepAliveCounter++ > 5E3)){
+            if (check_alive && (mKeepAliveCounter++ > 5E4)){
                 mKeepAliveCounter = 0;
                 int retry_counter = 0;
                 int result = -1;

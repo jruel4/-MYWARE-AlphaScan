@@ -121,6 +121,11 @@ class StorageManager {
             int read_bytes = SPIFFS_read(&fs, fd, bufx, buf_size);
             printf("Read %d bytes\n", read_bytes);
 
+            // Replace '*' with null terminator
+            for (int i = 0; i < read_bytes; i++){
+                if (bufx[i] == '*') bufx[i] = '\0';
+            }
+
             bufx[read_bytes] = '\0';    // zero terminate string
             printf("Data: %s\n", bufx);
 

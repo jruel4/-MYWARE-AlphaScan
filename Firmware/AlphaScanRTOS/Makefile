@@ -6,9 +6,9 @@ EXTRA_COMPONENTS += extras/dhcpserver
 EXTRA_COMPONENTS += extras/rboot-ota extras/mbedtls
 EXTRA_COMPONENTS += extras/spiffs
 
-FLASH_SIZE = 32
+FLASH_SIZE = 16
 # spiffs configuration
-SPIFFS_BASE_ADDR = 0x200000
+SPIFFS_BASE_ADDR = 0x100000
 SPIFFS_SIZE = 0x010000
 
 #include /media/marzipan/Expansion_1/Development/Projects/SuperHouseRTOS_2_3_17/esp-open-rtos/common.mk

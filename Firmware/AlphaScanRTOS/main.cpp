@@ -66,6 +66,7 @@ class AlphaScanManager : public esp_open_rtos::thread::task_t
                         {
                             if (mDebugSerial && (mMainLoopCounter++ % (int)10E5 == 0)) {
                                 printf("mSystemState == RUN_MODE\n");
+                                printf("Heap: %d\n",xPortGetFreeHeapSize());
                             }
 
                             int status = sdk_wifi_station_get_connect_status();
@@ -77,9 +78,9 @@ class AlphaScanManager : public esp_open_rtos::thread::task_t
                                     }
                                     // Trigger corresponding task
                                     _trigger_task(rcode);
-
                                 }
                                 else if (rcode == -2) { // switch into soft ap mode b/c timeout
+                                    printf("Preparing to switch into soft ap mode\n");
                                     sdk_wifi_station_disconnect();
                                     mWifiRetryCounter = 21;
                                 }
@@ -92,7 +93,7 @@ class AlphaScanManager : public esp_open_rtos::thread::task_t
                                 if (mWifiRetryCounter > 20){
                                     printf("Entering SoftAP Mode\n");
                                     mWifiRetryCounter = 0;
-                                    sdk_wifi_station_disconnect();
+                                    //sdk_wifi_station_disconnect();
                                     c_SoftAp.initialize(c_StorageManager);
                                     // reset device to try new params
                                     printf("Restarting device\n");
@@ -118,7 +119,7 @@ class AlphaScanManager : public esp_open_rtos::thread::task_t
         }    
 
         void _initialize(){
-            sdk_wifi_station_set_auto_connect(false);
+            //sdk_wifi_station_set_auto_connect(false);
             if (mDebugSerial){
                 uart_set_baud(0, 74880);
                 printf("Initializing Alpha Scan with Debug Mode = true\n");
@@ -126,6 +127,9 @@ class AlphaScanManager : public esp_open_rtos::thread::task_t
             }
 
             c_StorageManager->initialize();
+
+            //c_SoftAp.initialize(c_StorageManager);
+
             if (c_HostComm.initialize(c_StorageManager) < 0) mWifiRetryCounter = 21;
             mMainLoopCounter = 0;
             mSystemState = RUN_MODE;
