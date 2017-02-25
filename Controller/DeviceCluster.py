@@ -34,7 +34,9 @@ class DeviceCluster:
         pass
                 
     def generic_tcp_command_BYTE(self, cmd, extra = ''):
-        pass
+        for d in self.dev:
+            d.generic_tcp_command_BYTE("ACC_get_status")
+        return "COOL!"
         
     def generic_tcp_command_OPCODE(self, opcode, extra = ''):
         pass
