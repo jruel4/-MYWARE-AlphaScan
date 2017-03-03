@@ -24,7 +24,7 @@
 
 //#define pkt_size 256
 
-const char* AP_SSID = "esp-open-rtos AP 1";
+const char* AP_SSID = "esp-open-rtos AP 2";
 char AP_PSK[11] = "hello-moto";
 
 class SoftAP {

@@ -1,5 +1,5 @@
 # Simple makefile for simple example
-PROGRAM=simple
+PROGRAM=AlphaScanFirmware
 
 EXTRA_COMPONENTS = $(CURRENT_RTOS)/extras/cpp_support
 EXTRA_COMPONENTS += extras/dhcpserver
