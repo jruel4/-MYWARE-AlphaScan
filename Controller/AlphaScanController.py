@@ -134,7 +134,7 @@ class AlphaScanDevice:
             self.conn,addr = self.s.accept()
             self.conn.settimeout(.0001) # TODO maybe want to make this smaller
             time.sleep(0.01) # time for device to respond
-            self.UDP_IP = addr[0] # TODO this should say TCP_IP
+            self.UDP_IP_UNI = addr[0] # TODO this should say TCP_IP
             self.IS_CONNECTED = True
             return True
         except socket.timeout as e:
