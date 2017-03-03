@@ -9,7 +9,7 @@ class DeviceCluster:
     
     def __init__(self, num_devices = 1):
         self.num_devices = num_devices
-        self.dev = [AlphaScanDevice(50008+i) for i in range(num_devices)]
+        self.dev = [AlphaScanDevice(50007+i) for i in range(num_devices)]
     
     def open_debug_port(self):
         for d in self.dev:

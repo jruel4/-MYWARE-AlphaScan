@@ -124,7 +124,7 @@ else:
     fileName = "."
     
 # Run app     
-dev = DeviceCluster(num_devices=1) 
+dev = DeviceCluster(num_devices=2) 
 app = AlphaScanGui(dev, fileName)
 time.sleep(0.01)
 app.run()
