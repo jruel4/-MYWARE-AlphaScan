@@ -58,14 +58,14 @@ class AlphaScanDevice:
         self.sqwave = list()
         
         
-        self.info = StreamInfo('AS_'+time.strftime("%d_%m_%Y_%H_%M_%S"), 'EEG', 8, 250, 'float32', 'AS_'+time.strftime("%d_%m_%Y_%H_%M_%S"))
+        self.info = StreamInfo('AS_'+time.strftime("%d_%m_%Y_%H_%M_%S_")+str(portno), 'EEG', 8, 250, 'float32', 'AS_'+time.strftime("%d_%m_%Y_%H_%M_%S"))
         self.outlet = StreamOutlet(self.info)
         self.mysample = [random.random(), random.random(), random.random(),
             random.random(), random.random(), random.random(),
             random.random(), random.random()]
             
         # Impedance outlet
-        self.imp_info = StreamInfo('IMP_'+time.strftime("%d_%m_%Y_%H_%M_%S"), 'EEG', 8, 250, 'float32', 'IMP_'+time.strftime("%d_%m_%Y_%H_%M_%S"))
+        self.imp_info = StreamInfo('IMP_'+time.strftime("%d_%m_%Y_%H_%M_%S_")+str(portno), 'EEG', 8, 250, 'float32', 'IMP_'+time.strftime("%d_%m_%Y_%H_%M_%S"))
         self.imp_outlet = StreamOutlet(self.imp_info)
             
         self.SysParams = {'vcc':None,

@@ -11,19 +11,21 @@ import subprocess # NOTE: we use Windows-specific command 'netsh' commands
 class ApConnection:
     
     def __init__(self):
-        ''' ApConnection Class Initialization routine'''
+        ''' 
+        ApConnection Class Initialization routine'''
         self.interfaces = str()
         self.networks = str()
         self.ApIsAvailable = False
         self.ApConnected = False
         self.associated = False
-    
+        self.network_keyword = "AptNoSix"
+        
     def read_network_card(self):
         ''' Populate available interfaces and networks, then check to see if 
             AlphaScan access point is available and/or connected.'''
         self.interfaces = subprocess.check_output(["netsh","wlan","show","interfaces"])
         self.networks = subprocess.check_output(["netsh","wlan","show","networks"])
-        self.ApIsAvailable = ('AlphaScanAP' in self.networks)
+        self.ApIsAvailable = (self.network_keyword in self.networks)
         self.ApConnected = self.ap_connection_status(self.interfaces)
 
     def ap_connection_status(self,i):
@@ -40,7 +42,7 @@ class ApConnection:
         associated = False
         for e in n:
             if 'SSID' in e[0]:
-                if 'AlphaScanAP' in e[1]:
+                if self.network_keyword in e[1]:
                     associated = True
             if 'State' in e[0]:
                 if 'connected' in e[1]:
@@ -54,7 +56,7 @@ class ApConnection:
         ''' If the AP is available but not connected, connect to it. '''
         # TODO trouble shoot if profile not currently available - researsh says not possible...
         if self.ApIsAvailable and not self.ApConnected:
-            r = subprocess.check_output(["netsh","wlan","connect","name=AlphaScanAP"])
+            r = subprocess.check_output(["netsh","wlan","connect","name="+self.network_keyword])
             if 'successfully' in r:
                 return True
             else:
@@ -71,7 +73,7 @@ class ApConnection:
             
     def query_ap(self,query_text):
         ''' Send arbitrary query text to ap '''
-        #TODO make these requests non blocking or short timeout
+        #TODO make this request to a connected tcp socket, not a http server.
         try:
             r = requests.get("http://192.168.4.1/"+query_text, timeout=4.0)
             return r.text
