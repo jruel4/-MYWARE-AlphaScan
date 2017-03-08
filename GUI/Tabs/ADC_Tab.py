@@ -176,6 +176,13 @@ class ADC_REG_TAB( QWidget):
         
         #TODO fill in local reg map
         # set all check boxes to match RegMap
+        '''
+        TODO fix this error
+  File "C:\Users\marzipan\workspace\AlphaScan\GUI\Tabs\ADC_Tab.py", line 181, in pull_registers_from_ads
+    if self.ADC_RegMap[i][j]:
+
+IndexError: string index out of range
+'''
         for i in range(len(self.rowDict)):
             for j in range(8):
                 if self.ADC_RegMap[i][j]:
