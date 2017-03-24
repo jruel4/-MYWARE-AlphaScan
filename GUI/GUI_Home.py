@@ -11,8 +11,7 @@ Created on Mon Jan 25 16:42:21 2016
 ###############################################################################
 
 from PySide.QtCore import *
-from PySide.QtGui import *
-#import qdarkstyle 
+from PySide.QtGui import * 
 import sys
 import time
 
@@ -23,6 +22,7 @@ from PWR_Tab import PWR_REG_TAB
 from AP_Tab import AP_TAB
 from FS_Tab import FS_TAB
 from SYS_Tab import SYS_TAB
+from VIZ_Tab import VIZ_TAB
 
 from DeviceCluster import DeviceCluster
 
@@ -69,6 +69,7 @@ class AlphaScanGui(QWidget):
         self.adcTab = ADC_REG_TAB(self._Device, self.DebugConsole)
         self.pwrTab = PWR_REG_TAB(self._Device, self.DebugConsole)
         self.acclTab = ACCEL_REG_TAB(self._Device, self.DebugConsole)
+        self.vizTab = VIZ_TAB(self._Device, self.DebugConsole)
         
         # Create tabs with objects
         tabWidget.addTab(self.genTab, "General")
@@ -78,6 +79,10 @@ class AlphaScanGui(QWidget):
         tabWidget.addTab(self.adcTab, "ADC")
         tabWidget.addTab(self.pwrTab, "Power")
         tabWidget.addTab(self.acclTab, "Accel") 
+        tabWidget.addTab(self.vizTab, "Graph")
+
+        # Connect tab change event to handler        
+        tabWidget.currentChanged.connect(self.onTabChange) #changed!
 
         self.setWindowTitle("AlphaScan Controller")
         
@@ -104,6 +109,14 @@ class AlphaScanGui(QWidget):
         else:
             self.ConnectionStatus.setText("Not Connected")
         
+    @Slot() 
+    def onTabChange(self,i): #changed!
+        #TODO send signal to VIZ_Tab to start/stop plotting
+        if (i == 7): #TODO make this not hard coded!
+            self.vizTab.start_plotting()
+        else:
+            self.vizTab.stop_plotting()
+                  
     def closeEvent(self, event):
         self._Device.close_event()
         event.accept()

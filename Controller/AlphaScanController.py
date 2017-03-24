@@ -519,7 +519,7 @@ class AlphaScanDevice:
         self.DEV_streamActive.set()  
         self.FEEDER_THREAD = Thread(target=self.lsl_feeder_thread)
         self.FEEDER_THREAD.start()
-        if True: #TODO add imp calc var
+        if False: #TODO add imp calc var
             self.IMP_THREAD = Thread(target=self.imp_thread)
             self.IMP_THREAD.start()
         # Send command to being 
@@ -946,14 +946,14 @@ class AlphaScanDevice:
             
     def lsl_feeder_thread(self):
         self.t_data = list()
-        time.sleep(0.300)
+        time.sleep(0.500) # was at 0.300
         while self.DEV_streamActive.is_set():    
             d = self.fifo_queue.get()
             self.fifo_queue_imp.put(list(d)) # for imp thread
             self.outlet.push_sample(d)
             self.t_data += [d]
             self.local_qsize += [self.fifo_queue.qsize()]
-            time.sleep(0.004)
+            time.sleep(0.004) # was 0.004
             
     def get_ch_impedance(self,ch=4):
         # data to np
