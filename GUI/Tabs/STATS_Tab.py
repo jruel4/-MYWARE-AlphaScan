@@ -2,9 +2,21 @@
 
 from PySide.QtCore import *
 from PySide.QtGui import *
+from pylsl import  StreamInlet, resolve_stream, StreamInfo, StreamOutlet
+from collections import deque
+from threading import Thread
+import numpy as np
+from stats import rms
 
 
 class STATS_TAB(QWidget):
+    '''
+    The question is, which stream do I want to grab statistics from? Well 
+    for starters we can assume that a) the LSL stream is a time series and that 
+    b) it will only be feeding us 1 sample at a time at 250sps. therefor we 
+    probably want to implement a buffer local to the statistic module that samples 
+    the desired stream and calculates statistics on that time series on demand
+    '''
     
     SIG_reserve_tcp_buffer = Signal()
     
@@ -23,6 +35,8 @@ class STATS_TAB(QWidget):
         self.layout = QGridLayout()
         self.setLayout(self.layout) # Does it matter when I do this?
         
+        self.stat_labels = ['rms', 'min', 'max', 'avg', 'std']
+        
         # Set layout formatting
         self.layout.setAlignment(Qt.AlignTop)
         #TODO self.layout.setColumnStretch(3,1)
@@ -31,109 +45,46 @@ class STATS_TAB(QWidget):
         # Display system parameters
         #######################################################################
         
-        self.Text_Vcc = QLabel("VCC: ")
-        self.Text_FreeHeap = QLabel("Free Heap: ")
-        self.Text_ChipId = QLabel("Chip ID: ")
-        self.Text_SdkVer = QLabel("SDK Version: ")
-        self.Text_BootVer = QLabel("Boot Version: ")
-        self.Text_BootMode = QLabel("Boot Mode: ")
-        self.Text_CpuFreq = QLabel("CPU Frequency (MHz): ")
-        self.Text_FlashChipId = QLabel("Flash Chip ID: ")
-        self.Text_FlashChipRealSize = QLabel("Flash Chip Real Size: ")
-        self.Text_FlashChipSpeed = QLabel("Flash Chip Speed: ")
-        self.Text_FlashChipMode = QLabel("Flash Chip Mode: ")
-        self.Text_FlashChipSize = QLabel("Flash Chip Size: ")
-        self.Text_FreeSketchSpace = QLabel("Free Sketch Space: ")
-        
-        self.Text_VccVAL = QLabel("")
-        self.Text_FreeHeapVAL = QLabel("")
-        self.Text_ChipIdVAL = QLabel("")
-        self.Text_SdkVerVAL = QLabel("")
-        self.Text_BootVerVAL = QLabel("")
-        self.Text_BootModeVAL = QLabel("")
-        self.Text_CpuFreqVAL = QLabel("")
-        self.Text_FlashChipIdVAL = QLabel("")
-        self.Text_FlashChipRealSizeVAL = QLabel("")
-        self.Text_FlashChipSpeedVAL = QLabel("")
-        self.Text_FlashChipModeVAL = QLabel("")
-        self.Text_FlashChipSizeVAL = QLabel("")
-        self.Text_FreeSketchSpaceVAL = QLabel("")
-        
-        self.layout.addWidget(self.Text_Vcc, 0, 0)
-        self.layout.addWidget(self.Text_FreeHeap, 1, 0)
-        self.layout.addWidget(self.Text_ChipId, 2, 0)
-        self.layout.addWidget(self.Text_SdkVer, 3, 0)
-        self.layout.addWidget(self.Text_BootVer, 4, 0)
-        self.layout.addWidget(self.Text_BootMode, 5, 0)
-        self.layout.addWidget(self.Text_CpuFreq, 6, 0)
-        self.layout.addWidget(self.Text_FlashChipId, 7, 0)
-        self.layout.addWidget(self.Text_FlashChipRealSize, 8, 0)
-        self.layout.addWidget(self.Text_FlashChipSpeed, 9, 0)
-        self.layout.addWidget(self.Text_FlashChipMode, 10, 0)
-        self.layout.addWidget(self.Text_FlashChipSize, 11, 0)
-        self.layout.addWidget(self.Text_FreeSketchSpace, 12, 0)
-        
-        self.layout.addWidget(self.Text_VccVAL, 0, 1)
-        self.layout.addWidget(self.Text_FreeHeapVAL, 1, 1)
-        self.layout.addWidget(self.Text_ChipIdVAL, 2, 1)
-        self.layout.addWidget(self.Text_SdkVerVAL, 3, 1)
-        self.layout.addWidget(self.Text_BootVerVAL, 4, 1)
-        self.layout.addWidget(self.Text_BootModeVAL, 5, 1)
-        self.layout.addWidget(self.Text_CpuFreqVAL, 6, 1)
-        self.layout.addWidget(self.Text_FlashChipIdVAL, 7, 1)
-        self.layout.addWidget(self.Text_FlashChipRealSizeVAL, 8, 1)
-        self.layout.addWidget(self.Text_FlashChipSpeedVAL, 9, 1)
-        self.layout.addWidget(self.Text_FlashChipModeVAL, 10, 1)
-        self.layout.addWidget(self.Text_FlashChipSizeVAL, 11, 1)
-        self.layout.addWidget(self.Text_FreeSketchSpaceVAL, 12, 1)
-        
+        self.stat_val_dict = {}
+        for idx,s in enumerate(self.stat_labels):
+            self.stat_val_dict[s] = QLabel("")
+            self.layout.addWidget(QLabel(s.upper()+": "), idx+1, 0)
+            self.layout.addWidget(self.stat_val_dict[s], idx+1, 1)
+ 
         # Stream selection
         self.Options_StreamSelect = QComboBox()
-        self.Options_StreamSelect.insertItems(0, ['one','two','three'])
+        self.Options_StreamSelect.insertItem(0, "Select LSL Stream")
+        self.Options_StreamSelect.insertItems(1, self.get_stream_names())
         self.Options_StreamSelect.currentIndexChanged.connect(self.stream_changed)
-        self.layout.addWidget(self.Options_StreamSelect, 13,1)
+        self.layout.addWidget(self.Options_StreamSelect, 0,0)
+        
+        # chan selection
+        self.Options_ChanSelect = QComboBox()
+        self.Options_ChanSelect.insertItem(0, "Select Channel")
+        self.Options_ChanSelect.insertItems(1, [str(i+1) for i in range(8)])
+        self.layout.addWidget(self.Options_ChanSelect, 0,2)
         
         
         #######################################################################
         # Add control buttons
         #######################################################################
         
-        self.Button_RequestSysParams = QPushButton("Request System MCU Parameters")
-        self.Button_RefreshDisplay = QPushButton("Refresh Displayed Paramters")
-        
-        self.layout.addWidget(self.Button_RequestSysParams, 13, 0)
-        self.layout.addWidget(self.Button_RefreshDisplay, 14, 0)
-        
-        self.Button_RequestSysParams.clicked.connect(self.request_sys_params)
+        self.Button_RefreshDisplay = QPushButton("Refresh Displayed Parameters")
+        self.layout.addWidget(self.Button_RefreshDisplay, 0, 1)
         self.Button_RefreshDisplay.clicked.connect(self.refresh_display)
         
-    @Slot()
-    def request_sys_params(self):
-        # Disable auto-connect as it interferes with param retrieval
-        self.SIG_reserve_tcp_buffer.emit()
-        # Execute device command
-        r = self._Device.generic_tcp_command_BYTE("GEN_get_sys_params")
-        msg = QMessageBox()
-        msg.setText(r)
-        msg.exec_()
-        #TODO maybe add 1 second interval display, or add tcp size check update loop?  
+        # Stream control variables
+        self.selected_stream = None
+        self.buf = deque(maxlen=(250*10))
     
     @Slot()
     def refresh_display(self):
-        if self._Device.parse_sys_commands():
-            self.Text_VccVAL.setText(self._Device.SysParams["vcc"])
-            self.Text_FreeHeapVAL.setText(self._Device.SysParams["free_heap"])
-            self.Text_ChipIdVAL.setText(self._Device.SysParams["mcu_chip_id"])
-            self.Text_SdkVerVAL.setText(self._Device.SysParams["sdk_ver"])
-            self.Text_BootVerVAL.setText(self._Device.SysParams["boot_ver"]) 
-            self.Text_BootModeVAL.setText(self._Device.SysParams["boot_mode"]) 
-            self.Text_CpuFreqVAL.setText(self._Device.SysParams["cpu_freq_mhz"])
-            self.Text_FlashChipIdVAL.setText(self._Device.SysParams["flash_chip_id"])
-            self.Text_FlashChipRealSizeVAL.setText(self._Device.SysParams["flash_chip_real_size"])
-            self.Text_FlashChipSpeedVAL.setText(self._Device.SysParams["flash_chip_speed"])
-            self.Text_FlashChipModeVAL.setText(self._Device.SysParams["flash_chip_mode"])
-            self.Text_FlashChipSizeVAL.setText(self._Device.SysParams["flash_chip_size"])
-            self.Text_FreeSketchSpaceVAL.setText(self._Device.SysParams["free_sketch_space"])
+        if True:
+            self.stat_val_dict['rms'].setText(str(rms(self.buf)))
+            self.stat_val_dict['min'].setText(str(np.min(self.buf)))
+            self.stat_val_dict['max'].setText(str(np.max(self.buf)))
+            self.stat_val_dict['avg'].setText(str(np.mean(self.buf)))
+            self.stat_val_dict['std'].setText(str(np.std(self.buf)))
         else:
             msg = QMessageBox()
             msg.setText("Did not find complete response in buffer")
@@ -142,8 +93,26 @@ class STATS_TAB(QWidget):
     @Slot()
     def stream_changed(self, idx):
         self._Debug.append("Stream set: "+str(idx))
-        
+        self.selected_stream = idx-1
 
+        # Setup stream and launch collection thread w/ qTimer     
+        self.inlet = StreamInlet(self.streams[int(self.selected_stream)])  
+        _thread = Thread(target=self.acquisition_thread)
+        _thread.start()
+        
+        
+    def get_step_size(self, gain=24.0):
+        return 5.0/2**24/gain
+        
+    def get_stream_names(self):
+        self.streams = resolve_stream('type', 'EEG')
+        return [s.name() for s in self.streams]
+        
+    def acquisition_thread(self):
+        step = self.get_step_size()
+        while(True):
+            data,_ = self.inlet.pull_sample()
+            self.buf.append(data[self.Options_ChanSelect.currentIndex()-1]*step)
 
 
 
