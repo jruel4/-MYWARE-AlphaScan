@@ -23,6 +23,7 @@ from AP_Tab import AP_TAB
 from FS_Tab import FS_TAB
 from SYS_Tab import SYS_TAB
 from VIZ_Tab import VIZ_TAB
+from STATS_Tab import STATS_TAB
 
 from DeviceCluster import DeviceCluster
 
@@ -70,6 +71,7 @@ class AlphaScanGui(QWidget):
         self.pwrTab = PWR_REG_TAB(self._Device, self.DebugConsole)
         self.acclTab = ACCEL_REG_TAB(self._Device, self.DebugConsole)
         self.vizTab = VIZ_TAB(self._Device, self.DebugConsole)
+        self.statsTab = STATS_TAB(self._Device, self.DebugConsole)
         
         # Create tabs with objects
         tabWidget.addTab(self.genTab, "General")
@@ -80,6 +82,7 @@ class AlphaScanGui(QWidget):
         tabWidget.addTab(self.pwrTab, "Power")
         tabWidget.addTab(self.acclTab, "Accel") 
         tabWidget.addTab(self.vizTab, "Graph")
+        tabWidget.addTab(self.statsTab, "Stats")
 
         # Connect tab change event to handler        
         tabWidget.currentChanged.connect(self.onTabChange) #changed!

@@ -77,8 +77,11 @@ new_data = np.zeros_like(new_data)
 
 new_datas = [np.zeros_like(new_data) for i in range(8)]
 
+cmin = 0
+cmax = 1
+
 def update():
-    global inlet, new_data, spec, sample
+    global inlet, new_data, spec, sample, cmin, cmax
 
     begin = time.time()    
     jdx = 0
@@ -87,7 +90,8 @@ def update():
 
         jdx += 1
         if jdx % 60 == 0:
-            print("fps: ",jdx/(time.time()-begin))
+            pass            
+            #print("fps: ",jdx/(time.time()-begin))
         
         sample, timestamp = inlet.pull_sample()
         sample = np.asarray(sample)
