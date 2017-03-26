@@ -93,7 +93,7 @@ class AlphaScanGui(QWidget):
         # Create periodic timer for updating streaming and connection status
         self.timer = QTimer()
         self.timer.timeout.connect(self.update)
-        self.timer.start(100)
+        self.timer.start(100) # interval in milliseconds...
         
         # Lock app width
         self.setFixedWidth(self.geometry().width())
