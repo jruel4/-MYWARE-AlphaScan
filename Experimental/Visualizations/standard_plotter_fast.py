@@ -1,15 +1,15 @@
 # -*- coding: utf-8 -*-
 """
-Created on Sat Mar 25 05:57:50 2017
+Created on Mon Mar 27 19:16:36 2017
 
 @author: marzipan
 """
-
 import numpy as np
 from vispy import plot as vp
 from vispy import app
 from pylsl import StreamInlet, resolve_stream
 import time
+from threading import Thread
 
 streams = list()
 def select_stream():
@@ -60,14 +60,7 @@ def update_plot(event):
         print("fps: ",idx/(time.time()-begin))
    
     try:
-        #time.sleep(0) #yield 
-        sample, timestamp = inlet.pull_sample()
-        #print(sample[0])
-        new_samples = np.asarray(sample)
-        k = 1
-        y[:, :-k] = y[:, k:]
-        y[:, -k:] = new_samples[:,None]     
-        
+
         #normalize 
         ymax = y.max()
         if ymax > 0:
@@ -85,11 +78,27 @@ def update_plot(event):
         if 'EventEmitter loop detected' in err.args[0]: #TODO handle this correctly
             pass
 
+def update_data():
+    global y,inlet
+    while True:
+        #time.sleep(0) #yield 
+        sample, timestamp = inlet.pull_sample()
+        #print(sample[0])
+        new_samples = np.asarray(sample)
+        k = 1
+        y[:, :-k] = y[:, k:]
+        y[:, -k:] = new_samples[:,None]     
+    
+    
+
 timer = app.Timer()
 timer.connect(update_plot)
-timer.start(1.0/ 200)
+timer.start(1.0/200)
 
 if __name__ == '__main__':
     fig.show(run=True)
+    
+    thread = Thread(target=update_data)
+    thread.start()
 
     
