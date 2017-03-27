@@ -1,22 +1,15 @@
 # -*- coding: utf-8 -*-
 """
-Created on Fri Mar 24 06:45:35 2017
+Created on Fri Mar 24 15:17:49 2017
 
 @author: marzipan
 """
 
-# -*- coding: utf-8 -*-
-# Copyright (c) 2015, Vispy Development Team.
-# Distributed under the (new) BSD License. See LICENSE.txt for more info.
-# vispy: gallery 1
-"""
-A spectrogram and waveform plot of 1D data.
-"""
-
 import numpy as np
-from threading import Thread
 from vispy import plot as vp
+from vispy import app
 from pylsl import StreamInlet, resolve_stream
+
 
 streams = list()
 def select_stream():
@@ -31,26 +24,100 @@ inlet = select_stream()
 #sample, timestamp = inlet.pull_sample()
 
 fs=250
-fig = vp.Fig(size=(800, 400), show=False)
-spec = fig[0,0].spectrogram(np.zeros((256*600)), fs=fs, clim=(0, 8))
+fig = vp.Fig(show=False)
 
-new_data = spec._data
+'''
+_colormaps = dict(
+    # Some colormap presets
+    autumn=Colormap([(1., 0., 0., 1.), (1., 1., 0., 1.)]),
+    blues=Colormap([(1., 1., 1., 1.), (0., 0., 1., 1.)]),
+    cool=Colormap([(0., 1., 1., 1.), (1., 0., 1., 1.)]),
+    greens=Colormap([(1., 1., 1., 1.), (0., 1., 0., 1.)]),
+    reds=Colormap([(1., 1., 1., 1.), (1., 0., 0., 1.)]),
+    spring=Colormap([(1., 0., 1., 1.), (1., 1., 0., 1.)]),
+    summer=Colormap([(0., .5, .4, 1.), (1., 1., .4, 1.)]),
+    fire=_Fire(),
+    grays=_Grays(),
+    hot=_Hot(),
+    ice=_Ice(),
+    winter=_Winter(),
+    light_blues=_SingleHue(),
+    orange=_SingleHue(hue=35),
+    viridis=Colormap(ColorArray(_viridis_data[::2])),
+    # Diverging presets
+    coolwarm=Colormap(ColorArray(
+        [
+            (226, 0.59, 0.92), (222, 0.44, 0.99), (218, 0.26, 0.97),
+            (30, 0.01, 0.87),
+            (20, 0.3, 0.96), (15, 0.5, 0.95), (8, 0.66, 0.86)
+        ],
+        color_space="hsv"
+    )),
+    PuGr=_Diverging(145, 280, 0.85, 0.30),
+    GrBu=_Diverging(255, 133, 0.75, 0.6),
+    GrBu_d=_Diverging(255, 133, 0.75, 0.6, "dark"),
+    RdBu=_Diverging(220, 20, 0.75, 0.5),
+
+    # Configurable colormaps
+    cubehelix=CubeHelixColormap,
+    single_hue=_SingleHue,
+    hsl=_HSL,
+    husl=_HUSL,
+    diverging=_Diverging
+)
+'''
+
+spec = list()
+for r in range(1):
+    for c in range(1):        
+        spec += [fig[r,c].spectrogram(np.zeros((256*200)), fs=fs, clim=(0, 1), cmap='fire')]
+
+new_data = spec[0]._data
 new_data = np.zeros_like(new_data)
 
-def update():
-    global inlet, new_data, spec, sample
-    while True:
-        sample, timestamp = inlet.pull_sample()
-        sample = np.asarray(sample)
-        sample = sample.reshape((129,8))
-        ch1_samples = sample[:,5]
+new_datas = [np.zeros_like(new_data) for i in range(1)]
+
+cmin = 0
+cmax = 1
+
+chan_sel = 0
+freq_sel = (0,128)
+
+def update_plot(event):
+    global inlet, new_data, spec, sample, cmin, cmax, chan_sel
+
+    sample, timestamp = inlet.pull_sample()
+    sample = np.asarray(sample)
+    sample = sample.reshape((129,8))
+    for idx in range(1):
+        ch_samples = sample[:,chan_sel]
         k = 1
-        new_data[:, :-k] = new_data[:, k:]
-        new_data[:, -k:] = ch1_samples[:,None]
-        spec.set_data(new_data)
-        spec.update()
+        new_datas[idx][:, :-k] = new_datas[idx][:, k:]
+        new_datas[idx][:, -k:] = ch_samples[:,None]
+        
+        #frequency 'zoom'
+        for f in range(129):
+            if f >= freq_sel[0] and f <= freq_sel[1]:
+                pass
+            else:
+                new_datas[idx][f,:] = 0.0
+        
+        #normalize
+        d = new_datas[idx]/new_datas[idx].max()
+        spec[idx].set_data(d)
+        
+    fig.update()
+
+timer = app.Timer()
+timer.connect(update_plot)
+timer.start(0.016)
 
 if __name__ == '__main__':
     fig.show(run=True)
-    thread = Thread(target=update)
-    thread.start()
+#==============================================================================
+#     thread = Thread(target=update)
+#     thread.start()
+#==============================================================================
+    
+    
+    

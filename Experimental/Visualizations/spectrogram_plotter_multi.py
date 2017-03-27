@@ -6,10 +6,10 @@ Created on Fri Mar 24 15:17:49 2017
 """
 
 import numpy as np
-from threading import Thread 
 from vispy import plot as vp
+from vispy import app
 from pylsl import StreamInlet, resolve_stream
-import time
+
 
 streams = list()
 def select_stream():
@@ -80,38 +80,36 @@ new_datas = [np.zeros_like(new_data) for i in range(8)]
 cmin = 0
 cmax = 1
 
-def update():
+
+
+def update_plot(event):
     global inlet, new_data, spec, sample, cmin, cmax
 
-    begin = time.time()    
-    jdx = 0
+
     
-    while True:
-
-        jdx += 1
-        if jdx % 60 == 0:
-            pass            
-            #print("fps: ",jdx/(time.time()-begin))
+    sample, timestamp = inlet.pull_sample()
+    sample = np.asarray(sample)
+    sample = sample.reshape((129,8))
+    for idx in range(8):
+        ch_samples = sample[:,idx]
+        k = 1
+        new_datas[idx][:, :-k] = new_datas[idx][:, k:]
+        new_datas[idx][:, -k:] = ch_samples[:,None]
         
-        sample, timestamp = inlet.pull_sample()
-        sample = np.asarray(sample)
-        sample = sample.reshape((129,8))
-        for idx in range(8):
-            ch_samples = sample[:,idx]
-            k = 1
-            new_datas[idx][:, :-k] = new_datas[idx][:, k:]
-            new_datas[idx][:, -k:] = ch_samples[:,None]
-            
-            #normalize
-            d = new_datas[idx]/new_datas[idx].max()
-            spec[idx].set_data(d)
+        #normalize
+        d = new_datas[idx]/new_datas[idx].max()
+        spec[idx].set_data(d)
 
-        fig.update()
+timer = app.Timer()
+timer.connect(update_plot)
+timer.start(0.016)
 
 if __name__ == '__main__':
     fig.show(run=True)
-    thread = Thread(target=update)
-    thread.start()
+#==============================================================================
+#     thread = Thread(target=update)
+#     thread.start()
+#==============================================================================
     
     
     
