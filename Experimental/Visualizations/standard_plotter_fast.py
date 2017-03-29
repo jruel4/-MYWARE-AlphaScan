@@ -57,7 +57,8 @@ def update_plot(event):
     if idx==0: begin = time.time()
     idx+=1
     if idx %100 == 0:
-        print("fps: ",idx/(time.time()-begin))
+        #print("fps: ",idx/(time.time()-begin))
+        pass
    
     try:
 
@@ -101,4 +102,5 @@ if __name__ == '__main__':
     thread = Thread(target=update_data)
     thread.start()
 
-    
+# TODo consider self._timer = app.Timer(1.0/250.0, connect=self.on_timer, start=True)
+# overriding internal as in scalable plotter for fater plotting...    
