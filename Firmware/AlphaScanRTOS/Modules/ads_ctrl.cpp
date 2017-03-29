@@ -22,7 +22,7 @@
 
 //NOTE: VARIABLES
 //Queue size for interrupt->host communication, recommended at least 100; note, the actual size is 100*(sizeof(inADS))
-#define SAMPLE_QUEUE_SIZE 750
+#define SAMPLE_QUEUE_SIZE 250
 
 #define DBG 1
 

@@ -13,7 +13,7 @@
 #include "esp_spiffs.h"
 #include "spiffs.h"
 
-#define FIRMARE_VERSION "0.0.16"
+#define FIRMARE_VERSION "0.0.18"
 
 class AlphaScanManager : public esp_open_rtos::thread::task_t
 {

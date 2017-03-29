@@ -13,6 +13,7 @@
 #include "lwip/dns.h"
 #include "lwip/memp.h"
 #include "lwip/stats.h"
+#include "ssid_config.h"
 #include "ipv4/lwip/ip_addr.h"
 #include <algorithm>
 #include "ads_ctrl.cpp"
@@ -374,6 +375,10 @@ class HostCommManager {
 
             struct sdk_station_config config;
 
+            //pass_len = strlen(WIFI_PASS)+1;
+            //ssid_len = strlen(WIFI_SSID)+1;
+            //memcpy(config.ssid, WIFI_SSID, ssid_len);
+            //memcpy(config.password, WIFI_PASS, pass_len);
             memcpy(config.ssid, ssid, ssid_len+1);
             memcpy(config.password, pass, pass_len+1);
 
@@ -381,7 +386,7 @@ class HostCommManager {
             printf("Attempting to connect with ssid: %s, sz: %d, pass: %s, sz: %d\n", config.ssid, ssid_len, config.password, pass_len);
             sdk_wifi_set_opmode(STATION_MODE);
             sdk_wifi_station_set_config(&config);
-            sdk_wifi_station_connect();
+            //sdk_wifi_station_connect();
             return 0;
         }
 
@@ -503,10 +508,13 @@ class HostCommManager {
 
                     // If new data in local buf, send it
                     if (!local_buf_acked) {
-                        if (sendto(s, outbuf, pkt_size, 0, res.ai_addr, res.ai_addrlen ) < 0) {
-                            printf("... socket send failed\r\n");
+                        int err = sendto(s, outbuf, pkt_size, 0, res.ai_addr, res.ai_addrlen );
+                        if (err < 0) {
+                            inWaiting = ads->getQueueSize();
+                            heapSize = xPortGetFreeHeapSize();
+                            printf("... socket send failed with err: %d, queue size: %d, heap: %d\n",err, inWaiting, heapSize);
                             close(s);
-                            break;
+                            return;
                         }
                     }
 
