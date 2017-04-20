@@ -103,8 +103,9 @@ def update_plot(event):
                 new_datas[idx][f,:] = 0.0
         
         #normalize
-        d = new_datas[idx]/new_datas[idx].max()
+        d = new_datas[idx]#/new_datas[idx].max()
         spec[idx].set_data(d)
+        spec[idx].clim = (cmin,cmax)
         
     fig.update()
 

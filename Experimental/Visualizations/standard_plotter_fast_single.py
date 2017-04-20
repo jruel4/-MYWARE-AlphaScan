@@ -53,8 +53,9 @@ fig[0, 0].view.add(grid)
 
 idx = 0
 begin = time.time()
+ch_sel = 0
 def update_plot(event):
-    global lines,y,fig,colors,idx,begin
+    global lines,y,fig,colors,idx,begin,ch_sel
     if idx==0: begin = time.time()
     idx+=1
     if idx %100 == 0:
@@ -73,7 +74,7 @@ def update_plot(event):
 #==============================================================================
         
         for i,line in enumerate(lines):
-            line.set_data(y[i,:]+i, color=colors[i])
+            line.set_data(y[ch_sel,:]+i, color=colors[i])
 
         fig.update()
 
