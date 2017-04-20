@@ -7,6 +7,8 @@ Created on Mon Feb 01 18:54:23 2016
 
 import requests
 import subprocess # NOTE: we use Windows-specific command 'netsh' commands
+import socket
+import time
 
 class ApConnection:
     
@@ -18,7 +20,7 @@ class ApConnection:
         self.ApIsAvailable = False
         self.ApConnected = False
         self.associated = False
-        self.network_keyword = "AptNoSix"
+        self.network_keyword = "esp-open-rtos AP 2"
         
     def read_network_card(self):
         ''' Populate available interfaces and networks, then check to see if 
@@ -81,24 +83,33 @@ class ApConnection:
             return "timed out"
         except:
             return "unknown exception"
+            
+    def init_TCP(self):
+        s = socket.socket(socket.AF_INET,socket.SOCK_STREAM) 
+        s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        s.bind(('', 50007))
+        s.settimeout(2)
+        s.listen(10)        
+        time.sleep(0.5)
+        self.conn,self.dev_addr = s.accept()
+        return self.dev_addr
+            
+    def send_net_params(self, ip, ssid, password):
+        self.conn.send("ssid_key::"+ssid+"* ,\
+                   pass_key::"+password+"* ,\
+                   ip_key::"+ip+"* ,\
+                   port_key::50007* ,")
 
-# Test Driver
 #==============================================================================
+# # Test Driver
 # conn = ApConnection()
 # conn.read_network_card()
+# conn.connect_to_ap()
 # print("connected:        "+str(conn.ApConnected))
 # print("available:        "+str(conn.ApIsAvailable))
-# print("connection valid: "+str(conn.test_ap_connection()))
-# conn.query_ap('host_ip_192.168.1.8_endhost_ip')
-# conn.query_ap('pass_BSJKMVQ6LF2XH6BJ_endpass')
-# conn.query_ap('ssid_PHSL2_endssid')
-# conn.query_ap('GO')
+# conn.init_TCP()
+# conn.send_net_params()
 #==============================================================================
 
-#   4) Data to exchange with alpha scan:
-#       - network SSID
-#       - network passkey
-#       - host IP
-#       - Optional: TCP port and UDP port
-#   5) Note: if time consider alive/heartbeat protocol
+
 

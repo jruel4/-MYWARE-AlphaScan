@@ -8,6 +8,7 @@ Created on Fri Feb 05 14:05:09 2016
 from PySide.QtCore import *
 from PySide.QtGui import *
 from ApConnect import ApConnection
+import time
 
 class AP_TAB(QWidget):
     
@@ -56,7 +57,7 @@ class AP_TAB(QWidget):
         self.layout.addWidget(self.Button_SendHostIP, 3, 1)
         
         # create SSID
-        self.Line_SSID = QLineEdit("PHSL2")
+        self.Line_SSID = QLineEdit("MartianWearablesLLC")
         self.Button_SendSSID = QPushButton("Send SSID")
         self.Button_SendSSID.clicked.connect(self.send_ssid)
         
@@ -64,7 +65,7 @@ class AP_TAB(QWidget):
         self.layout.addWidget(self.Button_SendSSID, 4, 1)
         
         #create password
-        self.Line_PASSWORD = QLineEdit("BSJKMVQ6LF2XH6BJ")
+        self.Line_PASSWORD = QLineEdit("phobicbird712")
         self.Button_SendPASSWORD = QPushButton("Send Password")
         self.Button_SendPASSWORD.clicked.connect(self.send_password)
         
@@ -73,18 +74,29 @@ class AP_TAB(QWidget):
         
         # TODO create GO button
         self.Button_FinalizeParams = QPushButton("Finalize Configuration")
-        self.layout.addWidget(self.Button_FinalizeParams)
+        self.layout.addWidget(self.Button_FinalizeParams, 7,0)
         self.Button_FinalizeParams.clicked.connect(self.finalize_params)
+        
+         # create connect text
+        self.Text_ApConnect = QLabel("AP not connected")
+        self.layout.addWidget(self.Text_ApConnect, 6, 0)
+        
+        # Button to connect (only use if available)
+        self.Button_Connect = QPushButton("Connect to AP")
+        self.layout.addWidget(self.Button_Connect, 6, 1, 2, 1)
+        self.Button_Connect.clicked.connect(self.connect_to_ap)
         
     @Slot()
     def finalize_params(self):
-        if not self.check_availability(): return
-        r = self.conn.query_ap('finalize_params')
+
+        r = self.conn.init_TCP()
+        time.sleep(0.5)
+        r = self.conn.send_net_params(self.Line_HostIP.text(),
+                                      self.Line_SSID.text(),
+                                      self.Line_PASSWORD.text())
+        
         msgBox = QMessageBox()
-        if 'finalized' in r:
-            msgBox.setText("SUCCESS")
-        else:
-            msgBox.setText("failure")
+        msgBox.setText(r)
         msgBox.exec_()
         
     @Slot()
@@ -153,6 +165,16 @@ class AP_TAB(QWidget):
         r = self.conn.query_ap('pass_'+self.Line_PASSWORD.text()+'_endpass')
         msgBox = QMessageBox()
         if 'pass' in r:
+            msgBox.setText("SUCCESS")
+        else:
+            msgBox.setText("failure")
+        msgBox.exec_()
+        
+    @Slot()
+    def connect_to_ap(self):
+        r = self.conn.connect_to_ap()
+        msgBox = QMessageBox()
+        if r:
             msgBox.setText("SUCCESS")
         else:
             msgBox.setText("failure")
