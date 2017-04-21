@@ -7,92 +7,59 @@ Created on Thu Apr 20 21:28:51 2017
 
 import pymongo
 import gridfs
-
-# Connect
-uri = "mongodb://martin:pass1@74.79.252.194:27017/test_database"
-client = pymongo.MongoClient(uri)
-db = client.get_database('test_database')
-
-fs = gridfs.GridFS(db)
-metadata = {"user": "martin",
-            "name": "arbitrary file name",
-            "channels": "0z,cz,fz",
-            "type": "EEG"}
-a = fs.put(b"hello world", name="Test File Name", **metadata)
-fs.get(a).read()
-
-fname = u'C:\\Users\\MartianMartin\\Desktop\\xdf-master\\xdf-master\\xdf_sample.xdf'
-xdfd = open(fname,'rb').read()
-b = fs.put(xdfd, **metadata)
-ret = fs.get(b).read()
-
-'''
-# Given the Object ID from the RoboMongo Viewer do :
->>> oid = ObjectId('58f77f348dc048108a587040')
->>> ret = fs.get(oid).read()
-# Then dump to xdf
-new_file = open("new_file.xdf","wb")
-new_file.write(ret)
-new_fil.close()
-'''
-
-# Create collection
-collection_name = 'test_collection_2'
-coll = db.get_collection(collection_name)
-
-print(coll.find_one())
-
-# Insert document
-import datetime
-post = {"author": "Mike",
-         "text": "My first blog post!",
-         "tags": ["mongodb", "python", "pymongo"],
-         "date": datetime.datetime.utcnow()}
-
-post_id = coll.insert_one(post).inserted_id
-
-# Create test eeg data
-import random
-srate = 250
-duration = 60 * 10 # seconds
-N = srate * duration
-data_large = [random.random() for i in range(N)]
-data_small = [i for i in range(10)]
-
-# Insert small
-eeg_post = {'type': "EEG",
-        'data': data_small,
-        'user': 'martin',
-        'timestamp': datetime.datetime.utcnow(),
-}
-        
-post_id = coll.insert_one(eeg_post).inserted_id
-
-# Insert large
-eeg_post = {'type': "EEG",
-        'data': data_large,
-        'user': 'martin',
-        'timestamp': datetime.datetime.utcnow(),
-}
-        
-post_id = coll.insert_one(eeg_post).inserted_id
-
-# Query post by id
 from bson.objectid import ObjectId
-thing1 = coll.find_one({'_id': ObjectId('58f77f348dc048108a587040') })
-thing2 = coll.find_one({'_id': post_id })
+import os
 
-# Query by user
-things = coll.find({'user':'martin'})
-things_list = list(things)
-for l in things_list:
-    print(len(l['data']))
+class MongoController:
     
+    def __init__(self):
+        pass
     
-import collections  # From Python standard library.
-import bson
-from bson.codec_options import CodecOptions
-data = bson.BSON.encode({'a': 1})
+    def open_db_connection(self):
+        #uri = "mongodb://martin:pass1@74.79.252.194:27017/test_database"
+        local_uri = "mongodb://martin:pass1@192.168.2.5:27017/test_database"
+        client = pymongo.MongoClient(local_uri)
+        self.db = client.get_database('test_database')
+        self.fs = gridfs.GridFS(self.db)
+        
+    def close_db_connection(self):
+        self.db.close()
+
+    def upload_data(self, file_path=u'C:\\Users\\MartianMartin\\Desktop\\xdf-master\\xdf-master\\xdf_sample.xdf',
+                    filename="misc_file",
+                    user="misc_user",
+                    channels="fz,oz,cz",
+                    duration="10009",
+                    rec_type="EEG",
+                    notes="This is a test note"):
+        metadata = {"user": user,
+                    "name": filename,
+                    "channels": channels,
+                    "type": rec_type,
+                    "duration": duration,
+                    "notes": notes}
+        xdfd = open(file_path,'rb').read()
+        return self.fs.put(xdfd, **metadata)
+        
+    def download_data(self, object_id):
+        ret = self.fs.get(ObjectId(object_id)).read()
+        fp = os.getcwd()+'\\new_file_'+object_id+".xdf"
+        new_file = open(fp,"wb")
+        new_file.write(ret)
+        new_file.close()
+        return fp
+        
+    def test_upload(self, data):
+        
+        metadata = {"user": "martin",
+                    "name": "arbitrary file name",
+                    "channels": "0z,cz,fz",
+                    "type": "EEG"}
+        a = self.fs.put(b"hello world",  **metadata)
+        return self.fs.get(a).read()
+
+    def get_filenames(self):
+        files = list(self.fs.fin())
+        return [f.name for f in files]
+
     
-    
-#http://api.mongodb.com/python/current/examples/gridfs.html
