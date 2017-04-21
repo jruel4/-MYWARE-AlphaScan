@@ -31,7 +31,7 @@ class AlphaScanDevice:
         ###############################################################################
         self.UDP_IP = "192.168.1.17"      #This gets over written dynamically
         #self.UDP_IP_UNI = "192.168.1.109"
-        self.UDP_IP_UNI = "192.168.1.105"
+        self.UDP_IP_UNI = "192.168.1.105" # TODO GET RID OF THIS!
         self.UDP_PORT = 2390              #CONFIGURABLE
         
         self.num = 10
