@@ -6,9 +6,10 @@ from pylsl import  StreamInlet, resolve_stream, StreamInfo, StreamOutlet
 from collections import deque
 from threading import Thread
 import numpy as np
-from stats import rms
+#from stats import rms
 
-
+def rms(d): return np.sqrt(np.mean((d-np.mean(d))**2))
+    
 class STATS_TAB(QWidget):
     '''
     The question is, which stream do I want to grab statistics from? Well 

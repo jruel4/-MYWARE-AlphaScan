@@ -5,9 +5,9 @@ import time
 from threading import Thread, Event
 from pylsl import StreamInfo, StreamOutlet
 import random
-from CommandDefinitions import *
-from stats import get_imp
-from BitPacking import twos_comp
+from Includes.CommandDefinitions import *
+from Utilities.stats import get_imp
+from Includes.BitPacking import twos_comp
 import select
 from matplotlib import pyplot as plt
 import Queue

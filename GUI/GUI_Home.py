@@ -15,26 +15,16 @@ from PySide.QtGui import *
 import sys
 import time
 
-from GEN_Tab import GeneralTab
-from ACCEL_Tab import ACCEL_REG_TAB
-from ADC_Tab import ADC_REG_TAB
-from PWR_Tab import PWR_REG_TAB
-from AP_Tab import AP_TAB
-from FS_Tab import FS_TAB
-from SYS_Tab import SYS_TAB
-from VIZ_Tab import VIZ_TAB
-from STATS_Tab import STATS_TAB
-from STOR_TAB import STOR_TAB
-
-from DeviceCluster import DeviceCluster
-
-try:
-    qt_app = QApplication(sys.argv)
-except: # could fail for reasons other than already exists... 
-    pass
-
-qApp.setStyle(u'Cleanlooks')
-#qt_app.setStyleSheet(qdarkstyle.load_stylesheet())
+from Tabs.GEN_Tab import GeneralTab
+from Tabs.ACCEL_Tab import ACCEL_REG_TAB
+from Tabs.ADC_Tab import ADC_REG_TAB
+from Tabs.PWR_Tab import PWR_REG_TAB
+from Tabs.AP_Tab import AP_TAB
+from Tabs.FS_Tab import FS_TAB
+from Tabs.SYS_Tab import SYS_TAB
+from Tabs.VIZ_Tab import VIZ_TAB
+from Tabs.STATS_Tab import STATS_TAB
+from Tabs.STOR_TAB import STOR_TAB
 
 class AlphaScanGui(QWidget):
     def __init__(self, Device, fileName, parent=None):
@@ -119,31 +109,13 @@ class AlphaScanGui(QWidget):
     def onTabChange(self,i): #changed!
         #TODO send signal to VIZ_Tab to start/stop plotting
         if (i == 7): #TODO make this not hard coded!
-            self.vizTab.start_plotting()
+            #self.vizTab.start_plotting()
+            pass
         else:
-            self.vizTab.stop_plotting()
+            #self.vizTab.stop_plotting()
+            pass
                   
     def closeEvent(self, event):
         self._Device.close_event()
         event.accept()
         
-    def run(self):
-        # Show the form
-        self.show()
-        # Run the qt application
-        qt_app.exec_()
-
-###############################################################################
-# RUN APPLICATION #############################################################
-###############################################################################
-
-if len(sys.argv) >= 2:
-    fileName = sys.argv[1]
-else:
-    fileName = "."
-    
-# Run app     
-dev = DeviceCluster(num_devices=1) 
-app = AlphaScanGui(dev, fileName)
-time.sleep(0.01)
-app.run()

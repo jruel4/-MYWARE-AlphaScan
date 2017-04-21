@@ -3,8 +3,8 @@
 block_cipher = None
 
 
-a = Analysis(['..\\GUI\\GUI_Home.py'],
-             pathex=['..\\Binaries'],
+a = Analysis(['..\\main.py'],
+             pathex=['..\\Binaries', '..\\'],
              binaries=[('..\\Controller\\Includes\\pylsl\\liblsl64.dll','pylsl')],
              datas=None,
              hiddenimports=[],
