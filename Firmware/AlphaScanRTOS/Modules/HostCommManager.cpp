@@ -35,6 +35,8 @@ unsigned int old_nbset = 0, nbset = 0;
 #define TCP_NB_SET(x) {old_nbset = nbset; nbset = x; lwip_ioctl(mSocket, FIONBIO, &nbset); }
 #define TCP_NB_UNSET() {nbset = old_nbset; lwip_ioctl(mSocket, FIONBIO, &nbset); }
 
+#define WIFI_SSID "MartianWearablesLLC"
+#define WIFI_PASS "phobicbird712"
 
 class HostCommManager {
 
