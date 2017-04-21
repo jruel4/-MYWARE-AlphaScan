@@ -5,18 +5,6 @@ Created on Fri Apr 21 14:42:24 2017
 @author: MartianMartin
 """
 
-
-# -*- coding: utf-8 -*-
-"""
-Created on Mon Jan 25 16:42:21 2016
-
-@author: marzipan
-"""
-
-###############################################################################
-# AlphaScan GUI Home Page #####################################################
-###############################################################################
-
 from PySide.QtCore import *
 from PySide.QtGui import * 
 import sys
@@ -32,11 +20,6 @@ except: # could fail for reasons other than already exists...
 
 qApp.setStyle(u'Cleanlooks')
 #qt_app.setStyleSheet(qdarkstyle.load_stylesheet())
-
-
-###############################################################################
-# RUN APPLICATION #############################################################
-###############################################################################
 
 if len(sys.argv) >= 2:
     fileName = sys.argv[1]

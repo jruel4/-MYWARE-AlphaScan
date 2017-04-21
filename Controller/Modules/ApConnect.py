@@ -94,11 +94,11 @@ class ApConnection:
         self.conn,self.dev_addr = s.accept()
         return self.dev_addr
             
-    def send_net_params(self, ip, ssid, password):
+    def send_net_params(self, ip, ssid, password,port):
         self.conn.send("ssid_key::"+ssid+"* ,\
                    pass_key::"+password+"* ,\
                    ip_key::"+ip+"* ,\
-                   port_key::50007* ,")
+                   port_key::"+port+"* ,")
 
 #==============================================================================
 # # Test Driver

@@ -74,7 +74,7 @@ class AP_TAB(QWidget):
         
         # TODO create GO button
         self.Button_FinalizeParams = QPushButton("Finalize Configuration")
-        self.layout.addWidget(self.Button_FinalizeParams, 7,0)
+        self.layout.addWidget(self.Button_FinalizeParams, 8,0)
         self.Button_FinalizeParams.clicked.connect(self.finalize_params)
         
          # create connect text
@@ -86,6 +86,9 @@ class AP_TAB(QWidget):
         self.layout.addWidget(self.Button_Connect, 6, 1, 2, 1)
         self.Button_Connect.clicked.connect(self.connect_to_ap)
         
+        self.Line_PORT = QLineEdit("50007")       
+        self.layout.addWidget(self.Line_PORT, 7, 0)
+        
     @Slot()
     def finalize_params(self):
 
@@ -93,7 +96,8 @@ class AP_TAB(QWidget):
         time.sleep(0.5)
         r = self.conn.send_net_params(self.Line_HostIP.text(),
                                       self.Line_SSID.text(),
-                                      self.Line_PASSWORD.text())
+                                      self.Line_PASSWORD.text(),
+                                      self.Line_PORT.text())
         
         msgBox = QMessageBox()
         msgBox.setText(r)
