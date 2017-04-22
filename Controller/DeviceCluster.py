@@ -1,4 +1,5 @@
 from AlphaScanController import AlphaScanDevice
+import numpy as np
 
 class DeviceCluster:
     """
@@ -179,8 +180,27 @@ class DeviceCluster:
             d.close_udp_solo()
         return "unimplemented r-code"
     
-            
-            
+    def get_stream_stats(self):
+        keys = ['avg_rtt', 'std_rtt', 'min_rtt', 'max_rtt', 'miss', 'skip']
+        res = {k:[] for k in keys}
+        for d in self.dev:
+            res['avg_rtt'] += [np.mean(d.rtt)]
+            res['std_rtt'] += [np.std(d.rtt)]
+            res['min_rtt'] += [np.min(d.rtt)]
+            res['max_rtt'] += [np.max(d.rtt)]
+            res['miss'] += [np.mean(d.miss)]
+            res['skip'] += [np.mean(d.skip)]
+        return res
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
           
           
           

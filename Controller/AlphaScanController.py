@@ -691,7 +691,7 @@ class AlphaScanDevice:
             if (self.inbuf[-1] == (self.inbuf[-2] + 1)):
                 self.time_intervals += [self.time_beta - self.time_alpha]
         except socket.timeout:
-            primt("socket.timeout")
+            print("socket.timeout")
         self.time_alpha = self.time_beta
             
                 
@@ -753,7 +753,7 @@ class AlphaScanDevice:
         read_sizes = [u[1] for u in self.read_size_list]
         self.Bps_ps = list()
         # Cycle over every read event to create an element 
-        for i in range(len(timestamps)):
+        for i in range(len(self.timestamps)):
             # For every read event take subsequent events in the next second
             t = self.timestamps[i]
             r = read_sizes[i]
@@ -883,7 +883,7 @@ class AlphaScanDevice:
             return mysamples
         
         # Stat vars
-        dl = list() # delay list
+        self.rtt = list() # delay list
         rp = time.time() # rx previous
         t_data = list() # raw data
         t_q = list() # queue
@@ -895,18 +895,27 @@ class AlphaScanDevice:
         self.DEV_streamActive.set()
         sleep = 0.033 #TODO may want to tune this down for queue population
         sock.settimeout(0)
-        totrx = 0
-        skip = -1
-        miss = 0
+        self.totrx = 0
+        self.skip = -1
+        self.miss = 0
         ctr = 0x00
-        while self.DEV_streamActive.is_set():
-            sock.sendto(msg(ctr), (UDP_IP, UDP_PORT))    
-            time.sleep(sleep) 
-            nctr,valid,x,d = get_newest_ctr(sock)   
-            if not valid: miss+=1;
-            elif nctr != (ctr+1)%256: ctr=nctr;skip+=1
-            else: ctr=nctr;totrx+=valid;rc=time.time();dl+=[rc-rp];rp=rc;t_data+=[d];t_q+=[get_queue_size(d)];\
-                  t_heap+=[get_heap_size(d)];self.t_pdata+=parse_and_push(d)
+        
+        #####################################
+        # Begin Core Loop
+        #####################################
+        while self.DEV_streamActive.is_set():                                  # Only loop while lock is set 
+            sock.sendto(msg(ctr), (UDP_IP, UDP_PORT))                          # Send ack for data block with id==ctr
+            time.sleep(sleep)                                                  # Give device time to respond 
+            nctr,valid,x,d = get_newest_ctr(sock)                              # Get most recent received message
+            if not valid: self.miss+=1;                                        # If rx message not valid, restart
+            elif nctr != (ctr+1)%256: ctr=nctr;self.skip+=1                    # TODO(analyze) If rx message not expected count skip 
+            else: ctr=nctr;self.totrx+=valid;rc=time.time();self.rtt+=[rc-rp];\
+                  rp=rc;t_data+=[d];t_q+=[get_queue_size(d)];\
+                  t_heap+=[get_heap_size(d)];self.t_pdata+=parse_and_push(d)   # If valid, increment counter and extract data + metrics
+                  
+        #####################################
+        # End Core Loop
+        #####################################
         
         # Try to close connection (3x for reliability)
         time.sleep(0.100)

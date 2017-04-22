@@ -36,7 +36,9 @@ class STATS_TAB(QWidget):
         self.layout = QGridLayout()
         self.setLayout(self.layout) # Does it matter when I do this?
         
-        self.stat_labels = ['rms', 'min', 'max', 'avg', 'std']
+        self.stat_labels = ['rms', 'min', 'max', 'avg', 'std', 
+                            'avg_rtt', 'std_rtt', 'min_rtt', 'max_rtt',
+                            'miss', 'skip']
         
         # Set layout formatting
         self.layout.setAlignment(Qt.AlignTop)
@@ -77,6 +79,14 @@ class STATS_TAB(QWidget):
         # Stream control variables
         self.selected_stream = None
         self.buf = deque(maxlen=(250*10))
+        
+        #######################################################################
+        # Add Stream Comm Statistics Refresh
+        #######################################################################
+        self.Button_RefreshCommStats = QPushButton("Update Comm Stats")
+        self.layout.addWidget(self.Button_RefreshCommStats)
+        self.Button_RefreshCommStats.clicked.connect(self.update_comm_stats)
+        
     
     @Slot()
     def refresh_display(self):
@@ -114,6 +124,11 @@ class STATS_TAB(QWidget):
         while(True):
             data,_ = self.inlet.pull_sample()
             self.buf.append(data[self.Options_ChanSelect.currentIndex()-1]*step)
+    @Slot()
+    def update_comm_stats(self):
+        stats = self._Device.get_stream_stats()
+        for i in range(5,len(self.stat_labels)):            
+            self.stat_val_dict[self.stat_labels[i]].setText(str(stats[self.stat_labels[i]]))
 
 
 
