@@ -1,5 +1,12 @@
 # -*- coding: utf-8 -*-
 """
+Created on Thu Apr 27 01:14:44 2017
+
+@author: marzipan
+"""
+
+# -*- coding: utf-8 -*-
+"""
 CLIENT
 """
 import time
@@ -34,6 +41,7 @@ try:
         t2 = timing_utils.s2us(t2)
         t3 = timing_utils.s2us(time.clock())
         pkt2 = struct.pack(PKT_FORMAT, rx_pid, t1, t2, t3, 0)
+        #pkt2 = struct.pack(PKT_FORMAT, rx_pid, 100, 101, 102, 0)
         
         # Send plt2
         sock.sendto(pkt2, REMOTE_ADDR)
