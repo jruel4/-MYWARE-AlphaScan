@@ -11,7 +11,6 @@ import random
 import numpy as np
 from scipy import stats
 from matplotlib import pyplot as plt
-from scipy import stats
 
 # timeit.default_timer() == best clock on given system, time.clock() for windows
 
@@ -48,16 +47,17 @@ t0 = time.clock()
 time.sleep(0.001)
 
 averages = []
+cluster_times = []
 
 timeouts = 0
 
-for j in range(5):
+for j in range(30):
         
     time.sleep(1.0)
     
     offsets = []
     
-    for i in range(100):
+    for i in range(80):
         
         time.sleep(0.001)
     
@@ -89,8 +89,9 @@ for j in range(5):
                 
         except socket.timeout as e:
             timeouts += 1
-            
-    averages += [stats.trim_mean(offsets,0.2)]
+         
+    cluster_times += [time.clock()]
+    averages += [stats.trim_mean(offsets,0.35)]
 
 te = time.clock()
     
@@ -103,9 +104,14 @@ print("drift rate (uS/S): ",drift_rate)
 print("drift error (%): ",drift_rate/1E6*100)   
 print("time to 1ms of drift (S): ", 1E3/drift_rate)    
 
-
-
-
+#==============================================================================
+# x,y = (np.asarray(cluster_times),np.asarray(averages))
+# model = stats.linregress(x,y)
+# print("model slope: ",model.slope)
+# 
+# plt.plot([0,100], [model.intercept, model.slope*100], color='blue',
+#          linewidth=2)
+#==============================================================================
 
 
 
