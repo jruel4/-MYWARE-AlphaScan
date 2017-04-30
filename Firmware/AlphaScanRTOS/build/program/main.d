@@ -147,4 +147,7 @@ build/program//main.o: \
  /media/marzipan/Expansion_1/Development/Projects/AlphaScan/Firmware/AlphaScanRTOS/Modules/HostCommManager.cpp \
  /media/marzipan/Expansion_1/Development/Projects/AlphaScan/Firmware/AlphaScanRTOS/Modules/ads_ctrl.cpp \
  /media/marzipan/Expansion_1/Development/Projects/AlphaScan/Firmware/AlphaScanRTOS/Modules/StorageManager.cpp \
+ /media/marzipan/Expansion_1/Development/Projects/AlphaScan/Firmware/AlphaScanRTOS/Modules/TimeSync.cpp \
+ /media/marzipan/Expansion_1/Development/Projects/SuperHouseRTOS_2_3_17/esp-open-rtos/libc/xtensa-lx106-elf/include/inttypes.h \
+ /media/marzipan/Expansion_1/Development/Projects/SuperHouseRTOS_2_3_17/esp-open-rtos/libc/xtensa-lx106-elf/include/math.h \
  /media/marzipan/Expansion_1/Development/Projects/AlphaScan/Firmware/AlphaScanRTOS/Modules/ads_ctrl.cpp

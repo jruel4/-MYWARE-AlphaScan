@@ -9,6 +9,7 @@
 #include "Modules/OtaManager.cpp"
 #include "Modules/HostCommManager.cpp"
 #include "Modules/StorageManager.cpp"
+#include "Modules/TimeSync.cpp"
 #include "Modules/ads_ctrl.cpp"
 #include "esp_spiffs.h"
 #include "spiffs.h"
@@ -32,6 +33,7 @@ class AlphaScanManager : public esp_open_rtos::thread::task_t
         SoftAP c_SoftAp;        
         HostCommManager c_HostComm;
         OtaManager c_Ota; 
+        TimeSync timr;
         ADS* c_Ads = new ADS(SPI_FREQ_DIV_10M);
         StorageManager* c_StorageManager = new StorageManager();
         int mWifiRetryCounter = 0;
@@ -163,6 +165,33 @@ class AlphaScanManager : public esp_open_rtos::thread::task_t
                 sdk_system_restart();
 
             }
+            else if (rcode == 0x07) {
+                // go into sync mode
+
+                timr.markT1();
+                printf("Micros1: %lu\n",(uint32_t)timr.getT1());
+                vTaskDelay(100/ portTICK_PERIOD_MS);
+                timr.markT2();	
+                printf("Micros2: %lu\n", (uint32_t)timr.getT2());
+                printf("Difference: %lu\n\n", (uint32_t)(timr.getT2() - timr.getT1()));	
+
+
+                printf("calling sync code now\n");
+                timr.setTimeoutMS(5000); 
+                timr.setNumExchanges(1000);
+                timr.handleSync();
+                printf("sync complete \n");
+
+                timr.markT1();
+                printf("Micros1: %lu\n",(uint32_t)timr.getT1());
+                vTaskDelay(100/ portTICK_PERIOD_MS);
+                timr.markT2();	
+                printf("Micros2: %lu\n", (uint32_t)timr.getT2());
+                printf("Difference: %lu\n\n", (uint32_t)(timr.getT2() - timr.getT1()));	
+
+
+
+            }
             else if (rcode == 0x0d){
                 //Send ADS registers
                 printf("Sending ADS registers to host.\n");
@@ -216,22 +245,22 @@ extern "C" void user_init(void)
 //    DIVDED_BY_256 = 8,
 //} TIMER_PREDIVED_MODE;
 
-extern "C" void vConfigureTimerForRunTimeStats( void ) {
-    //    RTC_REG_WRITE(FRC1_CTRL_ADDRESS,  //FRC2_AUTO_RELOAD|
-    //            DIVDED_BY_256
-    //            | FRC1_ENABLE_TIMER);
-    //
-    //    RTC_REG_WRITE(FRC1_LOAD_ADDRESS, 0);
-    timer_set_interrupts(FRC2, false);
-    timer_set_run(FRC2, false);
-    timer_set_frequency(FRC2, 1000);
-    //timer_set_load(FRC2, 0x7fffff);
-    timer_set_run(FRC2, true);
-}
-
-extern "C" uint32_t vGetRunTimerCountValue( void ){
-    return timer_get_count(FRC2);
-}
+//extern "C" void vConfigureTimerForRunTimeStats( void ) {
+//    //    RTC_REG_WRITE(FRC1_CTRL_ADDRESS,  //FRC2_AUTO_RELOAD|
+//    //            DIVDED_BY_256
+//    //            | FRC1_ENABLE_TIMER);
+//    //
+//    //    RTC_REG_WRITE(FRC1_LOAD_ADDRESS, 0);
+//    timer_set_interrupts(FRC2, false);
+//    timer_set_run(FRC2, false);
+//    timer_set_frequency(FRC2, 1000);
+//    //timer_set_load(FRC2, 0x7fffff);
+//    timer_set_run(FRC2, true);
+//}
+//
+//extern "C" uint32_t vGetRunTimerCountValue( void ){
+//    return timer_get_count(FRC2);
+//}
 
 //extern void vConfigureTimerForRunTimeStats( void );
 //#define portCONFIGURE_TIMER_FOR_RUN_TIME_STATS() vConfigureTimerForRunTimeStats()
