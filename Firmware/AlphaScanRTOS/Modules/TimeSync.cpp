@@ -76,10 +76,10 @@ class TimeSync
 		uint64_t markT2();
 		uint64_t getT1();
 		uint64_t getT2();
+		static int initTimer();
 	protected:
 
 	private:
-		int initTimer();
 		//int establishHostConnection();
 		uint64_t getCyclesCount();
 
@@ -110,7 +110,7 @@ TimeSync::TimeSync() {
 	timeoutms = DEFAULT_TIMEOUT;
 	numExchanges = DEFAULT_NUM_EXCHANGES;
 
-	initTimer();
+	//initTimer();
 }
 TimeSync::~TimeSync() { }
 

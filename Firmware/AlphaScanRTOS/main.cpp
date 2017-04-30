@@ -214,6 +214,10 @@ AlphaScanManager t_Manager;
  */
 extern "C" void user_init(void)
 {
+
+    TimeSync::initTimer();
+    //TODO figure out why initTimer placed here works but in class does not work
+
     vTaskDelay(15 / portTICK_PERIOD_MS);
     t_Manager.setDebugSerial(true);
     t_Manager.task_create("main_loop", 2048);
