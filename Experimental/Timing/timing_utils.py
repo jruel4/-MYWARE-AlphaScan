@@ -8,6 +8,7 @@ Created on Mon Apr 24 18:47:37 2017
 from decimal import Decimal
 from scipy import stats
 from scipy.stats import mstats
+import numpy as np
 
 def s2us(s):
     return int((s*1E6)//1)
@@ -30,3 +31,31 @@ def get_iqr(vals):
 
 def get_trimmed_mean(vals):
     return stats.trim_mean(vals,.25)
+    
+def clean_data(x,y,wlen = 250):
+    cx = []; cy = [];
+    
+    # loop over 250 sample segments and filter them each...
+    rng = np.linspace(0,len(x),num=(len(x)/wlen))
+    for i in range(len(rng)-1):
+        b=int(rng[i]);e=int(rng[i+1]);
+        q75, q25 = np.percentile(y[b:e], [75 ,25])
+        for i in range(b,e):
+            if (y[i] < q75) and (y[i] > q25):
+                cx += [x[i]]
+                cy += [y[i]]
+    return cx,cy
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            

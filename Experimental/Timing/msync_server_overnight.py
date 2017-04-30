@@ -28,22 +28,13 @@ sock.settimeout(0.400) # 10 millisecond timeout ... might be low?
 # Init clock
 t0 = time.clock()
 
-time.sleep(0.001)
+timeouts = 0    
+offsets = []
 
-averages = []
-cluster_times = []
-
-timeouts = 0
-
-for j in range(5):
+try:
+    while True:
         
-    time.sleep(1.0)
-    
-    offsets = []
-    
-    for i in range(50):
-        
-        time.sleep(0.001)
+        #time.sleep(0.001)
     
         # Generate packet id
         pid = random.randint(0,2**64-1)
@@ -66,40 +57,25 @@ for j in range(5):
             if rx_pid == pid:
                 t4 = timing_utils.s2us(t4)
                 offset = timing_utils.get_offset_us(t1,t2,t3,t4)
-                offsets += [offset]
+                offsets += [(t4,offset)]
                 #print(offset)
             else:
                 print("Received INVALID id")
+                #flush udp
+                try:
+                    sock.recv(65535)
+                except socket.timeout:
+                    pass
                 
         except socket.timeout as e:
             timeouts += 1
-         
-    cluster_times += [time.clock()]
-    averages += [stats.trim_mean(offsets,0.35)]
+            
+            
+except KeyboardInterrupt:
+    print("Finished...")
+    te = time.clock()
 
-te = time.clock()
-    
-plt.plot(averages)
-
-elapsed = (te-t0)
-drift_mag = (averages[-1]-averages[0])
-drift_rate = drift_mag/elapsed
-print("drift rate (uS/S): ",drift_rate) 
-print("drift error (%): ",drift_rate/1E6*100)   
-print("time to 1ms of drift (S): ", 1E3/drift_rate)    
-
-x,y = (np.asarray(cluster_times),np.asarray(averages))
-model = stats.linregress(x,y)
-print("model slope: ",model.slope)
-print("model rval: ",model.rvalue)
-print("model pval: ",model.pvalue)
-#==============================================================================
-# 
-# plt.plot([0,100], [model.intercept, model.slope*100], color='blue',
-#          linewidth=2)
-#==============================================================================
-
-
+print("time elapsed: ", (te-t0))
 
 
 

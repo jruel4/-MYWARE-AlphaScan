@@ -25,6 +25,7 @@ from Tabs.SYS_Tab import SYS_TAB
 from Tabs.VIZ_Tab import VIZ_TAB
 from Tabs.STATS_Tab import STATS_TAB
 from Tabs.STOR_TAB import STOR_TAB
+from Tabs.SYSCHECK_TAB import SYSCHECK_TAB
 
 class AlphaScanGui(QWidget):
     def __init__(self, Device, fileName, parent=None):
@@ -64,6 +65,7 @@ class AlphaScanGui(QWidget):
         self.vizTab = VIZ_TAB(self._Device, self.DebugConsole)
         self.statsTab = STATS_TAB(self._Device, self.DebugConsole)
         self.storTab = STOR_TAB(self._Device, self.DebugConsole)
+        self.checkTab = SYSCHECK_TAB(self._Device, self.DebugConsole)
         
         # Create tabs with objects
         tabWidget.addTab(self.genTab, "General")
@@ -76,6 +78,7 @@ class AlphaScanGui(QWidget):
         tabWidget.addTab(self.vizTab, "Graph")
         tabWidget.addTab(self.statsTab, "Stats")
         tabWidget.addTab(self.storTab, "Storage")
+        tabWidget.addTab(self.checkTab, "SysCheck")
 
         # Connect tab change event to handler        
         tabWidget.currentChanged.connect(self.onTabChange) #changed!

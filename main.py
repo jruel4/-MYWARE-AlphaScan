@@ -15,8 +15,8 @@ from Controller.DeviceCluster import DeviceCluster
 
 try:
     qt_app = QApplication(sys.argv)
-except: # could fail for reasons other than already exists... 
-    pass
+except Exception as e: # could fail for reasons other than already exists... 
+    print(e)
 
 qApp.setStyle(u'Cleanlooks')
 #qt_app.setStyleSheet(qdarkstyle.load_stylesheet())
@@ -32,3 +32,28 @@ app = AlphaScanGui(dev, fileName)
 time.sleep(0.01)
 app.show()
 qt_app.exec_()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -191,10 +191,12 @@ class DeviceCluster:
             res['miss'] += [np.mean(d.miss)]
             res['skip'] += [np.mean(d.skip)]
         return res
-          
-          
-          
-          
+             
+    def time_sync(self):
+        r = []
+        for d in self.dev:
+            r += [d.time_sync()]
+        return r
           
           
           

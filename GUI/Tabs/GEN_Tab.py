@@ -7,6 +7,8 @@ Created on Fri Feb 05 14:06:33 2016
 
 from PySide.QtCore import *
 from PySide.QtGui import *
+from TimeSync import TimeSync
+import time
 
 class GeneralTab(QWidget):
     
@@ -128,6 +130,17 @@ class GeneralTab(QWidget):
         self.Button_ClearGeneralMessage = QPushButton("Clear Message")
         self.layout.addWidget(self.Button_ClearGeneralMessage, 5,2,1,1)
         self.Button_ClearGeneralMessage.clicked.connect(self.clear_gen_msg)
+        
+        # Add time sync button
+        self.Button_SyncTime = QPushButton("Sync Time")
+        self.layout.addWidget(self.Button_SyncTime, 5,1,1,1)
+        self.Button_SyncTime.clicked.connect(self.synchronize_time)
+        
+        self.Progress_SyncProgress = QProgressBar()
+        #self.Progress_SyncProgress.setAutoFillBackground(True)
+        self.layout.addWidget(self.Progress_SyncProgress, 5,0,1,1)
+        
+        self.fake_time = 0
         
 
         
@@ -497,9 +510,43 @@ class GeneralTab(QWidget):
                 self._Debug.append("Debug Disable Failed")
         
             
+    @Slot()
+    def synchronize_time(self):
+        self._Debug.append("beginning sync")
+        QMessageBox.information(self, "Synchronizing Time", "Please wait for time sync to complete...")
+        
+        self.time_begin = time.time()
+        self.xt = QTimer()
+        self.xt.timeout.connect(self.update_progress)
+        self.xt.start(600)
+        
+        r = self._Device.time_sync()
+        self._Debug.append(str(r))
+        
+    @Slot()
+    def update_progress(self):
+        self.fake_time += 1
+        self.Progress_SyncProgress.setValue(self.fake_time)  
+        
+        # Check if all devices are finished
+        finished = True
+        for i,d in enumerate(self._Device.dev):
+            s = d.ts.finished.is_set()
+            #self._Debug.append(str(i)+" "+str(s))
+            finished &= s
             
-    ###########################################################################    
-
+            
+        if (finished):
+            self.Progress_SyncProgress.setValue(100) 
+            self.xt.stop()
+            QMessageBox.information(self, "Sync Complete", "Done!")   
+            r = []
+            for i,d in enumerate(self._Device.dev):
+                # Process
+                r += [d.ts.process_offsets()]
+            key = "[drift(uS/S), len_offsets, drift_reasonable]\n"
+            QMessageBox.information(self, "Sync Results", key+str(r))
+                
 
 
 

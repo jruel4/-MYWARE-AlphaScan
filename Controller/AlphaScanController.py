@@ -12,6 +12,7 @@ import select
 from matplotlib import pyplot as plt
 import Queue
 import numpy as np
+from TimeSync import TimeSync
 
 class AlphaScanDevice:
     
@@ -85,6 +86,9 @@ class AlphaScanDevice:
         self.debug_port_open = False
         self.debug_port_no = 2391
         #self.open_debug_port()
+        
+        # create sync object
+        self.ts = TimeSync()
         
     def close_event(self):
         self.DEV_streamActive.clear()
@@ -1002,7 +1006,11 @@ class AlphaScanDevice:
             idx = 0
             
             
-            
+    def time_sync(self):      
+        self.generic_tcp_command_OPCODE(0x7)
+        time.sleep(1.0)
+        return self.ts.sync(self.UDP_IP_UNI)
+        
             
             
           

@@ -6,6 +6,7 @@ from pylsl import  StreamInlet, resolve_stream, StreamInfo, StreamOutlet
 from collections import deque
 from threading import Thread
 import numpy as np
+from Plotting.StandAlonePlotter import SinglePlotFigure
 #from stats import rms
 
 def rms(d): return np.sqrt(np.mean((d-np.mean(d))**2))
@@ -66,6 +67,8 @@ class STATS_TAB(QWidget):
         self.Options_ChanSelect.insertItem(0, "Select Channel")
         self.Options_ChanSelect.insertItems(1, [str(i+1) for i in range(8)])
         self.layout.addWidget(self.Options_ChanSelect, 0,2)
+        self.Options_ChanSelect.currentIndexChanged.connect(self.update_chan_sel)
+        self.selected_channel = 0
         
         
         #######################################################################
@@ -86,6 +89,22 @@ class STATS_TAB(QWidget):
         self.Button_RefreshCommStats = QPushButton("Update Comm Stats")
         self.layout.addWidget(self.Button_RefreshCommStats)
         self.Button_RefreshCommStats.clicked.connect(self.update_comm_stats)
+        
+        # Turn on realtime updating
+        self.Button_ToggleRealtime = QPushButton("Auto Update Off")
+        self.layout.addWidget(self.Button_ToggleRealtime)
+        self.Button_ToggleRealtime.clicked.connect(self.toggle_realtime_update)
+        # Create periodic timer for updating streaming and connection status
+        self.timer = QTimer()
+        self.timer.timeout.connect(self.update)
+        self.timer_on = False
+        self.test_val = 0
+        
+        # Define experimental run graph button
+        self.Button_RunGraph = QPushButton("Launch Graph")
+        self.layout.addWidget(self.Button_RunGraph)
+        self.Button_RunGraph.clicked.connect(self.launch_graph)
+        
         
     
     @Slot()
@@ -111,6 +130,12 @@ class STATS_TAB(QWidget):
         _thread = Thread(target=self.acquisition_thread)
         _thread.start()
         
+    @Slot()
+    def update_chan_sel(self, idx):
+        self.selected_channel = idx-1
+        if self.plotter:
+            self.plotter.set_chan(self.selected_channel)
+        self._Debug.append("Current chan sel is: "+str(self.selected_channel))
         
     def get_step_size(self, gain=24.0):
         return 5.0/2**24/gain
@@ -126,13 +151,46 @@ class STATS_TAB(QWidget):
             self.buf.append(data[self.Options_ChanSelect.currentIndex()-1]*step)
     @Slot()
     def update_comm_stats(self):
+        # Separate method for updating not regular stream stats but "comm stats"
         stats = self._Device.get_stream_stats()
         for i in range(5,len(self.stat_labels)):            
             self.stat_val_dict[self.stat_labels[i]].setText(str(stats[self.stat_labels[i]]))
+    
+    @Slot()
+    def toggle_realtime_update(self):
+        if self.timer_on:
+            # Turn it off
+            self.timer.stop()
+            self.Button_ToggleRealtime.setText("Auto Update Off")
+        else:
+            # Turn it on
+            self.timer.start(100) # interval in milliseconds...
+            self.Button_ToggleRealtime.setText("Auto Update On")
+        
+        # Toggle
+        self.timer_on = not self.timer_on
+    
+    @Slot()
+    def update(self):
+        self.refresh_display() 
+#==============================================================================
+#         # Test code
+#         self.test_val += 1
+#         self.stat_val_dict['rms'].setText(str(self.test_val))
+#         self.stat_val_dict['min'].setText(str(self.test_val))
+#         self.stat_val_dict['max'].setText(str(self.test_val))
+#         self.stat_val_dict['avg'].setText(str(self.test_val))
+#         self.stat_val_dict['std'].setText(str(self.test_val))
+#==============================================================================
 
-
-
-
+    @Slot()
+    def launch_graph(self):
+        indx = 0
+        self.plotter = SinglePlotFigure(StreamInlet(self.streams[int(self.selected_stream)]), self._Debug, indx)
+        self.gtmr = QTimer()
+        self.gtmr.timeout.connect(self.plotter.update_plot)
+        self.gtmr.start(17)
+        self.plotter.run()
 
 
 
