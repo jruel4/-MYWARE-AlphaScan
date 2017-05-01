@@ -178,7 +178,7 @@ class AlphaScanManager : public esp_open_rtos::thread::task_t
 
                 printf("calling sync code now\n");
                 timr.setTimeoutMS(5000); 
-                timr.setNumExchanges(1000);
+                timr.setNumExchanges(12000);
                 timr.handleSync();
                 printf("sync complete \n");
 

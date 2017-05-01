@@ -24,7 +24,7 @@
 
 //#define pkt_size 256
 
-const char* AP_SSID = "esp-open-rtos AP 2";
+const char* AP_SSID = "esp-open-rtos AP 666";
 char AP_PSK[11] = "hello-moto";
 
 class SoftAP {
@@ -48,7 +48,7 @@ class SoftAP {
             printf("Set opmode success");
 
             struct ip_info ap_ip;
-            IP4_ADDR(&ap_ip.ip, 172, 16, 0, 1);
+            IP4_ADDR(&ap_ip.ip, 192, 16, 0, 1);
             IP4_ADDR(&ap_ip.gw, 0, 0, 0, 0);
             IP4_ADDR(&ap_ip.netmask, 255, 255, 0, 0);
             sdk_wifi_set_ip_info(1, &ap_ip);
@@ -68,7 +68,7 @@ class SoftAP {
             ap_config.channel = 3;
             ap_config.authmode = AUTH_WPA_WPA2_PSK;
             ap_config.ssid_hidden = 0;
-            ap_config.max_connection = 3;
+            ap_config.max_connection = 4;
             ap_config.beacon_interval = 100;
 
             printf("Created config struct");
@@ -78,7 +78,7 @@ class SoftAP {
             printf("Set soft ap config success");
 
             ip_addr_t first_client_ip;
-            IP4_ADDR(&first_client_ip, 172, 16, 0, 2);
+            IP4_ADDR(&first_client_ip, 192, 16, 0, 2);
             dhcpserver_start(&first_client_ip, 4);
 
             printf("Init complete... initializing telnet task");
@@ -158,7 +158,7 @@ EXTRACT_VAL:
 
             // Setup socket resources
             struct ip_addr my_host_ip;
-            IP4_ADDR(&my_host_ip, 172, 16, 0, 2);
+            IP4_ADDR(&my_host_ip, 192, 16, 0, 2);
 
 
             struct sockaddr_in my_sockaddr_in;
