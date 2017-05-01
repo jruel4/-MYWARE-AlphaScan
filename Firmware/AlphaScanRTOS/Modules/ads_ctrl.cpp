@@ -489,7 +489,7 @@ QueueHandle_t xDataReadyQueue; // Do not need to set NULL
 struct inADSData
 {
     TickType_t tickCount = 0;
-    byte inDataArray[27] = {0};
+    byte inDataArray[30] = {0};
 } s_tmpDataBuffer;
 typedef struct inADSData inADSData;
 
