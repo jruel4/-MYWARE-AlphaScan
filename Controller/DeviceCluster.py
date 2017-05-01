@@ -68,15 +68,27 @@ class DeviceCluster:
             d.read_tcp(num_bytes=_num_bytes)	
         return "unimplemented r-code"
 
-    def pull_adc_registers(self): 
-        for d in self.dev:
-            d.pull_adc_registers()
-        return "unimplemented r-code"
+    def pull_adc_registers(self, devNum=0):
+        if(devNum in range(len(self.dev))):
+            retMsg = "PULL: Pulled from device number " + str(devNum)
+            return self.dev[devNum].pull_adc_registers(), retMsg
+        else:
+            return False, "PULL: Invalid device number " + str(devNum)
+#        for d in self.dev:
+#            d.pull_adc_registers()
+#        return "unimplemented r-code"
  
-    def push_adc_registers(self, RegMap):
-        for d in self.dev:
-            d.push_adc_registers(RegMap)
-        return "unimplemented r-code"
+    def push_adc_registers(self, RegMap, devNum=[]):
+        if(devNum == []):
+            for d in self.dev:
+                d.push_adc_registers(RegMap)
+            return "PUSH: Pushed to all " + str(len(self.dev)) + "devices"
+        else:
+            if(devNum in range(len(self.dev))):
+                self.dev[devNum].push_adc_registers(RegMap)
+                return "PUSH: Pushed to device " + str(devNum)
+            else:
+                return "PUSH: Invalid device number"
 	
     def sync_adc_registers(self):
         for d in self.dev:
@@ -191,12 +203,14 @@ class DeviceCluster:
             res['miss'] += [np.mean(d.miss)]
             res['skip'] += [np.mean(d.skip)]
         return res
-             
+          
     def time_sync(self):
         r = []
         for d in self.dev:
             r += [d.time_sync()]
         return r
+          
+          
           
           
           

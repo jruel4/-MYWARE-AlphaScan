@@ -8,6 +8,7 @@ Created on Fri Feb 05 14:04:12 2016
 from PySide.QtCore import *
 from PySide.QtGui import *
 import pickle
+import os # for generating map files
 
 class ADC_REG_TAB( QWidget):
     def __init__(self, Device, Debug, parent=None):
@@ -15,6 +16,19 @@ class ADC_REG_TAB( QWidget):
         self._Device = Device
         self._Debug = Debug
         
+        # ADC Config Filenames
+        f_impedanceMeasurement = os.path.join(os.path.curdir, 'RegMaps', 'impedance.map') 
+        f_testSignal = os.path.join(os.path.curdir, 'test.map')
+        f_RMS = os.path.join(os.path.curdir, 'rms.map')
+        f_standardEEG = os.path.join(os.path.curdir, 'eeg.map')
+
+        regMaps = {
+        "Standard":f_standardEEG,
+        "Impedance":f_impedanceMeasurement,
+        "RMS":f_RMS,
+        "Square Wave":f_testSignal
+        }
+
         # Create Scroll Area
         self.scrollArea = QScrollArea(self)
         self.scrollArea.setWidgetResizable(True)
@@ -102,29 +116,42 @@ class ADC_REG_TAB( QWidget):
         mainLayout.addWidget(self.Button_PushRegister)
         self.Button_PushRegister.clicked.connect(self.push_registers_to_ads)
         
+        #Generate dropdown list for which device to send to
+        self._dict_Dropdown_SendToDevices = {"All":[]}
+        for i in range(self._Device.num_devices):
+            self._dict_Dropdown_SendToDevices[str(i+1)] = i
+
+        self.Dropdown_SendToDevices = QComboBox(self)
+        for i in sorted(self._dict_Dropdown_SendToDevices):
+            self.Dropdown_SendToDevices.addItem(i);
+        mainLayout.addWidget(self.Dropdown_SendToDevices)         
+        
         nextRow = mainLayout.rowCount() + 1
         
+        
         # Save reg_map button
+        #JCR
+        self.Dropdown_SaveRegMaps = QComboBox(self)
+        for i in regMaps.keys(): self.Dropdown_SaveRegMaps.addItem(i);
+        mainLayout.addWidget(self.Dropdown_SaveRegMaps, nextRow, 1)        
+        
         self.Button_SaveRegMap = QPushButton("Save Reg Map")
         mainLayout.addWidget(self.Button_SaveRegMap, nextRow, 0)
-        self.Button_SaveRegMap.clicked.connect(self.save_reg_map)
+        self.Button_SaveRegMap.clicked.connect(lambda: self.save_reg_map(regMaps[self.Dropdown_SaveRegMaps.currentText()]))
+
+        nextRow = mainLayout.rowCount() + 1
+        
+        
+        #JCR
+        self.Dropdown_LoadRegMaps = QComboBox(self)
+        for i in regMaps.keys(): self.Dropdown_LoadRegMaps.addItem(i);
+        mainLayout.addWidget(self.Dropdown_LoadRegMaps, nextRow, 1)                
         
         # Load reg_map button
         self.Button_LoadRegMap = QPushButton("Load Reg Map")
-        mainLayout.addWidget(self.Button_LoadRegMap, nextRow, 1)
-        self.Button_LoadRegMap.clicked.connect(self.load_reg_map)
+        mainLayout.addWidget(self.Button_LoadRegMap, nextRow, 0)
+        self.Button_LoadRegMap.clicked.connect(lambda: self.load_reg_map(regMaps[self.Dropdown_LoadRegMaps.currentText()]))
         
-        nextRow = mainLayout.rowCount() + 1
-        
-        # Save reg_map button Impedance
-        self.Button_SaveRegMap_Imp = QPushButton("Save Imp Map")
-        mainLayout.addWidget(self.Button_SaveRegMap_Imp, nextRow, 0)
-        self.Button_SaveRegMap_Imp.clicked.connect(self.save_reg_map_impedance)
-        
-        # Load reg_map button Impedance
-        self.Button_LoadRegMap_Imp = QPushButton("Load Imp Map")
-        mainLayout.addWidget(self.Button_LoadRegMap_Imp, nextRow, 1)
-        self.Button_LoadRegMap_Imp.clicked.connect(self.load_reg_map_impedance)
         
         # Send Hex command button
         self.Line_HexCommand = QLineEdit("0")
@@ -144,7 +171,8 @@ class ADC_REG_TAB( QWidget):
     @Slot()
     def push_registers_to_ads(self):
         self.sync_reg_map_to_check()
-        r = self._Device.push_adc_registers(self.ADC_RegMap)
+        deviceNum = self._dict_Dropdown_SendToDevices[self.Dropdown_SendToDevices.currentText()]
+        r = self._Device.push_adc_registers(self.ADC_RegMap, deviceNum)
         
         msg = QMessageBox()
         msg.setText(r)
@@ -155,14 +183,13 @@ class ADC_REG_TAB( QWidget):
     def pull_registers_from_ads(self):
         
         # TODO check to ensure that (not streaming) and (connected)
-        r = self._Device.pull_adc_registers()
+        deviceNum = self._dict_Dropdown_SendToDevices[self.Dropdown_SendToDevices.currentText()]
+        msg = QMessageBox()
+        r,retMsg = self._Device.pull_adc_registers(deviceNum)
         if r:
             self.ADC_RegMap = r
         else:
-            msg = QMessageBox()
-            msg.setText("failure")
-            msg.exec_()
-            return
+            msg.setText("Failure\n" + retMsg)
 #==============================================================================
 #         msg = QMessageBox()
 #         if r:
@@ -191,7 +218,7 @@ IndexError: string index out of range
                     self.rowDict[i]['BIT_'+str(j)].setCheckState(Qt.CheckState.Unchecked)
         
         msg = QMessageBox()
-        msg.setText("complete")
+        msg.setText("Complete\n" + retMsg)
         msg.exec_()
     
     @Slot()
@@ -208,31 +235,42 @@ IndexError: string index out of range
             pass
             
     @Slot()
-    def save_reg_map(self):
+    def save_reg_map(self, path="test_profile.p"):
         self.sync_reg_map_to_check()
-        #TODO make these paths unbreakable (local relative?)
-        pickle.dump(self.ADC_RegMap, open("..\\Controller\\Data\\test_profile.p", "wb"))
+        pickle.dump(self.ADC_RegMap, open(path, "wb"))
         msg = QMessageBox()
-        msg.setText("Map Saved")
-        msg.exec_()
+        msg.setText(path + " Map Saved")
+        msg.exec_()    
+ 
+#old   
+#    def save_reg_map(self):
+#        self.sync_reg_map_to_check()
+#        #TODO make these paths unbreakable (local relative?)
+#        pickle.dump(self.ADC_RegMap, open("test_profile.p", "wb"))
+#        msg = QMessageBox()
+#        msg.setText("Map Saved")
+#        msg.exec_()
         
     @Slot()
     def save_reg_map_impedance(self):
         self.sync_reg_map_to_check()
         #TODO make these paths unbreakable (local relative?)
-        pickle.dump(self.ADC_RegMap, open("..\\Controller\\Data\\impedance_profile.p", "wb"))
+        pickle.dump(self.ADC_RegMap, open(f_impedanceMeasurement, "wb"))
         msg = QMessageBox()
         msg.setText("Map Saved")
         msg.exec_()
     
     @Slot()
-    def load_reg_map(self):
-        self.ADC_RegMap = pickle.load( open("..\\Controller\\Data\\test_profile.p", "rb"))
+    def load_reg_map(self, path="test_profile.p"):
+        self.ADC_RegMap = pickle.load( open(path, "rb"))
         self.sync_check_to_reg_map()
+        msg = QMessageBox()
+        msg.setText(path + "Map Loaded")
+        msg.exec_()
         
     @Slot()
     def load_reg_map_impedance(self):
-        self.ADC_RegMap = pickle.load( open("..\\Controller\\Data\\impedance_profile.p", "rb"))
+        self.ADC_RegMap = pickle.load( open("impedance_profile.p", "rb"))
         self.sync_check_to_reg_map()
         
     def sync_check_to_reg_map(self):
