@@ -20,7 +20,7 @@ class ApConnection:
         self.ApIsAvailable = False
         self.ApConnected = False
         self.associated = False
-        self.network_keyword = "esp-open-rtos AP 2"
+        self.network_keyword = "esp-open-rtos AP 666"
         
     def read_network_card(self):
         ''' Populate available interfaces and networks, then check to see if 
