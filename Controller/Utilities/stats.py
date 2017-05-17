@@ -9,13 +9,13 @@ import numpy as np
 def rms(d): return np.sqrt(np.mean((d-np.mean(d))**2))
     
 def get_imp(d):
-    b2v = 5.0/(2**24)
+    b2v = 4.5/(2**23 -1)
     V = (max(d) - min(d))*b2v
     I = 24E-6
     return V/I
     
 def get_voltage(b, gain=1.0):
-    b2v = 5.0/(2**24)
+    b2v = 4.5/(2**23 - 1)
     b2v /= gain
     return b*b2v
     

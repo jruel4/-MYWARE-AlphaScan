@@ -25,8 +25,9 @@ class TimeSync:
         self.finished.clear()
         
         
-    def sync(self, IP):
+    def sync(self, IP, DEVNUM):
         self.UDP_IP_REMOTE = IP
+        self.DEVNUM = DEVNUM
         self.syncThread = Thread(target=self.sync_thread)
         self.syncThread.start()
 
@@ -58,7 +59,8 @@ class TimeSync:
         
     def sync_thread(self):
         UDP_IP_LOCAL = ''
-        UDP_PORT_LOCAL = 2049
+        
+        UDP_PORT_LOCAL = 2049 + self.DEVNUM
         UDP_PORT_REMOTE = 2050
         
         UDP_IP_REMOTE = self.UDP_IP_REMOTE

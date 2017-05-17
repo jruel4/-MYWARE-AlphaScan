@@ -966,7 +966,10 @@ class AlphaScanDevice:
             self.outlet.push_sample(d)
             self.t_data += [d]
             self.local_qsize += [self.fifo_queue.qsize()]
-            time.sleep(0.004) # was 0.004
+            if(self.fifo_queue.qsize() > 250):
+                time.sleep(0.002) # was 0.004
+            else:
+                time.sleep(0.004) # was 0.004
             
     def get_ch_impedance(self,ch=4):
         # data to np
@@ -1009,7 +1012,7 @@ class AlphaScanDevice:
     def time_sync(self):      
         self.generic_tcp_command_OPCODE(0x7)
         time.sleep(1.0)
-        return self.ts.sync(self.UDP_IP_UNI)
+        return self.ts.sync(self.UDP_IP_UNI,self.COMM_PORT - 50007)
         
             
             
