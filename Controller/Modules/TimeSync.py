@@ -1,6 +1,3 @@
-
-
-# -*- coding: utf-8 -*-
 """
 SERVER
 """
@@ -16,11 +13,12 @@ from PySide.QtGui import *
 import numpy as np
 from matplotlib import pyplot as plt
 from sklearn import linear_model
+import pylsl
 
 class TimeSync:
     
     def __init__(self):
-        self.t_init = time.clock()
+        self.t_init = pylsl.local_clock()
         self.finished = Event()
         self.finished.clear()
         
@@ -55,7 +53,15 @@ class TimeSync:
         drift_reasonable = drift < 5E-5
         plt.plot(x,y)
         plt.plot(xc,yc)
+        self.regr = regr
         return drift,len(self.offsets), drift_reasonable
+        
+    def calculate_offset(self, device_timestamp):
+        '''
+        dev_time = host_time*drift + initial offset ==>
+        host_time = (dev_time-initial_offset)/drift
+        '''
+        return (device_timestamp - self.regr.intercept_) / self.regr.coef_[0][0]
         
     def sync_thread(self):
         UDP_IP_LOCAL = ''
@@ -73,12 +79,12 @@ class TimeSync:
         sock.settimeout(0.400) # 10 millisecond timeout ... might be low?
         
         # Init clock
-        self.t0 = time.clock()
+        self.t0 = pylsl.local_clock()
         
         timeouts = 0    
         self.offsets = []
         
-        while (time.clock()-self.t0) < 60.0:
+        while (pylsl.local_clock()-self.t0) < 60.0:
             
             #time.sleep(0.001)
         
@@ -86,7 +92,7 @@ class TimeSync:
             pid = random.randint(0,2**64-1)
             
             # Generate t1, pkt1, and immediatly send
-            t1 = timing_utils.s2us(time.clock())
+            t1 = timing_utils.s2us(pylsl.local_clock())
             pkt1 = struct.pack(PKT_FORMAT, pid, t1, 0, 0, 0)
             sock.sendto(pkt1, (UDP_IP_REMOTE,UDP_PORT_REMOTE))
             
@@ -96,7 +102,7 @@ class TimeSync:
                 #TODO handle Errno 10054
                 
                 # Upon receipt immediatly generate t4
-                t4 = time.clock()
+                t4 = pylsl.local_clock()
                 
                 # Check if packet is correct
                 rx_pid,t1,t2,t3,_ = struct.unpack(PKT_FORMAT, rx_data)

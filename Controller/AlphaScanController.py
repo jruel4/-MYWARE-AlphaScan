@@ -870,7 +870,11 @@ class AlphaScanDevice:
         def parse_and_push(data):
             deviceData = [list() for i in range(8)]
             mysamples = [[0 for i in range(8)] for j in range(57)]
+            timestamp_base = ord(data[6:14])
             for i in range(57):
+                #TODO update calculation below for variable sample rates
+                # i.e. 4000 = 1000/250 * 1000 so adjust 250 to variable srate
+                timestamp_inc = timestamp_base + (i*4000) # assuming 4,000 microsecond elapse b/w samples
                 for j in xrange(8):
                     deviceData[j] = [data[(24+24*i)+(j*3):(24+24*i)+(j*3+3)]] 
                     val = 0
@@ -883,7 +887,7 @@ class AlphaScanDevice:
                             print("value error",e)
                     val = twos_comp(val)
                     mysamples[i][j] = val
-                self.fifo_queue.put(list(mysamples[i]))
+                self.fifo_queue.put((list(mysamples[i]), timestamp_inc))
             return mysamples
         
         # Stat vars
@@ -962,9 +966,14 @@ class AlphaScanDevice:
         time.sleep(0.500) # was at 0.300
         while self.DEV_streamActive.is_set():    
             d = self.fifo_queue.get()
-            self.fifo_queue_imp.put(list(d)) # for imp thread
-            self.outlet.push_sample(d)
-            self.t_data += [d]
+            self.fifo_queue_imp.put(list(d[0])) # for imp thread
+            
+            # Convert from device time to host time
+            device_timestamp = d[1] 
+            host_timestamp = self.ts.calculate_offset(device_timestamp)
+            self.outlet.push_sample(d[0], timestamp=host_timestamp)
+            
+            self.t_data += [d[0]]
             self.local_qsize += [self.fifo_queue.qsize()]
             if(self.fifo_queue.qsize() > 250):
                 time.sleep(0.002) # was 0.004
