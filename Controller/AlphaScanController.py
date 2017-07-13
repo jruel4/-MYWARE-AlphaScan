@@ -3,7 +3,7 @@ import socket
 from collections import deque
 import time
 from threading import Thread, Event
-from pylsl import StreamInfo, StreamOutlet
+from pylsl import StreamInfo, StreamOutlet, local_clock
 import random
 from Includes.CommandDefinitions import *
 from Utilities.stats import get_imp
@@ -830,6 +830,8 @@ class AlphaScanDevice:
         sock.setsockopt(socket.SOL_SOCKET,socket.SO_RCVBUF,8192)
         sock.bind(('',UDP_PORT))
         self.sock = sock
+        #JCR
+        self.raw_vals = list()
         def msg(c,token=0x00):
             return chr(c)+'_'.encode('utf-8')+chr(0x00)     
         def get_newest_ctr(sock):
@@ -870,7 +872,10 @@ class AlphaScanDevice:
         def parse_and_push(data):
             deviceData = [list() for i in range(8)]
             mysamples = [[0 for i in range(8)] for j in range(57)]
-            timestamp_base = ord(data[6:14])
+            timestamp_base = 0            
+            for idx in range(6,14):
+                timestamp_base |= ord(data[idx]) << (((idx-6)) * 8)
+            self.raw_vals += [data[x] for x in range(6,14)]
             for i in range(57):
                 #TODO update calculation below for variable sample rates
                 # i.e. 4000 = 1000/250 * 1000 so adjust 250 to variable srate
@@ -888,7 +893,7 @@ class AlphaScanDevice:
                     val = twos_comp(val)
                     mysamples[i][j] = val
                 self.fifo_queue.put((list(mysamples[i]), timestamp_inc))
-            return mysamples
+            return (mysamples,timestamp_base)
         
         # Stat vars
         self.rtt = list() # delay list
@@ -939,6 +944,7 @@ class AlphaScanDevice:
         # Share stats
         self.t_q = list(t_q)
         self.t_heap = list(t_heap)
+        self.t_rawbuf = t_data
         
         
             
@@ -963,6 +969,7 @@ class AlphaScanDevice:
             
     def lsl_feeder_thread(self):
         self.t_data = list()
+        self.t_offsets=list()
         time.sleep(0.500) # was at 0.300
         while self.DEV_streamActive.is_set():    
             d = self.fifo_queue.get()
@@ -971,6 +978,7 @@ class AlphaScanDevice:
             # Convert from device time to host time
             device_timestamp = d[1] 
             host_timestamp = self.ts.calculate_offset(device_timestamp)
+            self.t_offsets += [device_timestamp,host_timestamp,local_clock()]
             self.outlet.push_sample(d[0], timestamp=host_timestamp)
             
             self.t_data += [d[0]]
