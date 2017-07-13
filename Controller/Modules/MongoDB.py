@@ -18,12 +18,12 @@ class MongoController:
     def open_db_connection(self):
         #uri = "mongodb://martin:pass1@74.79.252.194:27017/test_database"
         local_uri = "mongodb://martin:pass1@192.168.2.5:27017/test_database"
-        client = pymongo.MongoClient(local_uri)
-        self.db = client.get_database('test_database')
+        self.client = pymongo.MongoClient(local_uri)
+        self.db = self.client.get_database('test_database')
         self.fs = gridfs.GridFS(self.db)
         
     def close_db_connection(self):
-        self.db.close()
+        self.client.close()
 
     def upload_data(self, file_path=u'C:\\Users\\MartianMartin\\Desktop\\xdf-master\\xdf-master\\xdf_sample.xdf',
                     filename="misc_file",
@@ -41,7 +41,7 @@ class MongoController:
         xdfd = open(file_path,'rb').read()
         return self.fs.put(xdfd, **metadata)
         
-    def download_data(self, object_id):
+    def download_data(self, object_id): # where do i get object id?
         ret = self.fs.get(ObjectId(object_id)).read()
         fp = os.getcwd()+'\\new_file_'+object_id+".xdf"
         new_file = open(fp,"wb")
@@ -58,8 +58,22 @@ class MongoController:
         a = self.fs.put(b"hello world",  **metadata)
         return self.fs.get(a).read()
 
-    def get_filenames(self):
-        files = list(self.fs.fin())
-        return [f.name for f in files]
+    def get_filenames(self, type_filter=None):
+        files = list(self.fs.find())
+        return [(f.name,f._id) for f in files]
+        
+    def get_file_objects(self):
+        self.files = list(self.fs.find())
+        return self.files
 
     
+
+
+
+
+
+
+
+
+
+
