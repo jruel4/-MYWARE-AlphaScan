@@ -35,9 +35,9 @@ class TimeSync:
             return False
         
     def sync_threadx(self):
-        self.t0 = time.time()
+        self.t0 = pylsl.local_clock()
         print("running thread")
-        while (time.time()-self.t0) < 5.0:
+        while (pylsl.local_clock()-self.t0) < 5.0:
             pass
         self.finished.set()
         
@@ -61,7 +61,7 @@ class TimeSync:
         dev_time = host_time*drift + initial offset ==>
         host_time = (dev_time-initial_offset)/drift
         '''
-        return (device_timestamp - self.regr.intercept_) / self.regr.coef_[0][0]
+        return ((device_timestamp - self.regr.intercept_) / (1 + self.regr.coef_[0][0])) / (1.0e6)
         
     def sync_thread(self):
         UDP_IP_LOCAL = ''
