@@ -59,14 +59,14 @@ class AlphaScanDevice:
         self.sqwave = list()
         
         
-        self.info = StreamInfo('AS_'+time.strftime("%d_%m_%Y_%H_%M_%S_")+str(portno), 'EEG', 8, 250, 'float32', 'AS_'+time.strftime("%d_%m_%Y_%H_%M_%S"))
+        self.info = StreamInfo('AS_'+time.strftime("%d_%m_%Y_%H_%M_%S_"), 'EEG', 8, 250, 'float32', 'AS_'+time.strftime("%d_%m_%Y_%H_%M_%S"))
         self.outlet = StreamOutlet(self.info)
         self.mysample = [random.random(), random.random(), random.random(),
             random.random(), random.random(), random.random(),
             random.random(), random.random()]
             
         # Impedance outlet
-        self.imp_info = StreamInfo('IMP_'+time.strftime("%d_%m_%Y_%H_%M_%S_")+str(portno), 'EEG', 8, 250, 'float32', 'IMP_'+time.strftime("%d_%m_%Y_%H_%M_%S"))
+        self.imp_info = StreamInfo('IMP_'+time.strftime("%d_%m_%Y_%H_%M_%S_")+str(portno), 'IMP', 8, 250, 'float32', 'IMP_'+time.strftime("%d_%m_%Y_%H_%M_%S"))
         self.imp_outlet = StreamOutlet(self.imp_info)
             
         self.SysParams = {'vcc':None,
@@ -978,7 +978,7 @@ class AlphaScanDevice:
             # Convert from device time to host time
             device_timestamp = d[1] 
             host_timestamp = self.ts.calculate_offset(device_timestamp)
-            self.t_offsets += [device_timestamp,host_timestamp,local_clock()]
+            self.t_offsets += [[device_timestamp,host_timestamp,local_clock()]]
             self.outlet.push_sample(d[0], timestamp=host_timestamp)
             
             self.t_data += [d[0]]
