@@ -27,12 +27,11 @@ else:
     fileName = "."
     
 # Run app     
-dev = DeviceCluster(num_devices=1) 
+dev = DeviceCluster(num_devices=1,starting_port=50007)
 app = AlphaScanGui(dev, fileName)
 time.sleep(0.01)
 app.show()
 qt_app.exec_()
-
 
 
 

@@ -2,4 +2,7 @@ Binaries/
 *.xdf
 *.p
 *.pyc
+Controller/Modules/*.pyc
+*.ini
 *~
+Firmware/
