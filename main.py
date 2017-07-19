@@ -14,7 +14,7 @@ from GUI.GUI_Home import AlphaScanGui
 from Controller.DeviceCluster import DeviceCluster
 
 try:
-    qt_app = QApplication(sys.argv)
+    qt_app = QtGui.QApplication.instance()
 except Exception as e: # could fail for reasons other than already exists... 
     print(e)
 
@@ -27,12 +27,11 @@ else:
     fileName = "."
     
 # Run app     
-dev = DeviceCluster(num_devices=1) 
+dev = DeviceCluster(num_devices=1,starting_port=50009)
 app = AlphaScanGui(dev, fileName)
 time.sleep(0.01)
 app.show()
 qt_app.exec_()
-
 
 
 
