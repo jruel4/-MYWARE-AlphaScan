@@ -65,7 +65,26 @@ class MongoController:
     def get_file_objects(self):
         self.files = list(self.fs.find())
         return self.files
-
+        
+    '''
+    StreamNode Support Methods
+    '''
+    def write_stream(self, file_path=None,
+                filename="misc_file",
+                user="misc_user",
+                channels="fz,oz,cz",
+                duration="10009",
+                rec_type="EEG",
+                notes="This is a test note"):
+                    
+    metadata = {"user": user,
+                "name": filename,
+                "channels": channels,
+                "type": rec_type,
+                "duration": duration,
+                "notes": notes}
+    xdfd = open(file_path,'rb').read()
+    return self.fs.put(xdfd, **metadata)
     
 
 
