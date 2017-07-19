@@ -13,12 +13,16 @@ e.g. buffering, converting, etc.
 
 '''
 from pylsl import StreamInlet, resolve_stream
+from threading import Thread, Event
+import numpy as np
+from MongoDB import MongoController
 
 class StreamManager:
     
     def __init__(self):
         self.filename = None
         self.overwrite = False
+        self.db = MongoController()
         
     
     # select_streams
@@ -70,7 +74,7 @@ class StreamManager:
     ###
     
     # begin_saving
-    def begin_saving(self, filename, metadata=None, overwrite=False):
+    def begin_saving(self, metadata):
         '''
         Function:
             Begins saving to file
@@ -80,8 +84,6 @@ class StreamManager:
             (O) overwrite: bool, whether or not to overwrite if a file already exists
         Return
         '''
-        self.filename = filename
-        self.overwrite = overwrite
         self.metadata = metadata
         # begin saving all streams
         for s in self.selected_streams:
@@ -138,7 +140,14 @@ class StreamManager:
         for s in self.selected_streams:
             s.stop()
             
-        #TODO write to MongoDB
+        # Collect all streams data
+        data = self.load_current_data()
+        
+        # Collect all metadata
+        metadata = self.metadata
+        
+        # Write to databse
+        self.db.write_streams(data,metadata)
     
     ###
     # Metadata
@@ -146,7 +155,7 @@ class StreamManager:
     
     
     # create_metadata
-    def create_metadata(self,user,proctor,ch_names, recording_desc,marker_desc,other_metadata):
+    def create_metadata(self,filename,user,proctor,ch_names, recording_desc,marker_desc,other_metadata):
         '''
         Function:
             Add metadata which is saved with the stream data
@@ -160,7 +169,8 @@ class StreamManager:
         Returns:
             metadata: md, metadata structure
         '''
-        return {'user':user,
+        return {'filename':filename,
+                'user':user,
                 'proctor':proctor,
                 'ch_names':ch_names,
                 'recording_desc':recording_desc,
@@ -190,6 +200,7 @@ class StreamManager:
         [1] LSL keyboard events: https://github.com/sccn/labstreaminglayer/wiki/Keyboard.wiki
         '''
         self.selected_streams[marker_stream_uid].set_type_marker(key_events)
+        # Note, actual mapping performed upon saving
     
     ###
     # Loading data
@@ -234,7 +245,23 @@ class StreamManager:
                 Keys are the UIDs of the marker streams.
         
         '''
-        pass
+        data = dict()
+        data_ts = dict()
+        markers = dict()
+        markers_ts = dict()
+        for uid,stream in self.selected_streams.items():
+            if stream.type == 'REGULAR':
+                data[uid] = stream.get_data()
+                data_ts[uid] = stream.get_ts()
+            else:
+                markers[uid] = stream.get_data()
+                markers_ts[uid] = stream.get_ts()
+                
+        return {'data':data,'data_ts':data_ts,'markers':markers,'markers_ts':markers_ts}
+                
+        
+        
+        
     
 class Stream:
     '''
@@ -253,22 +280,48 @@ class Stream:
         self.inlet = StreamInlet(lsl_stream)
         self.state = 'PAUSED'
         self.type = 'REGULAR'
+        self.active_event = Event()
+        self.data_buf = list()
+        self.ts_buf = list()
         
     def begin(self):
-        pass
+        self.active_event.set()
+        thread = Thread(target=self.acquisition_thread)
+        thread.start()
     
     def pause(self):
-        pass
+        self.active_event.clear()
     
     def resume(self):
-        pass
+        self.begin()
     
     def stop(self):
-        pass
+        self.pause()
+        if self.type == 'MARKER':
+            # map markers
+            for i in range(len(self.data_buf)):
+                for j in range(len(self.data_buf[i])):
+                    try:
+                        self.data_buf[i][j] = self.mapping[self.data_buf[i][j]]
+                    except KeyError:
+                        print("Didn't find mapping for ",self.data_buf[i][j])
     
     def set_type_marker(self, mapping):
         self.type = 'MARKER'
         self.mapping = mapping
+        
+    def get_data(self):
+        return np.asarray(self.data_buf)
+    
+    def get_ts(self):
+        return np.asarray(self.ts_buf)
+    
+    def acquisition_thread(self):
+        
+        while self.active_event.is_set():
+            chunk, timestamps = self.inlet.pull_chunk()
+            self.data_buf.extend(chunk)
+            self.ts_buf.extend(timestamps)
     
     
     
