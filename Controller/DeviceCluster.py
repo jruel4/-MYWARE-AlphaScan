@@ -209,16 +209,3 @@ class DeviceCluster:
         for d in self.dev:
             r += [d.time_sync()]
         return r
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          
-        

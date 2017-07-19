@@ -1046,11 +1046,3 @@ class AlphaScanDevice:
           
           
           
-          
-          
-          
-          
-          
-            
-            
-
