@@ -4,7 +4,7 @@ SERVER
 
 import time
 import socket
-import timing_utils
+from Experimental.Timing import timing_utils
 import struct
 import random
 from threading import Thread, Event
