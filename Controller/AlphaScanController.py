@@ -59,14 +59,14 @@ class AlphaScanDevice:
         self.sqwave = list()
         
         
-        self.info = StreamInfo('AS_'+time.strftime("%d_%m_%Y_%H_%M_%S_")+str(portno), 'EEG', 8, 250, 'float32', 'AS_'+time.strftime("%d_%m_%Y_%H_%M_%S"))
+        self.info = StreamInfo('AS_'+time.strftime("%d_%m_%Y_%H_%M_%S_"+str(portno)), 'EEG', 8, 250, 'float32', 'AS_'+time.strftime("%d_%m_%Y_%H_%M_%S")+str(portno))
         self.outlet = StreamOutlet(self.info)
         self.mysample = [random.random(), random.random(), random.random(),
             random.random(), random.random(), random.random(),
             random.random(), random.random()]
             
         # Impedance outlet
-        self.imp_info = StreamInfo('IMP_'+time.strftime("%d_%m_%Y_%H_%M_%S_")+str(portno), 'EEG', 8, 250, 'float32', 'IMP_'+time.strftime("%d_%m_%Y_%H_%M_%S"))
+        self.imp_info = StreamInfo('IMP_'+time.strftime("%d_%m_%Y_%H_%M_%S_")+str(portno), 'IMP', 8, 250, 'float32', 'IMP_'+time.strftime("%d_%m_%Y_%H_%M_%S"))
         self.imp_outlet = StreamOutlet(self.imp_info)
             
         self.SysParams = {'vcc':None,
@@ -922,9 +922,16 @@ class AlphaScanDevice:
             nctr,valid,x,d = get_newest_ctr(sock)                              # Get most recent received message
             if not valid: self.miss+=1;                                        # If rx message not valid, restart
             elif nctr != (ctr+1)%256: ctr=nctr;self.skip+=1                    # TODO(analyze) If rx message not expected count skip 
-            else: ctr=nctr;self.totrx+=valid;rc=time.time();self.rtt+=[rc-rp];\
-                  rp=rc;t_data+=[d];t_q+=[get_queue_size(d)];\
-                  t_heap+=[get_heap_size(d)];self.t_pdata+=parse_and_push(d)   # If valid, increment counter and extract data + metrics
+            else:
+                ctr=nctr;
+                self.totrx+=valid;
+                rc=time.time();
+                self.rtt+=[rc-rp];
+                rp=rc;
+#                t_data+=[d];
+#                t_q+=[get_queue_size(d)];
+#                t_heap+=[get_heap_size(d)];
+                self.t_pdata+=parse_and_push(d)   # If valid, increment counter and extract data + metrics
                   
         #####################################
         # End Core Loop
@@ -978,7 +985,7 @@ class AlphaScanDevice:
             # Convert from device time to host time
             device_timestamp = d[1] 
             host_timestamp = self.ts.calculate_offset(device_timestamp)
-            self.t_offsets += [device_timestamp,host_timestamp,local_clock()]
+            self.t_offsets += [[device_timestamp,host_timestamp,local_clock()]]
             self.outlet.push_sample(d[0], timestamp=host_timestamp)
             
             self.t_data += [d[0]]

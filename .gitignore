@@ -1,5 +1,9 @@
 Binaries/
+Firmware/
+Controller/Utilities/cardio_noise_removal/
 *.xdf
 *.p
 *.pyc
 *~
+*.swp
+*.ini
