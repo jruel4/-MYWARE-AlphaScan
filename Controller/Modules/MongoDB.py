@@ -13,7 +13,7 @@ import os
 class MongoController:
     
     def __init__(self):
-        pass
+        self.open_db_connection()
     
     def open_db_connection(self):
         #uri = "mongodb://martin:pass1@74.79.252.194:27017/test_database"
@@ -69,22 +69,15 @@ class MongoController:
     '''
     StreamNode Support Methods
     '''
-    def write_stream(self, file_path=None,
-                filename="misc_file",
-                user="misc_user",
-                channels="fz,oz,cz",
-                duration="10009",
-                rec_type="EEG",
-                notes="This is a test note"):
-                    
-    metadata = {"user": user,
-                "name": filename,
-                "channels": channels,
-                "type": rec_type,
-                "duration": duration,
-                "notes": notes}
-    xdfd = open(file_path,'rb').read()
-    return self.fs.put(xdfd, **metadata)
+    def write_streams(self, f_handle, metadata): 
+        print("sending data to mongo")
+        return self.fs.put(f_handle, **metadata)
+    
+    def read_stream(self, object_id, file_to_save_to):
+        ret = self.fs.get(ObjectId(object_id)).read()
+        file_to_save_to.write(ret)
+        file_to_save_to.close()
+        return True
     
 
 

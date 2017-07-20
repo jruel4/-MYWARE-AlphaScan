@@ -4,6 +4,7 @@ Controller/Utilities/cardio_noise_removal/
 *.xdf
 *.p
 *.pyc
+*.simmie
 Controller/Modules/*.pyc
 *.ini
 *~
