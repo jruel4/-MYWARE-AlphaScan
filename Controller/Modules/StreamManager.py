@@ -172,7 +172,7 @@ class StreamManager:
         self.db.read_stream(object_id, new_file)
         print("file save to: ",filename)
         
-        
+
     
     ###
     # Metadata
