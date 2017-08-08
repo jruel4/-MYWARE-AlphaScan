@@ -1,5 +1,5 @@
 import numpy as np
-from vispy import plot as vp
+#from vispy import plot as vp
 import time
 from threading import Thread
 

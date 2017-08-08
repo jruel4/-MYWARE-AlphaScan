@@ -18,6 +18,7 @@ import numpy as np
 from MongoDB import MongoController
 import pickle
 import time
+import os
 
 class StreamManager:
     
@@ -28,8 +29,9 @@ class StreamManager:
         
     
     # select_streams
-    def select_streams(self, uids=None):
-        '''
+    def select_streams(self, *args):
+        """Select streams.
+
         Function:
             If UIDs are passed in then quietly accept them.
             
@@ -44,21 +46,35 @@ class StreamManager:
             NOTE: If user inputs -1, please exit gracefully (assume the user changed their mind)
         
         Args:
-            (O) uids: list of unicode strings corresponding to UIDs of streams which to include in saving
+            Keywords:
+                (O) uids: list of unicode strings corresponding to UIDs of streams which to include in saving
+            Other:
+                (O) *args: passed onto resolve_stream (can use this to resolve specific types of streams, see example)
         
         Returns:
             success: int,
                 1 if successful
                 0 if gracefully exiting
                 -1 if error
-        '''
+                
+        Example:
+            select_streams(uids=['ae0382198fe...']) - use uid as only value
+            select_streams('type','EEG') - resolve only EEG streams (passed onto resolve_stream -> resolve_byprop)
+            select_streams() - resolves all streams (w/ 1 second timeout)
+        """
+        
+#        uids = kwargs.pop('uids', None)        
+        uids = None
         
         if uids:
             # make sure all uids are actuall available
             pass
         else:
             # get available streams
-            streams = resolve_stream()
+            streams = resolve_stream(*args)
+            if not streams:
+                print("No streams found, returning.")
+                return 0
             for n,s in enumerate(streams):
                 print("index: ",n, s.name(), s.type(), s.source_id(), s.uid())
             uids = input("Please input desired stream indexes as comma separated list: ")
@@ -149,7 +165,8 @@ class StreamManager:
         metadata = self.metadata
         
         # Create filename
-        filename = '../Data/' + str(time.time()) + '.simmie'
+        dir_path = os.path.dirname(os.path.realpath(__file__))
+        filename = os.path.join(dir_path, '..', 'Data', str(time.time()) + '.simmie')
         
         # Pickle data to that grid fs will chunk it
         print("dumping data to file")
@@ -163,6 +180,20 @@ class StreamManager:
         self.db.write_streams(f_handle, metadata)
         
         print("Upload complete")
+        
+    '''
+    Function:
+        Clears internal buffers
+    Args:
+        None
+    Returns:
+        None
+    
+    
+    '''
+    def clear(self):
+        for s in self.selected_streams.values():
+            s.clear()
         
     def read_stream(self, object_id):
         '''
@@ -204,14 +235,14 @@ class StreamManager:
     
     
     # map_marker_streams
-    def map_marker_streams(self, key_events, marker_stream_uid):
+    def map_marker_streams(self, key_events, marker_stream_uid=None):
         '''
         Function:
             Sets up mapping from LSL marker streams (ex. keycorder) to actual meaningful
             event labels (which are saved in the file)
         Args:
             keys_events: dict, keys correspond to LSL keyrecorder outputs (see [1]), values are the actual event labels
-            marker_stream_uid: string, must be currently held in self.selected_streams
+            (O) marker_stream_uid: string, if present must be currently held in self.selected_streams
         Returns:
             None
             
@@ -224,7 +255,21 @@ class StreamManager:
         
         [1] LSL keyboard events: https://github.com/sccn/labstreaminglayer/wiki/Keyboard.wiki
         '''
-        self.selected_streams[marker_stream_uid].set_type_marker(key_events)
+        
+
+        if marker_stream_uid:
+            self.selected_streams[marker_stream_uid].set_type_marker(key_events)
+        else:
+            # get available streams
+            streams = resolve_stream()
+            for n,s in enumerate(streams):
+                print("index: ",n, s.name(), s.type(), s.source_id(), s.uid())
+            idx = input("Please input desired stream index: ")
+            
+            if idx == -1:
+                return 0
+            else:
+                self.selected_streams[streams[idx].uid()].set_type_marker(key_events)
         # Note, actual mapping performed upon saving
     
     ###
@@ -340,23 +385,20 @@ class Stream:
     
     def get_ts(self):
         return np.asarray(self.ts_buf)
+        
+    def clear(self):
+        self.data_buf = list()
+        self.ts_buf = list()
     
     def acquisition_thread(self):
-        
         while self.active_event.is_set():
-            chunk, timestamps = self.inlet.pull_chunk()
-            self.data_buf.extend(chunk)
-            self.ts_buf.extend(timestamps)
-    
-    
-    
-    
-    
-    
-    
-    
-
-    
-    
-    
+            if self.type == 'MARKER':
+                chunk, timestamps = self.inlet.pull_sample()
+                self.data_buf.append(chunk)
+                self.ts_buf.append(timestamps)
+            else:
+                chunk, timestamps = self.inlet.pull_chunk()
+                self.data_buf.extend(chunk)
+                self.ts_buf.extend(timestamps)
+                time.sleep(0.01) #no need to be running all the time
     

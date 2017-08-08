@@ -17,7 +17,7 @@ class MongoController:
     
     def open_db_connection(self):
         #uri = "mongodb://martin:pass1@74.79.252.194:27017/test_database"
-        local_uri = "mongodb://martin:pass1@192.168.2.5:27017/test_database"
+        local_uri = "mongodb://martin:pass1@192.168.1.4:27017/test_database"
         self.client = pymongo.MongoClient(local_uri)
         self.db = self.client.get_database('test_database')
         self.fs = gridfs.GridFS(self.db)

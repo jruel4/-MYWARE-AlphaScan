@@ -4,7 +4,8 @@ SERVER
 
 import time
 import socket
-from Experimental.Timing import timing_utils
+# NOTE: importing timing_utils from Experimental.Timing, TODO FIX IMPORT
+import timing_utils
 import struct
 import random
 from threading import Thread, Event
