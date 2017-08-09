@@ -36,7 +36,7 @@ if __name__ == "__main__":
     
     
     s.select_streams("type='EEG' or type='Markers'")
-    s.map_marker_streams(marker_map)
+#    s.map_marker_streams(marker_map)
     s.begin_saving(metadata)
     
     doRun = True
@@ -53,8 +53,13 @@ if __name__ == "__main__":
                 print("Error stopping saving.")
             if s.begin_saving(metadata):
                 print("Error beginning saving.")
+        if i == "R":
+            print("Cycling stream saver AND clearing RAM...")
+            if s.stop_saving() == -1:
+                print("Error stopping saving.")
+            if s.begin_saving(metadata):
+                print("Error beginning saving.")
             s.clear() #clear buffers
-            
             
             
             

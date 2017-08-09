@@ -6,7 +6,7 @@ from pylsl import  StreamInlet, resolve_stream, StreamInfo, StreamOutlet
 from collections import deque
 from threading import Thread
 import numpy as np
-from Plotting.StandAlonePlotter import SinglePlotFigure
+from AlphaScan.GUI.Plotting.StandAlonePlotter import SinglePlotFigure
 #from stats import rms
 
 def rms(d): return np.sqrt(np.mean((d-np.mean(d))**2))

@@ -47,8 +47,15 @@ class AlphaScanGui(QWidget):
         # Add device streaming and connected labels to status area
         self.StreamingStatus = QLabel("Not Streaming") 
         self.ConnectionStatus = QLabel("Not Connected")
-        self.DebugConsole = QTextEdit("Debug Console...")
+        self.DebugConsole = QTextEdit()
         self.DebugConsole.setReadOnly(True)
+
+        # JCR
+        self.consolePrint("Console Test Print")
+        sys.stdout = self #set stdout to GUI console
+        print(" &gt;&gt; GUI Console Test Print\n") # need to run this! console doesn't print " >> " when it's started, looks sloppy
+
+
         
         statusArea.addWidget(self.StreamingStatus)
         statusArea.addWidget(self.ConnectionStatus)
@@ -121,4 +128,18 @@ class AlphaScanGui(QWidget):
     def closeEvent(self, event):
         self._Device.close_event()
         event.accept()
-        
+    
+    # For writing to GUI console
+    def consolePrint(self, *args, **kwargs):
+        tmp = sys.stdout
+        sys.stdout = sys.__stdout__
+        for a in args:
+            print(a)
+        sys.stdout = tmp
+
+    def write(self, txt, color="green", style="bold"):
+        if txt == '':
+            return
+        # Convert "\n" to "<br>" and add ">>" to each new line
+        html = "<br> &gt;&gt; ".join([t for t in txt.split("\n")])
+        self.DebugConsole.insertHtml("<b style='color:" + color + ";'>" + html + "</b>")

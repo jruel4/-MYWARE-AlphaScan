@@ -18,14 +18,18 @@ class ADC_REG_TAB( QWidget):
         
         # ADC Config Filenames
         f_impedanceMeasurement = os.path.join(os.path.curdir, 'RegMaps', 'impedance.map') 
-        f_testSignal = os.path.join(os.path.curdir, 'test.map')
-        f_RMS = os.path.join(os.path.curdir, 'rms.map')
-        f_standardEEG = os.path.join(os.path.curdir, 'eeg.map')
+        f_testSignal = os.path.join(os.path.curdir, 'RegMaps', 'test.map')
+        f_RMS = os.path.join(os.path.curdir, 'RegMaps', 'rms.map')
+        f_standardEEG_0 = os.path.join(os.path.curdir,'RegMaps',  'eeg_0.map')
+        f_standardEEG_n = os.path.join(os.path.curdir,'RegMaps',  'eeg_n.map')
+        f_no_bias = os.path.join(os.path.curdir, 'RegMaps', 'no_bias.map')
 
         regMaps = {
-        "Standard":f_standardEEG,
+        "Standard D0":f_standardEEG_0,
+        "Standard Dn":f_standardEEG_n,
         "Impedance":f_impedanceMeasurement,
         "RMS":f_RMS,
+        "No Bias":f_no_bias,
         "Square Wave":f_testSignal
         }
 
@@ -129,29 +133,28 @@ class ADC_REG_TAB( QWidget):
         nextRow = mainLayout.rowCount() + 1
         
         
-        # Save reg_map button
-        #JCR
-        self.Dropdown_SaveRegMaps = QComboBox(self)
-        for i in regMaps.keys(): self.Dropdown_SaveRegMaps.addItem(i);
-        mainLayout.addWidget(self.Dropdown_SaveRegMaps, nextRow, 1)        
-        
-        self.Button_SaveRegMap = QPushButton("Save Reg Map")
-        mainLayout.addWidget(self.Button_SaveRegMap, nextRow, 0)
-        self.Button_SaveRegMap.clicked.connect(lambda: self.save_reg_map(regMaps[self.Dropdown_SaveRegMaps.currentText()]))
-
-        nextRow = mainLayout.rowCount() + 1
-        
-        
         #JCR
         self.Dropdown_LoadRegMaps = QComboBox(self)
         for i in regMaps.keys(): self.Dropdown_LoadRegMaps.addItem(i);
-        mainLayout.addWidget(self.Dropdown_LoadRegMaps, nextRow, 1)                
+        mainLayout.addWidget(self.Dropdown_LoadRegMaps, nextRow, 1)
         
         # Load reg_map button
         self.Button_LoadRegMap = QPushButton("Load Reg Map")
         mainLayout.addWidget(self.Button_LoadRegMap, nextRow, 0)
         self.Button_LoadRegMap.clicked.connect(lambda: self.load_reg_map(regMaps[self.Dropdown_LoadRegMaps.currentText()]))
         
+        nextRow = mainLayout.rowCount() + 1
+        
+        # Save reg_map button
+        self.Dropdown_SaveRegMaps = QComboBox(self)
+        for i in regMaps.keys(): self.Dropdown_SaveRegMaps.addItem(i);
+        mainLayout.addWidget(self.Dropdown_SaveRegMaps, nextRow, 1)        
+
+        #JCR        
+        self.Button_SaveRegMap = QPushButton("Save Reg Map")
+        mainLayout.addWidget(self.Button_SaveRegMap, nextRow, 0)
+        self.Button_SaveRegMap.clicked.connect(lambda: self.save_reg_map(regMaps[self.Dropdown_SaveRegMaps.currentText()]))
+
         
         # Send Hex command button
         self.Line_HexCommand = QLineEdit("0")
@@ -265,7 +268,7 @@ IndexError: string index out of range
         self.ADC_RegMap = pickle.load( open(path, "rb"))
         self.sync_check_to_reg_map()
         msg = QMessageBox()
-        msg.setText(path + "Map Loaded")
+        msg.setText(path + " | Map Loaded")
         msg.exec_()
         
     @Slot()

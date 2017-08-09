@@ -5,7 +5,7 @@ SERVER
 import time
 import socket
 # NOTE: importing timing_utils from Experimental.Timing, TODO FIX IMPORT
-import timing_utils
+import AlphaScan.Experimental.Timing.timing_utils as timing_utils
 import struct
 import random
 from threading import Thread, Event
