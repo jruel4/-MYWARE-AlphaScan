@@ -523,9 +523,8 @@ class AlphaScanDevice:
         self.DEV_streamActive.set()  
         self.FEEDER_THREAD = Thread(target=self.lsl_feeder_thread)
         self.FEEDER_THREAD.start()
-        if False: #TODO add imp calc var
-            self.IMP_THREAD = Thread(target=self.imp_thread)
-            self.IMP_THREAD.start()
+        self.IMP_THREAD = Thread(target=self.imp_thread)
+        self.IMP_THREAD.start()
         # Send command to being 
         self.begin = time.time()
         return "Success"
