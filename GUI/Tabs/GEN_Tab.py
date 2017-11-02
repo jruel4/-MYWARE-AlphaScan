@@ -7,7 +7,7 @@ Created on Fri Feb 05 14:06:33 2016
 
 from PySide.QtCore import *
 from PySide.QtGui import *
-from TimeSync import TimeSync
+from Controller.Modules.TimeSync import TimeSync
 import time
 
 class GeneralTab(QWidget):

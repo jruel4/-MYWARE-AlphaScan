@@ -7,7 +7,7 @@ Created on Thu Apr 20 20:58:17 2017
 
 from PySide.QtCore import *
 from PySide.QtGui import *
-from MongoDB import MongoController
+from Controller.Modules.MongoDB import MongoController
 
 class STOR_TAB(QWidget):
     

@@ -7,7 +7,7 @@ Created on Fri Feb 05 14:05:09 2016
 
 from PySide.QtCore import *
 from PySide.QtGui import *
-from ApConnect import ApConnection
+from Controller.Modules.ApConnect import ApConnection
 import time
 
 class AP_TAB(QWidget):

@@ -12,7 +12,7 @@ import select
 from matplotlib import pyplot as plt
 import Queue
 import numpy as np
-from TimeSync import TimeSync
+from Controller.Modules.TimeSync import TimeSync
 
 class AlphaScanDevice:
     

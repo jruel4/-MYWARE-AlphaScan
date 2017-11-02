@@ -7,7 +7,7 @@ Created on Mon Feb 15 19:47:40 2016
 
 from PySide.QtCore import *
 from PySide.QtGui import *
-from Spiffs import SPIFFS
+from Controller.Modules.Spiffs import SPIFFS
 
 class FS_TAB(QWidget):
     
